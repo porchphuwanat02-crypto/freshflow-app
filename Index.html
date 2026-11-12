@@ -1,0 +1,3650 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FreshFlow Atelier — Premium Restaurant Operations</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Prompt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.468.0"></script>
+  <!-- Leaflet Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Prompt', 'Inter', 'sans-serif'],
+            mono: ['Inter', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-workspace: #f4f0e8;
+      --card-bg: rgba(255, 252, 246, 0.86);
+      --card-border: rgba(255, 255, 255, 0.92);
+      --card-outer-ring: rgba(83, 74, 59, 0.08);
+      --glass-shadow: 0 22px 50px -18px rgba(73, 59, 42, 0.16), 0 4px 18px -5px rgba(117, 130, 98, 0.10);
+      --text-main: #352f28;
+      --text-muted: #82796d;
+    }
+
+    html.dark {
+      --bg-workspace: #211f1a;
+      --card-bg: rgba(49, 46, 39, 0.82);
+      --card-border: rgba(225, 216, 197, 0.13);
+      --card-outer-ring: rgba(170, 180, 145, 0.14);
+      --glass-shadow: 0 24px 55px -12px rgba(0, 0, 0, 0.48), 0 0 24px -6px rgba(164, 174, 133, 0.08);
+      --text-main: #f4eee2;
+      --text-muted: #b9ae9b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-workspace);
+      color: var(--text-main);
+      font-family: 'Prompt', 'Inter', sans-serif;
+      overflow-x: hidden;
+      transition: background-color 0.35s ease, color 0.35s ease;
+    }
+
+    /* Interactive 3D Polyhedron & Luminous Particle Stage */
+    #bg-canvas-3d {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .ambient-mesh {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(16, 185, 129, 0.11), transparent 40%),
+        radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.10), transparent 42%),
+        radial-gradient(circle at 75% 84%, rgba(245, 158, 11, 0.07), transparent 44%);
+    }
+
+    /* Glassmorphism 3.0 & Prismatic Rim Lighting */
+    .bento-card {
+      position: relative;
+      background: var(--card-bg);
+      backdrop-filter: blur(22px) saturate(140%);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.45);
+      border-radius: 1.4rem;
+      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.32s ease, border-color 0.32s ease;
+    }
+
+    html.dark .bento-card {
+      box-shadow: var(--glass-shadow), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .bento-card:hover {
+      border-color: rgba(16, 185, 129, 0.48);
+    }
+
+    /* True Multi-Layered 3D Tilt & Depth Elevation */
+    .tilt3d {
+      transform-style: preserve-3d;
+      perspective: 1100px;
+      will-change: transform;
+      overflow: hidden;
+    }
+
+    .tilt3d .z-layer-1 {
+      transform: translateZ(14px);
+      transform-style: preserve-3d;
+    }
+
+    .tilt3d .z-layer-2 {
+      transform: translateZ(26px);
+      transform-style: preserve-3d;
+    }
+
+    .tilt3d .glare-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(
+        circle 260px at var(--mx, 50%) var(--my, 50%),
+        rgba(255, 255, 255, 0.34),
+        rgba(16, 185, 129, 0.08) 45%,
+        transparent 75%
+      );
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      z-index: 15;
+    }
+
+    html.dark .tilt3d .glare-overlay {
+      background: radial-gradient(
+        circle 280px at var(--mx, 50%) var(--my, 50%),
+        rgba(52, 211, 153, 0.18),
+        rgba(6, 182, 212, 0.08) 45%,
+        transparent 75%
+      );
+    }
+
+    .tilt3d:hover .glare-overlay {
+      opacity: 1;
+    }
+
+    /* 3D Holographic Gyroscope Centerpiece (Login & Role Views) */
+    .gyro-stage {
+      perspective: 900px;
+      transform-style: preserve-3d;
+    }
+    .gyro-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      transform-style: preserve-3d;
+    }
+    .gyro-ring-1 {
+      border: 2px solid rgba(16, 185, 129, 0.55);
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 0 18px rgba(16, 185, 129, 0.2);
+      animation: gyroSpin1 11s linear infinite;
+    }
+    .gyro-ring-2 {
+      inset: 12px;
+      border: 2px dashed rgba(6, 182, 212, 0.6);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
+      animation: gyroSpin2 15s linear infinite;
+    }
+    .gyro-ring-3 {
+      inset: 24px;
+      border: 2px solid rgba(245, 158, 11, 0.55);
+      animation: gyroSpin3 9s ease-in-out infinite alternate;
+    }
+    @keyframes gyroSpin1 {
+      0% { transform: rotateX(62deg) rotateY(15deg) rotateZ(0deg); }
+      100% { transform: rotateX(62deg) rotateY(15deg) rotateZ(360deg); }
+    }
+    @keyframes gyroSpin2 {
+      0% { transform: rotateX(-55deg) rotateY(35deg) rotateZ(360deg); }
+      100% { transform: rotateX(-55deg) rotateY(35deg) rotateZ(0deg); }
+    }
+    @keyframes gyroSpin3 {
+      0% { transform: rotateX(25deg) rotateY(-45deg) scale(0.95); }
+      100% { transform: rotateX(-35deg) rotateY(45deg) scale(1.05); }
+    }
+
+    /* Floating 3D Levitation */
+    @keyframes float3D {
+      0%, 100% { transform: translateY(0px) rotateZ(0deg); }
+      50% { transform: translateY(-7px) rotateZ(1.5deg); }
+    }
+    .animate-float-3d {
+      animation: float3D 4.5s ease-in-out infinite;
+    }
+
+    /* True 3D Isometric Extruded Bar Columns */
+    .iso-bar-wrap {
+      perspective: 700px;
+      transform-style: preserve-3d;
+    }
+    .iso-bar {
+      position: relative;
+      border-radius: 6px 6px 2px 2px;
+      transform-style: preserve-3d;
+      transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow:
+        inset 0 2px 3px rgba(255, 255, 255, 0.55),
+        4px 6px 14px -2px rgba(15, 23, 42, 0.25);
+    }
+    /* Isometric 3D Top Cap & Side Extrusion */
+    .iso-bar::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 2px;
+      right: -3px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.48);
+      transform: skewX(-42deg);
+      border-radius: 3px 3px 0 0;
+      pointer-events: none;
+    }
+    .iso-bar::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      right: -5px;
+      width: 5px;
+      bottom: 2px;
+      background: rgba(0, 0, 0, 0.22);
+      transform: skewY(-48deg);
+      border-radius: 0 2px 2px 0;
+      pointer-events: none;
+    }
+    .iso-bar:hover {
+      filter: brightness(1.12);
+      transform: translateY(-6px) scaleY(1.03);
+    }
+
+    /* 3D Laser Receipt Scanner Beam */
+    @keyframes laserSweep {
+      0% { top: 6%; opacity: 0.4; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 6%; opacity: 0.4; }
+    }
+    .laser-beam {
+      position: absolute;
+      left: 4%;
+      right: 4%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #10b981, #34d399, #10b981, transparent);
+      box-shadow: 0 0 18px 4px rgba(16, 185, 129, 0.75);
+      border-radius: 999px;
+      animation: laserSweep 2.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* 3D Cylindrical Capacity Tank */
+    .cylinder-3d {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: linear-gradient(90deg, rgba(148,163,184,0.18) 0%, rgba(255,255,255,0.45) 35%, rgba(148,163,184,0.22) 100%);
+      box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+    html.dark .cylinder-3d {
+      background: linear-gradient(90deg, rgba(15,23,42,0.7) 0%, rgba(51,65,85,0.45) 35%, rgba(15,23,42,0.8) 100%);
+    }
+    .cylinder-liquid {
+      position: relative;
+      height: 100%;
+      border-radius: 14px;
+      transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: inset 0 3px 6px rgba(255,255,255,0.45), inset 0 -3px 6px rgba(0,0,0,0.25);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.65); }
+
+    /* Range Slider */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.28);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #34d399, #059669);
+      border: 3px solid #ffffff;
+      box-shadow: 0 3px 10px rgba(16, 185, 129, 0.55);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    @media print {
+      .no-print { display: none !important; }
+      #bg-canvas-3d, .ambient-mesh { display: none !important; }
+      body { background: #fff !important; color: #000 !important; }
+      .bento-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+    }
+
+
+    /* Culinary Atelier — warm truffle, sage and linen finish */
+    :root {
+      --sage: #758262;
+      --sage-deep: #536247;
+      --truffle: #51463a;
+      --linen: #f4efe5;
+      --terracotta: #b8795b;
+      --gold: #c49b60;
+    }
+    body {
+      background-image:
+        radial-gradient(ellipse at 12% 5%, rgba(185, 161, 119, .12), transparent 36%),
+        radial-gradient(ellipse at 90% 30%, rgba(128, 143, 105, .12), transparent 38%),
+        linear-gradient(135deg, rgba(255,255,255,.16), transparent 55%);
+      letter-spacing: .005em;
+    }
+    html.dark body {
+      background-image:
+        radial-gradient(ellipse at 12% 5%, rgba(167, 139, 97, .10), transparent 36%),
+        radial-gradient(ellipse at 90% 30%, rgba(125, 143, 102, .10), transparent 38%);
+    }
+    .bento-card {
+      border-radius: 1.55rem;
+      box-shadow: 0 18px 48px -22px rgba(69, 55, 39, .22), inset 0 1px 0 rgba(255,255,255,.68);
+    }
+    html.dark .bento-card {
+      box-shadow: 0 24px 55px -16px rgba(0,0,0,.48), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .bento-card:hover { border-color: rgba(117,130,98,.55); }
+    .ambient-mesh {
+      background:
+        radial-gradient(circle at 12% 18%, rgba(117,130,98,.13), transparent 40%),
+        radial-gradient(circle at 86% 14%, rgba(196,155,96,.10), transparent 42%),
+        radial-gradient(circle at 75% 84%, rgba(184,121,91,.08), transparent 44%);
+    }
+    .tilt3d .glare-overlay {
+      background: radial-gradient(circle 270px at var(--mx,50%) var(--my,50%),
+        rgba(255,255,255,.38), rgba(174,181,145,.12) 46%, transparent 76%);
+    }
+    .gyro-ring-1 { border-color: rgba(117,130,98,.62); box-shadow: 0 0 24px rgba(117,130,98,.22), inset 0 0 18px rgba(117,130,98,.16); }
+    .gyro-ring-2 { border-color: rgba(196,155,96,.58); box-shadow: 0 0 20px rgba(196,155,96,.16); }
+    .gyro-ring-3 { border-color: rgba(184,121,91,.52); }
+    .iso-bar { filter: saturate(.78); }
+    .cylinder-3d { background: linear-gradient(90deg, rgba(132,121,102,.18), rgba(255,255,255,.55) 35%, rgba(132,121,102,.2)); }
+    .cylinder-liquid { box-shadow: inset 0 3px 6px rgba(255,255,255,.42), inset 0 -3px 6px rgba(54,48,38,.18); }
+    .culinary-kicker {
+      color: var(--sage-deep);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .culinary-section {
+      border-left: 3px solid var(--sage);
+      padding-left: 12px;
+    }
+    html.dark .culinary-kicker { color: #c2c9a9; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+  <!-- 60fps Interactive 3D Polyhedron & Luminous Particle Canvas -->
+  <canvas id="bg-canvas-3d"></canvas>
+  <div class="ambient-mesh"></div>
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-[130]"></canvas>
+
+  <!-- Splash Screen Overlay -->
+  <div id="splash" class="fixed inset-0 z-[150] bg-slate-950/90 backdrop-blur-xl flex flex-col items-center justify-center text-white transition-opacity duration-500">
+    <div class="relative w-24 h-24 gyro-stage flex items-center justify-center mb-5">
+      <div class="gyro-ring gyro-ring-1"></div>
+      <div class="gyro-ring gyro-ring-2"></div>
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-500/40">
+        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+      </div>
+    </div>
+    <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 bg-clip-text text-transparent">FreshFlow AI 3D OS</h1>
+    <p class="text-xs text-slate-400 mt-1">กำลังจัดเตรียมครัวและวัตถุดิบสำหรับวันนี้...</p>
+  </div>
+
+  <!-- Toast Notification (Preserves #toast & #toast-text + multi-toast container) -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-[125] bento-card px-4 py-3 shadow-2xl border-emerald-500/50 items-center gap-3 max-w-sm">
+    <div class="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center shrink-0">
+      <i data-lucide="sparkles" class="w-4 h-4"></i>
+    </div>
+    <span id="toast-text" class="text-xs font-bold leading-snug">พร้อมใช้งาน</span>
+  </div>
+
+  <!-- =====================================================================
+       VIEW 1: 3D HOLOGRAPHIC LOGIN VIEW (#view-login)
+  ===================================================================== -->
+  <section id="view-login" class="min-h-screen w-full flex items-center justify-center p-4 sm:p-8 relative">
+    <div class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <!-- Left 3D Holographic Art Showcase -->
+      <div class="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
+        <div class="relative w-44 h-44 sm:w-52 sm:h-52 gyro-stage flex items-center justify-center mx-auto lg:mx-0">
+          <div class="gyro-ring gyro-ring-1"></div>
+          <div class="gyro-ring gyro-ring-2"></div>
+          <div class="gyro-ring gyro-ring-3"></div>
+          <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40 animate-float-3d">
+            <i data-lucide="layers" class="w-11 h-11"></i>
+          </div>
+          <!-- Floating 3D Orbital Badges -->
+          <div class="absolute -top-2 -right-4 bento-card px-3 py-1.5 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-300 shadow-xl animate-float-3d">
+            ✨ AI Stock Forecast
+          </div>
+          <div class="absolute -bottom-2 -left-4 bento-card px-3 py-1.5 text-[11px] font-extrabold text-amber-600 dark:text-amber-300 shadow-xl animate-float-3d" style="animation-delay:1.2s">
+            🔥 Zero-Waste +96%
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <span class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span id="db-status">Supabase Auth + Cloud Data</span>
+          </span>
+          <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+            FreshFlow <span class="bg-gradient-to-r from-amber-700 via-lime-700 to-emerald-800 bg-clip-text text-transparent">Culinary Atelier</span>
+          </h1>
+          <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-md">
+            พื้นที่ทำงานสำหรับร้านอาหารระดับพรีเมียม จัดการวัตถุดิบ ต้นทุนเมนู ยอดขาย และการลด Food Waste ในมุมมองเดียว
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+          <button onclick="startDemo()" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-xl shadow-emerald-500/30 hover:scale-[1.02] transition flex items-center gap-2">
+            <i data-lucide="zap" class="w-4 h-4"></i> เข้าใช้งาน Demo ทันที
+          </button>
+          <button onclick="guestVisit()" class="px-5 py-3 rounded-2xl bento-card font-bold text-sm hover:border-emerald-500 transition flex items-center gap-2">
+            <i data-lucide="store" class="w-4 h-4 text-emerald-500"></i> ดูหน้าร้านลูกค้า
+          </button>
+          <button onclick="openConfig()" class="p-3 rounded-2xl bento-card text-slate-500 hover:text-emerald-500 transition" title="ตั้งค่า Supabase">
+            <i data-lucide="settings" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Frosted Glass Login Card -->
+      <div class="lg:col-span-6">
+        <div class="bento-card tilt3d p-7 sm:p-9 space-y-5">
+          <div class="glare-overlay"></div>
+          <div class="z-layer-1 space-y-1">
+            <h2 class="text-2xl font-extrabold">เข้าสู่ระบบจัดการร้านค้า</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">เข้าสู่ระบบเพื่อซิงก์ข้อมูลร้านค้ากับ Supabase Cloud</p>
+          </div>
+          <form id="login-form" onsubmit="handleLogin(event)" class="z-layer-1 space-y-4">
+            <div>
+              <label class="block text-xs font-bold mb-1.5">อีเมลผู้ใช้งาน</label>
+              <input id="auth-email" type="email" autocomplete="email" required class="w-full px-4 py-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold mb-1.5">รหัสผ่าน</label>
+              <input id="auth-password" type="password" autocomplete="current-password" required class="w-full px-4 py-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
+            </div>
+            <p id="auth-message" class="text-xs text-rose-500 font-semibold hidden"></p>
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <button id="btn-login" type="submit" class="py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 transition">
+                เข้าสู่ระบบ
+              </button>
+              <button id="btn-signup" type="button" onclick="handleSignup()" class="py-3 rounded-xl bg-slate-200/80 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-bold text-sm transition">
+                สมัครสมาชิกใหม่
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       VIEW 2: 3D ROLE SELECTION (#view-role-selection)
+  ===================================================================== -->
+  <section id="view-role-selection" class="hidden min-h-screen w-full flex items-center justify-center p-4 sm:p-8">
+    <div class="max-w-4xl w-full space-y-8 text-center">
+      <div class="space-y-2">
+        <span id="role-user-label" class="px-3.5 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-xs font-bold">ยินดีต้อนรับสู่ FreshFlow AI</span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">เลือกบทบาทการเข้าใช้งานระบบ</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">สัมผัสประสบการณ์ 3D Bento Workspace สำหรับเจ้าของร้าน หรือดูมุมมองหน้าร้านลูกค้า</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+        <div onclick="selectRole('owner')" class="bento-card tilt3d p-6 cursor-pointer group space-y-4">
+          <div class="glare-overlay"></div>
+          <div class="z-layer-2 w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center shadow-xl shadow-emerald-500/30">
+            <i data-lucide="layout-dashboard" class="w-7 h-7"></i>
+          </div>
+          <div class="z-layer-1 space-y-1">
+            <h3 class="text-lg font-extrabold group-hover:text-emerald-500 transition">เจ้าของร้าน (Owner)</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">จัดการสต็อก AI พยากรณ์สินค้า คำนวณต้นทุน และดูงบการเงิน 3 มิติ</p>
+          </div>
+        </div>
+
+        <div onclick="selectRole('visitor')" class="bento-card tilt3d p-6 cursor-pointer group space-y-4">
+          <div class="glare-overlay"></div>
+          <div class="z-layer-2 w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center shadow-xl shadow-amber-500/30">
+            <i data-lucide="shopping-bag" class="w-7 h-7"></i>
+          </div>
+          <div class="z-layer-1 space-y-1">
+            <h3 class="text-lg font-extrabold group-hover:text-amber-500 transition">หน้าร้านลูกค้า (Storefront)</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">ดูโปรโมชันระบายสต็อกสดใหม่ แผนที่ร้าน และสั่งซื้อดีลสุดคุ้ม</p>
+          </div>
+        </div>
+
+        <div id="btn-admin-entry" onclick="openAdmin()" class="bento-card tilt3d p-6 cursor-pointer group space-y-4">
+          <div class="glare-overlay"></div>
+          <div class="z-layer-2 w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center shadow-xl shadow-violet-500/30">
+            <i data-lucide="shield-check" class="w-7 h-7"></i>
+          </div>
+          <div class="z-layer-1 space-y-1">
+            <h3 class="text-lg font-extrabold group-hover:text-violet-500 transition">ผู้ดูแลระบบ (Admin)</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">ตรวจสอบฐานข้อมูลร้านค้า สมาชิก และสถานะระบบคลาวด์ทั้งหมด</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <button onclick="backToLogin()" class="text-xs font-bold text-slate-500 hover:text-emerald-500 transition">← กลับหน้าเข้าสู่ระบบ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       VIEW 3: STORE ONBOARDING & LEAFLET MAP (#view-store-onboarding)
+  ===================================================================== -->
+  <section id="view-store-onboarding" class="hidden min-h-screen w-full flex items-center justify-center p-4 sm:p-8">
+    <div class="bento-card max-w-3xl w-full p-6 sm:p-8 space-y-5 shadow-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-[11px] font-bold">Store GPS & Profile Setup</span>
+          <h2 class="text-2xl font-extrabold mt-1">ตั้งค่าโปรไฟล์ร้านค้าและปักหมุดแผนที่</h2>
+        </div>
+        <button onclick="goToRoleSelection()" class="text-xs font-bold text-slate-400 hover:text-emerald-500">← เปลี่ยนบทบาท</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div>
+          <label class="block font-bold mb-1">ชื่อร้านอาหาร / คาเฟ่</label>
+          <input id="onboard-store-name" type="text" value="ครัวสดใหม่ FreshFlow Kitchen" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">ประเภทร้านค้า</label>
+          <select id="onboard-store-type" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+            <option value="ร้านอาหารตามสั่ง & คาเฟ่">ร้านอาหารตามสั่ง & คาเฟ่</option>
+            <option value="ร้านกาแฟและเบเกอรี">ร้านกาแฟและเบเกอรี</option>
+            <option value="ร้านอาหารสุขภาพ / Clean Food">ร้านอาหารสุขภาพ / Clean Food</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <label class="block font-bold">ค้นหาที่อยู่หรือเลือกย่านด่วน</label>
+        <div class="flex flex-wrap gap-2">
+          <input id="onboard-address-input" type="text" value="สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร" class="flex-1 min-w-[200px] px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+          <button id="btn-search-address" type="button" onclick="searchAddressAndPin()" class="px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-700 text-white font-bold">ค้นหาพิกัด</button>
+        </div>
+        <div class="flex flex-wrap gap-1.5 pt-1">
+          <button type="button" onclick="quickPickLocation('สุขุมวิท 24 กรุงเทพฯ', 13.7262, 100.5698)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-semibold">📍 สุขุมวิท 24</button>
+          <button type="button" onclick="quickPickLocation('สยามสแควร์ ปทุมวัน กรุงเทพฯ', 13.7456, 100.5341)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-semibold">📍 สยามสแควร์</button>
+          <button type="button" onclick="quickPickLocation('นิมมานเหมินท์ เชียงใหม่', 18.7968, 98.9675)" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-semibold">📍 นิมมานฯ เชียงใหม่</button>
+        </div>
+      </div>
+
+      <div class="space-y-1.5">
+        <div id="onboard-map" class="w-full h-56 rounded-2xl overflow-hidden border border-slate-300 dark:border-slate-700 z-10"></div>
+        <div id="pin-coords-text" class="text-[11px] text-slate-500 font-mono">พิกัด GPS: 13.7262, 100.5698 (คลิกบนแผนที่เพื่อย้ายหมุด)</div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button id="btn-finish-onboarding" onclick="finishOnboardingAndEnterDashboard()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-xl shadow-emerald-500/30 hover:opacity-95 transition">
+          บันทึกและเข้าสู่ Workspace 3 มิติ →
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       VIEW 4: CUSTOMER STOREFRONT VIEW (#view-visitor)
+  ===================================================================== -->
+  <div id="view-visitor" class="hidden min-h-screen flex-col">
+    <header class="sticky top-0 z-40 bento-card rounded-none border-x-0 border-t-0 px-4 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-500/30">
+          <i data-lucide="leaf" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 id="visitor-store-header-title" class="font-extrabold text-lg leading-tight">ครัวสดใหม่ FreshFlow Kitchen</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> เปิดรับออเดอร์ • ดีลลดขยะอาหาร AI ประจำวัน
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <div id="visitor-store-picker" class="flex items-center gap-2">
+          <select id="visitor-store-select" onchange="onVisitorStoreChange()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+            <option value="0">สาขาสุขุมวิท 24 (หลัก)</option>
+            <option value="1">สาขาสยามสแควร์</option>
+          </select>
+        </div>
+        <button onclick="switchRoleToOwner()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 dark:from-emerald-600 dark:to-teal-600 text-white text-xs font-bold hover:opacity-95 transition flex items-center gap-2 shadow-lg">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          กลับสู่หลังบ้าน SaaS
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+      <!-- 3D Isometric Food Showcase Hero -->
+      <div class="bento-card tilt3d p-7 sm:p-10 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white border-none overflow-hidden">
+        <div class="glare-overlay"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+          <div class="lg:col-span-8 space-y-3 z-layer-1">
+            <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold shadow">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-300"></i> AI Zero-Waste 3D Flash Deals
+            </span>
+            <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+              อร่อยสดใหม่ คุ้มค่าทุกจาน พร้อมช่วยลด Food Waste
+            </h2>
+            <p class="text-emerald-50 text-sm sm:text-base max-w-2xl">
+              คัดสรรวัตถุดิบคุณภาพสดใหม่ประจำวัน คำนวณและจัดเซ็ตพิเศษโดยระบบ FreshFlow AI เพื่อส่งต่อความอร่อยในราคาสุดคุ้ม
+            </p>
+          </div>
+          <div class="lg:col-span-4 flex justify-center z-layer-2">
+            <div class="p-5 rounded-3xl bg-white/15 backdrop-blur-xl border border-white/30 text-center shadow-2xl animate-float-3d">
+              <div class="text-xs uppercase tracking-wider text-amber-200 font-bold">ลดสูงสุดวันนี้</div>
+              <div class="text-4xl sm:text-5xl font-extrabold my-1 text-white drop-shadow">35%</div>
+              <div class="text-[11px] text-emerald-100">เซ็ตคอมโบระบายสต็อกสดใหม่</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Flash Promotions Grid -->
+      <section class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-extrabold flex items-center gap-2">
+            <i data-lucide="flame" class="w-5 h-5 text-amber-500"></i> โปรโมชันระบายสต็อกสดใหม่วันนี้
+          </h3>
+          <span class="text-xs text-slate-500">อัปเดตอัตโนมัติจากคลังสินค้า</span>
+        </div>
+        <div id="storefrontPromoGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      </section>
+
+      <!-- Store Location Map -->
+      <section class="bento-card p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 class="text-lg font-extrabold flex items-center gap-2">
+              <i data-lucide="map-pin" class="w-5 h-5 text-emerald-500"></i> พิกัดหน้าร้านและการรับสินค้า
+            </h3>
+            <p id="visitor-store-address-display" class="text-xs text-slate-500 dark:text-slate-400">สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ (เปิด 08:00 - 21:00 น.)</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openGoogleMapsDirections()" class="px-3.5 py-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-500/20 transition">
+              นำทาง Google Maps
+            </button>
+            <button onclick="sendLine('ลูกค้ากำลังดูแผนที่หน้าร้านบนหน้า Storefront')" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition">
+              แชทสอบถาม LINE
+            </button>
+          </div>
+        </div>
+        <div id="visitor-map" class="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 z-10"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- =====================================================================
+       VIEW 5: OWNER FULL-WIDTH SAAS BENTO WORKSPACE (#view-owner)
+  ===================================================================== -->
+  <div id="view-owner" class="hidden min-h-screen w-full relative">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="mobileSidebarBackdrop" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 hidden lg:hidden"></div>
+
+    <!-- ===================================================================
+         1. LEFT COLLAPSIBLE SIDEBAR (7 Navigation Items)
+    =================================================================== -->
+    <aside id="leftSidebar" class="no-print fixed lg:sticky top-0 left-0 z-50 h-screen w-72 shrink-0 bento-card rounded-none border-y-0 border-l-0 flex flex-col justify-between transition-all duration-300 -translate-x-full lg:translate-x-0">
+      <div class="p-4 space-y-4">
+        <div class="flex items-center justify-between gap-2 px-1">
+          <div class="flex items-center gap-3 overflow-hidden">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center text-white font-extrabold shadow-lg shadow-emerald-500/30 shrink-0">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </div>
+            <div class="sidebar-label truncate">
+              <div class="flex items-center gap-1.5">
+                <span class="font-extrabold text-base tracking-tight">FreshFlow</span>
+                <span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-xs">3D AI</span>
+              </div>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">Smart F&B ERP & Forecast</p>
+            </div>
+          </div>
+          <button onclick="toggleSidebarCollapse()" title="ย่อ/ขยายแถบเมนู" class="hidden lg:flex p-2 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-500 transition">
+            <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+          </button>
+          <button onclick="toggleMobileSidebar(false)" class="lg:hidden p-2 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-500">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- AI & Cloud Status Pill -->
+        <div class="sidebar-label px-3 py-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/70 border border-slate-200/70 dark:border-slate-700/70 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="connectionStatusText" class="font-semibold text-slate-700 dark:text-slate-200">Culinary workspace ready</span>
+          </div>
+          <button onclick="openOnboardingAgain()" title="ตั้งค่าร้านค้า & พิกัด" class="text-slate-400 hover:text-emerald-500 transition">
+            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <!-- 7 Navigation Menu Items -->
+        <nav class="space-y-1.5 pt-1" aria-label="Main Navigation">
+          <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25">
+            <i data-lucide="layout-grid" class="w-4 h-4 shrink-0"></i>
+            <span class="sidebar-label truncate">1. ภาพรวมการค้า</span>
+          </button>
+
+          <button onclick="switchTab('scan')" data-tab="scan" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <i data-lucide="scan-line" class="w-4 h-4 shrink-0 text-emerald-500"></i>
+            <span class="sidebar-label truncate">2. นำเข้าวัตถุดิบ AI</span>
+          </button>
+
+          <button onclick="switchTab('product-forecast')" data-tab="product-forecast" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <div class="flex items-center gap-3 truncate">
+              <i data-lucide="sparkles" class="w-4 h-4 shrink-0 text-amber-500"></i>
+              <span class="sidebar-label truncate">3. พยากรณ์สินค้า & ระบายสต็อก</span>
+            </div>
+            <span class="sidebar-label px-1.5 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-300">AI</span>
+          </button>
+
+          <button onclick="switchTab('expiry')" data-tab="expiry" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <div class="flex items-center gap-3 truncate">
+              <i data-lucide="package-check" class="w-4 h-4 shrink-0 text-rose-500"></i>
+              <span class="sidebar-label truncate">4. คลังสินค้า & โปรด่วน</span>
+            </div>
+            <span id="sidebarExpiryBadge" class="sidebar-label px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">2</span>
+          </button>
+
+          <button onclick="switchTab('costing')" data-tab="costing" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <i data-lucide="calculator" class="w-4 h-4 shrink-0 text-blue-500"></i>
+            <span class="sidebar-label truncate">5. คำนวณต้นทุนเมนู</span>
+          </button>
+
+          <button onclick="switchTab('forecast')" data-tab="forecast" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <i data-lucide="trending-up" class="w-4 h-4 shrink-0 text-violet-500"></i>
+            <span class="sidebar-label truncate">6. พยากรณ์การเงิน AI</span>
+          </button>
+
+          <button onclick="switchTab('accounting')" data-tab="accounting" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 shrink-0 text-cyan-500"></i>
+            <span class="sidebar-label truncate">7. รายงานบัญชี & ภาษี</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Bottom Store & Auth Card -->
+      <div class="p-4 border-t border-slate-200/70 dark:border-slate-800 space-y-2.5">
+        <div class="sidebar-label p-3 rounded-2xl bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-cyan-500/15 border border-emerald-500/25 flex items-center gap-2.5">
+          <div id="owner-avatar" class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow">
+            FF
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-1">
+              <span id="owner-navbar-store-name" class="text-xs font-extrabold text-emerald-700 dark:text-emerald-300 truncate">ครัวสดใหม่ FreshFlow</span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500 text-white font-bold">PRO</span>
+            </div>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate" id="authUserEmail">owner@freshflow.ai</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="openConfig()" class="flex-1 py-2 px-3 rounded-xl bg-slate-200/70 dark:bg-slate-800 hover:bg-emerald-500 hover:text-white text-xs font-bold transition flex items-center justify-center gap-1.5">
+            <i data-lucide="database" class="w-3.5 h-3.5"></i>
+            <span class="sidebar-label">Cloud / Config</span>
+          </button>
+          <button onclick="openOnboardingAgain()" title="แก้ไขพิกัดร้าน" class="p-2 rounded-xl bg-slate-200/70 dark:bg-slate-800 hover:text-emerald-500 transition">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="logout()" title="ออกจากระบบ" class="p-2 rounded-xl bg-slate-200/70 dark:bg-slate-800 hover:text-rose-500 transition">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================================================================
+         CENTER WORKSPACE COLUMN (Top Command Header + 100% Full-Width Bento)
+    =================================================================== -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- TOP COMMAND HEADER -->
+      <header class="no-print sticky top-0 z-30 bento-card rounded-none border-x-0 border-t-0 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3 flex-1 min-w-[220px] max-w-xl">
+          <button onclick="toggleMobileSidebar(true)" class="lg:hidden p-2.5 rounded-xl bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input
+              id="globalSearchInput"
+              type="text"
+              oninput="handleGlobalSearch(this.value)"
+              placeholder="ค้นหาเมนู, วัตถุดิบ, โน้ตบัญชี หรือสั่ง AI..."
+              class="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+            />
+            <div id="globalSearchDropdown" class="hidden absolute left-0 right-0 mt-2 bento-card p-2 z-50 max-h-80 overflow-y-auto shadow-2xl"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+          <!-- Timeframe Selector -->
+          <div class="hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/70 dark:border-slate-700 text-xs font-bold">
+            <button onclick="setTimeframe('today', this)" class="tf-btn px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-xs text-emerald-600 dark:text-emerald-400 transition">วันนี้</button>
+            <button onclick="setTimeframe('7d', this)" class="tf-btn px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white transition">7 วัน</button>
+            <button onclick="setTimeframe('month', this)" class="tf-btn px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white transition">เดือนนี้</button>
+            <button onclick="setTimeframe('quarter', this)" class="tf-btn px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white transition">ไตรมาส</button>
+          </div>
+
+          <!-- Sound Effects Toggle (#sound-toggle) -->
+          <button id="sound-toggle" onclick="setSound(!soundEnabled)" title="เปิด/ปิดเสียงแจ้งเตือน 3D Chime" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 transition">
+            <i id="soundIcon" data-lucide="volume-2" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Dark / Light Mode Toggle -->
+          <button onclick="toggleTheme()" title="สลับ Dark Mode / Light Mode" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/15 text-slate-600 dark:text-slate-300 transition">
+            <i id="themeIcon" data-lucide="moon" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Notification Drawer Button -->
+          <button onclick="toggleNotificationDrawer()" title="การแจ้งเตือนระบบ & LINE" class="relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/15 text-slate-600 dark:text-slate-300 transition">
+            <i data-lucide="bell" class="w-4 h-4"></i>
+            <span id="notifDot" class="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500"></span>
+          </button>
+
+          <!-- Switch to Customer Storefront -->
+          <button onclick="switchRoleToVisitor()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500 hover:text-white text-xs font-bold transition flex items-center gap-1.5">
+            <i data-lucide="store" class="w-4 h-4"></i>
+            <span class="hidden md:inline">หน้าร้านลูกค้า</span>
+          </button>
+
+          <!-- Right AI Co-Pilot Panel Toggle -->
+          <button onclick="toggleCopilotPanel()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/30 hover:opacity-95 transition flex items-center gap-1.5">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+            <span>AI Co-Pilot</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- =================================================================
+           MAIN FULL-WIDTH BENTO CONTAINER (100% Full Width)
+      ================================================================= -->
+      <main class="flex-1 w-full p-4 sm:p-6 space-y-6">
+
+        <!-- ===============================================================
+             TAB 1: DASHBOARD (ภาพรวมการค้า 3D Isometric & Depth Layers)
+        =============================================================== -->
+        <section id="tab-dashboard" class="tab-section space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold mb-0.5">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                <span id="dash-store-address-label">สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ</span>
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">ภาพรวมการค้า & สุขภาพธุรกิจ AI 3 มิติ</h1>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button onclick="switchTab('scan')" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold shadow-lg shadow-emerald-500/25 hover:scale-[1.02] transition flex items-center gap-1.5">
+                <i data-lucide="scan-line" class="w-4 h-4"></i> นำเข้าวัตถุดิบ AI
+              </button>
+              <button onclick="switchTab('product-forecast')" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-lg shadow-amber-500/25 hover:scale-[1.02] transition flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> พยากรณ์สินค้า & ระบายสต็อก
+              </button>
+            </div>
+          </div>
+
+          <!-- Top 4 Multi-Layered 3D KPI Bento Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+            <div class="bento-card tilt3d p-5">
+              <div class="glare-overlay"></div>
+              <div class="flex items-center justify-between mb-3 z-layer-1">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">ยอดขายรวม (<span class="tf-label">วันนี้</span>)</span>
+                <span class="z-layer-2 p-2.5 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-lg shadow-emerald-500/30"><i data-lucide="wallet" class="w-4 h-4"></i></span>
+              </div>
+              <div id="kpiRevenue" class="z-layer-2 text-2xl sm:text-3xl font-extrabold tracking-tight">฿18,450</div>
+              <div class="z-layer-1 mt-2 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> +14.2% เทียบช่วงก่อนหน้า
+              </div>
+            </div>
+
+            <div class="bento-card tilt3d p-5">
+              <div class="glare-overlay"></div>
+              <div class="flex items-center justify-between mb-3 z-layer-1">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">ต้นทุนวัตถุดิบ & ดำเนินงาน</span>
+                <span class="z-layer-2 p-2.5 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-600 text-white shadow-lg shadow-blue-500/30"><i data-lucide="shopping-bag" class="w-4 h-4"></i></span>
+              </div>
+              <div id="kpiExpense" class="z-layer-2 text-2xl sm:text-3xl font-extrabold tracking-tight">฿7,820</div>
+              <div class="z-layer-1 mt-2 flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 font-bold">
+                Food Cost 32.4% (เกณฑ์ดีเยี่ยม)
+              </div>
+            </div>
+
+            <div class="bento-card tilt3d p-5">
+              <div class="glare-overlay"></div>
+              <div class="flex items-center justify-between mb-3 z-layer-1">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">กำไรสุทธิ (Net Profit)</span>
+                <span class="z-layer-2 p-2.5 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-600 text-white shadow-lg shadow-violet-500/30"><i data-lucide="piggy-bank" class="w-4 h-4"></i></span>
+              </div>
+              <div id="kpiProfit" class="z-layer-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">฿10,630</div>
+              <div class="z-layer-1 mt-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                Net Margin <span id="kpiMargin" class="font-extrabold text-emerald-600 dark:text-emerald-400">57.6%</span>
+              </div>
+            </div>
+
+            <div class="bento-card tilt3d p-5">
+              <div class="glare-overlay"></div>
+              <div class="flex items-center justify-between mb-3 z-layer-1">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">มูลค่าสต็อกเสี่ยงค้าง/ใกล้หมดอายุ</span>
+                <span class="z-layer-2 p-2.5 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-lg shadow-amber-500/30"><i data-lucide="alert-triangle" class="w-4 h-4"></i></span>
+              </div>
+              <div id="kpiAtRiskStock" class="z-layer-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400">฿2,670</div>
+              <div class="z-layer-1 mt-2">
+                <button onclick="switchTab('product-forecast')" class="text-xs font-extrabold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
+                  ให้ AI จัดเซ็ตระบายสต็อกทันที <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Bento Grid: Extruded 3D Isometric Bar Chart (#bars3d) + 3D Donut + 3D Arc Gauge -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <!-- Extruded 3D Bar Chart (7 cols) -->
+            <div class="lg:col-span-7 bento-card p-6 flex flex-col justify-between relative">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-6">
+                <div>
+                  <h3 class="text-base font-extrabold">กราฟแท่ง 3 มิติ (Isometric 3D) รายรับ - รายจ่าย - กำไร</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">ชี้เมาส์ที่แท่งกราฟ 3 มิติเพื่อดูรายละเอียดตัวเลขแต่ละวัน</p>
+                </div>
+                <div class="flex items-center gap-3 text-xs font-bold">
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-emerald-500 shadow"></span> รายรับ</span>
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-rose-400 shadow"></span> รายจ่าย</span>
+                  <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-indigo-500 shadow"></span> กำไร</span>
+                </div>
+              </div>
+
+              <!-- Floating Glass Tooltip -->
+              <div id="barChartTooltip" class="hidden pointer-events-none absolute top-16 right-6 z-20 bento-card px-4 py-3 text-xs shadow-2xl border-emerald-500/40"></div>
+
+              <!-- 3D Isometric Stage (#bars3d preserved) -->
+              <div class="relative rounded-2xl bg-gradient-to-b from-slate-100/50 to-slate-200/50 dark:from-slate-800/30 dark:to-slate-900/60 p-4 border border-slate-200/60 dark:border-slate-800">
+                <div id="bars3d" class="iso-bar-wrap h-56 flex items-end justify-between gap-2 sm:gap-4 pt-6 pb-1 px-1"></div>
+              </div>
+              <div id="barChartLabels" class="flex items-center justify-between px-4 pt-2.5 text-[11px] font-extrabold text-slate-500"></div>
+            </div>
+
+            <!-- Right 5 Cols: 3D Arc Health Gauge & 3D Bevel Donut Chart -->
+            <div class="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-5">
+              <!-- 3D Arc Gauge for Financial Health Score -->
+              <div class="bento-card tilt3d p-5 flex items-center justify-between gap-4">
+                <div class="glare-overlay"></div>
+                <div class="space-y-1.5 z-layer-1">
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-[11px] font-extrabold">AI Financial Health 3D</span>
+                  <h3 class="text-lg font-extrabold">คะแนนสุขภาพร้าน: <span id="healthScoreNum" class="text-emerald-500">88/100</span></h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">กระแสเงินสดแข็งแกร่ง อัตราการหมุนเวียนสต็อกเร็วกว่าค่าเฉลี่ย 18%</p>
+                </div>
+                <div class="relative w-24 h-24 shrink-0 flex items-center justify-center z-layer-2">
+                  <svg class="w-24 h-24 -rotate-90 drop-shadow-lg" viewBox="0 0 100 100">
+                    <defs>
+                      <linearGradient id="gaugeGrad3D" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#34d399" />
+                        <stop offset="100%" stop-color="#06b6d4" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="11" fill="none" class="text-slate-200 dark:text-slate-800" />
+                    <circle id="healthGaugeCircle" cx="50" cy="50" r="40" stroke="url(#gaugeGrad3D)" stroke-width="11" stroke-linecap="round" fill="none" stroke-dasharray="251.2" stroke-dashoffset="30" />
+                  </svg>
+                  <span class="absolute text-base font-extrabold">88%</span>
+                </div>
+              </div>
+
+              <!-- 3D Concentric Bevel Donut Chart -->
+              <div class="bento-card tilt3d p-5 flex items-center gap-5">
+                <div class="glare-overlay"></div>
+                <div class="relative w-28 h-28 shrink-0 z-layer-2">
+                  <div class="w-full h-full rounded-full" style="background: conic-gradient(#10b981 0% 42%, #3b82f6 42% 68%, #f59e0b 68% 85%, #8b5cf6 85% 100%); box-shadow: 0 12px 24px -6px rgba(16,185,129,0.35), inset 0 4px 10px rgba(255,255,255,0.45), inset 0 -6px 12px rgba(0,0,0,0.3);"></div>
+                  <div class="absolute inset-4 rounded-full bg-white dark:bg-slate-900 flex flex-col items-center justify-center shadow-inner border border-slate-200/70 dark:border-slate-700">
+                    <span class="text-[10px] text-slate-400 font-semibold">โครงสร้าง</span>
+                    <span class="text-xs font-extrabold">ต้นทุน 3D</span>
+                  </div>
+                </div>
+                <div class="flex-1 space-y-1.5 text-xs z-layer-1">
+                  <div class="font-extrabold text-sm mb-1">สัดส่วนต้นทุน (Cost Breakdown)</div>
+                  <div class="flex justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow"></span>วัตถุดิบสด</span><span class="font-extrabold">42%</span></div>
+                  <div class="flex justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 shadow"></span>ค่าแรงพนักงาน</span><span class="font-extrabold">26%</span></div>
+                  <div class="flex justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow"></span>ค่าน้ำ-ไฟ-แก๊ส</span><span class="font-extrabold">17%</span></div>
+                  <div class="flex justify-between"><span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-violet-500 shadow"></span>บรรจุภัณฑ์/GP</span><span class="font-extrabold">15%</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Recent Transactions + LINE OA & Store Notes -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div class="lg:col-span-7 bento-card p-6 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-base font-extrabold">ความเคลื่อนไหวรายการล่าสุด & บันทึกบัญชีอัตโนมัติ</h3>
+                <button onclick="switchTab('accounting')" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">ดูรายงานบัญชีทั้งหมด →</button>
+              </div>
+              <div id="dashboardRecentTx" class="divide-y divide-slate-200/70 dark:divide-slate-800"></div>
+            </div>
+
+            <!-- Store Notes & LINE OA Quick Sync (#line-id, #note-body, #note-list) -->
+            <div class="lg:col-span-5 bento-card p-6 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-extrabold flex items-center gap-2">
+                  <i data-lucide="message-square-plus" class="w-4 h-4 text-emerald-500"></i> บันทึกช่วยจำ & LINE OA ร้าน
+                </h3>
+              </div>
+              <div class="flex gap-2">
+                <input id="line-id" type="text" value="@freshflow-shop" placeholder="LINE Group / OA ID" class="flex-1 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs" />
+                <button onclick="saveLineId()" class="px-3.5 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold shadow">บันทึก LINE</button>
+              </div>
+              <div class="flex gap-2">
+                <input id="note-body" type="text" placeholder="จดโน้ตสั่งของหรือแจ้งเตือนพนักงาน..." class="flex-1 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs" />
+                <button onclick="addNote()" class="px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-slate-700 text-white text-xs font-bold">เพิ่มโน้ต</button>
+              </div>
+              <div id="note-list" class="space-y-2 max-h-36 overflow-y-auto"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 2: AI INGREDIENT SCAN & IMPORT (3D Laser Scanner + Neural Link)
+        =============================================================== -->
+        <section id="tab-scan" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">นำเข้าวัตถุดิบ & สแกนใบเสร็จ AI 3D Laser</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400">สแกนใบเสร็จหรือเพิ่มรายการวัตถุดิบเพื่อส่งต่อให้ AI พยากรณ์จำนวนจานและการระบายสต็อกทันที</p>
+            </div>
+            <button onclick="simulateScanReceipt()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 dark:from-emerald-600 dark:to-teal-600 text-white text-xs font-bold hover:opacity-95 transition flex items-center gap-2 shadow-lg">
+              <i data-lucide="camera" class="w-4 h-4 text-emerald-300"></i> จำลองสแกนใบเสร็จ AI OCR
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left: 3D Laser Dropzone + Add Ingredient Form (5 cols) -->
+            <div class="lg:col-span-5 bento-card p-6 space-y-4">
+              <!-- 3D Laser Receipt Dropzone -->
+              <div onclick="simulateScanReceipt()" class="relative h-28 rounded-2xl border-2 border-dashed border-emerald-500/50 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 flex flex-col items-center justify-center cursor-pointer overflow-hidden group">
+                <div class="laser-beam"></div>
+                <i data-lucide="scan" class="w-7 h-7 text-emerald-500 mb-1 group-hover:scale-110 transition"></i>
+                <span class="text-xs font-extrabold">คลิกเพื่อสแกนบิลใบเสร็จด้วย AI 3D Vision</span>
+                <span class="text-[10px] text-slate-500">รองรับบิลแม็คโคร โลตัส และตลาดสดอัตโนมัติ</span>
+              </div>
+
+              <h3 class="text-base font-extrabold flex items-center gap-2 pt-1">
+                <i data-lucide="plus-square" class="w-5 h-5 text-emerald-500"></i> เพิ่มรายการวัตถุดิบเข้าระบบ
+              </h3>
+              <form id="ingredientForm" onsubmit="addManualIngredient(event)" class="space-y-3">
+                <div>
+                  <label class="block text-xs font-bold mb-1">ชื่อวัตถุดิบ</label>
+                  <input id="manual-name" type="text" required placeholder="เช่น เนื้ออกไก่สด, ไข่ไก่เบอร์ 1, ใบกะเพรา" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold mb-1">ปริมาณ (หน่วย)</label>
+                    <input id="manual-qty" type="text" required placeholder="เช่น 15 กก." class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold mb-1">ต้นทุนรวม (บาท)</label>
+                    <input id="manual-price" type="number" min="1" required placeholder="เช่น 1250" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold mb-1">อายุการเก็บรักษา (วัน)</label>
+                    <input id="ingShelfLife" type="number" min="1" max="365" value="3" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold mb-1">หมวดหมู่สินค้า</label>
+                    <select id="ingCategory" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                      <option value="เนื้อสัตว์">เนื้อสัตว์ & โปรตีน</option>
+                      <option value="ผักสด">ผักสด & สมุนไพร</option>
+                      <option value="นมและเครื่องดื่ม">นมสด & เครื่องดื่ม</option>
+                      <option value="ของแห้ง">เครื่องปรุง & ของแห้ง</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2">
+                  <i data-lucide="plus" class="w-4 h-4"></i> บันทึกวัตถุดิบเข้าคลัง
+                </button>
+              </form>
+            </div>
+
+            <!-- Right: Imported Ingredients Table + Neural AI Trigger Box (7 cols) -->
+            <div class="lg:col-span-7 bento-card p-6 flex flex-col justify-between space-y-5">
+              <div class="space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h3 class="text-base font-extrabold">รายการวัตถุดิบในคลังปัจจุบัน (<span id="ingredientCountBadge">0</span> รายการ)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">ซิงก์เข้าสู่สมองกล AI เพื่อคำนวณกำลังผลิตและจุดระบายสต็อก</p>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs text-slate-400">มูลค่ารวมวัตถุดิบ</span>
+                    <div id="intake-total-price" class="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">฿0</div>
+                  </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-72 rounded-2xl border border-slate-200/70 dark:border-slate-800">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100/90 dark:bg-slate-800/90 text-slate-500 uppercase">
+                      <tr>
+                        <th class="py-2.5 px-3.5">วัตถุดิบ</th>
+                        <th class="py-2.5 px-3.5">ปริมาณ</th>
+                        <th class="py-2.5 px-3.5">อายุเหลือ</th>
+                        <th class="py-2.5 px-3.5 text-right">ต้นทุน</th>
+                        <th class="py-2.5 px-3.5 text-center">จัดการ</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ingredient-tbody" class="divide-y divide-slate-200/70 dark:divide-slate-800"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Neural Connection Box to Product Forecast & Stock Clearance -->
+              <div id="ai-combined-result-box" class="p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/15 to-amber-500/15 border border-emerald-500/35 space-y-3 shadow-inner">
+                <div class="flex items-start gap-3">
+                  <div class="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shrink-0 shadow-lg">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-extrabold text-sm sm:text-base">คำนวณวัตถุดิบเสร็จแล้ว? ให้ AI พยากรณ์สินค้าและแผนระบายสต็อกทันที!</h4>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 mt-0.5">แปลงปริมาณวัตถุดิบทั้งหมดเป็นจำนวนจานที่ผลิตได้ คาดการณ์วันที่ขายหมด และสร้างเซ็ตโปรโมชันระบายสต็อกอัตโนมัติ</p>
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 pt-1">
+                  <button id="btn-run-ai" onclick="runCombinedAICalculation()" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600 hover:scale-[1.02] text-white font-bold text-sm shadow-xl shadow-emerald-500/30 transition flex items-center justify-center gap-2">
+                    <span>✨ สั่ง AI วิเคราะห์และคำนวณร่วมกัน</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="switchTab('product-forecast')" class="px-4 py-3 rounded-xl bento-card text-xs font-extrabold hover:border-emerald-500 transition">
+                    เปิดหน้าพยากรณ์สินค้า 3D →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 3: AI PRODUCT & STOCK CLEARANCE FORECAST (3D Cylinders & Optimizer)
+        =============================================================== -->
+        <section id="tab-product-forecast" class="tab-section hidden space-y-6">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-3 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs font-extrabold flex items-center gap-1">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> AI Stock-to-Menu 3D Intelligence
+                </span>
+                <span id="forecastLastSyncBadge" class="text-xs text-slate-400">ซิงก์ข้อมูลวัตถุดิบล่าสุดแล้ว</span>
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">พยากรณ์สินค้า & การจัดการระบายสต็อก AI</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400">คำนวณกำลังการผลิตเมนูจากวัตถุดิบจริงด้วยหลอดความจุ 3 มิติ พร้อมแคมเปญเร่งระบายสต็อกอัจฉริยะ</p>
+              <p class="text-[11px] text-slate-400 mt-1">ค่าพยากรณ์คำนวณจากข้อมูลสต็อกและสูตรเมนูในระบบ • การส่ง LINE จริงต้องเชื่อมต่อ LINE OA ก่อน</p>
+            </div>
+
+            <!-- Interactive 3D Weather & Demand Scenario Controller -->
+            <div class="bento-card p-2.5 flex flex-wrap items-center gap-2">
+              <span class="text-xs font-extrabold px-2 text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="cloud-sun" class="w-4 h-4 text-amber-500"></i> จำลองสภาพอากาศ:
+              </span>
+              <button onclick="setForecastScenario('sunny', this)" class="scenario-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md transition">
+                ☀️ แดดจัด (1.0x)
+              </button>
+              <button onclick="setForecastScenario('rainy', this)" class="scenario-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-blue-500/15 transition">
+                🌧️ ฝนตก (-25%)
+              </button>
+              <button onclick="setForecastScenario('weekend', this)" class="scenario-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-amber-500/15 transition">
+                🎉 วันหยุด (+35%)
+              </button>
+            </div>
+          </div>
+
+          <!-- Top 4 Multi-Layered 3D Summary Strip -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bento-card tilt3d p-4">
+              <div class="glare-overlay"></div>
+              <div class="z-layer-1 text-xs font-bold text-slate-500 dark:text-slate-400">กำลังการผลิตรวมจากสต็อก</div>
+              <div id="pfTotalPortions" class="z-layer-2 text-2xl font-extrabold mt-1 text-emerald-600 dark:text-emerald-400">0 จาน/แก้ว</div>
+              <div id="pfScenarioNote" class="z-layer-1 text-[11px] text-slate-400 mt-1">อ้างอิงวัตถุดิบปัจจุบันในคลัง</div>
+            </div>
+            <div class="bento-card tilt3d p-4">
+              <div class="glare-overlay"></div>
+              <div class="z-layer-1 text-xs font-bold text-slate-500 dark:text-slate-400">คาดการณ์รายรับจากสต็อกชุดนี้</div>
+              <div id="pfProjectedRevenue" class="z-layer-2 text-2xl font-extrabold mt-1">฿0</div>
+              <div class="z-layer-1 text-[11px] text-emerald-500 font-bold mt-1">เมื่อระบายสินค้าตามแผน AI</div>
+            </div>
+            <div class="bento-card tilt3d p-4">
+              <div class="glare-overlay"></div>
+              <div class="z-layer-1 text-xs font-bold text-slate-500 dark:text-slate-400">สินค้าเสี่ยงค้างสต็อก (Overstock)</div>
+              <div id="pfOverstockCount" class="z-layer-2 text-2xl font-extrabold mt-1 text-amber-500">0 รายการ</div>
+              <div class="z-layer-1 text-[11px] text-slate-400 mt-1">แนะนำทำ Flash Clearance Deal</div>
+            </div>
+            <div class="bento-card tilt3d p-4">
+              <div class="glare-overlay"></div>
+              <div class="z-layer-1 text-xs font-bold text-slate-500 dark:text-slate-400">คาดการณ์ลดขยะอาหาร (Waste Saved)</div>
+              <div id="pfWasteReduction" class="z-layer-2 text-2xl font-extrabold mt-1 text-teal-500">96.4%</div>
+              <div class="z-layer-1 text-[11px] text-slate-400 mt-1">ประหยัดต้นทุนทิ้งเสีย ~฿1,450</div>
+            </div>
+          </div>
+
+          <!-- BENTO PART A & B -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <!-- PART A: 3D Cylindrical Production Capacity Meters (7 cols) -->
+            <div class="xl:col-span-7 bento-card p-6 space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-lg font-extrabold flex items-center gap-2">
+                    <i data-lucide="utensils" class="w-5 h-5 text-emerald-500"></i>
+                    A. พยากรณ์จำนวนจานที่ผลิตได้ & ความเร็วในการขายหมด
+                  </h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">หลอดความจุ 3 มิติแสดงสัดส่วนการระบายสต็อกทันวันหมดอายุ (Sell-Through Velocity)</p>
+                </div>
+                <button onclick="switchTab('scan')" class="text-xs font-bold px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 transition">
+                  + เพิ่มวัตถุดิบ
+                </button>
+              </div>
+
+              <div id="productForecastCards" class="space-y-3.5"></div>
+            </div>
+
+            <!-- PART B: AI Smart Stock Clearance Optimizer (5 cols) -->
+            <div class="xl:col-span-5 bento-card p-6 space-y-4 border-amber-500/35 bg-gradient-to-b from-amber-500/10 via-transparent to-emerald-500/10">
+              <div>
+                <span class="px-2.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-extrabold uppercase tracking-wider shadow">AI Clearance Engine 3D</span>
+                <h3 class="text-lg font-extrabold mt-1.5 flex items-center gap-2">
+                  <i data-lucide="zap" class="w-5 h-5 text-amber-500"></i>
+                  B. กลยุทธ์เร่งระบายสต็อกอัจฉริยะ
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">จับคู่วัตถุดิบใกล้หมดอายุเป็นเซ็ตเมนูทำกำไรและยิงโปรเข้า LINE ทันที</p>
+              </div>
+
+              <div id="aiClearanceDealsContainer" class="space-y-4"></div>
+            </div>
+          </div>
+
+          <!-- BENTO PART C: 7-Day Auto-Reorder & Safety Stock 3D Timeline -->
+          <div class="bento-card p-6 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="text-lg font-extrabold flex items-center gap-2">
+                  <i data-lucide="calendar-clock" class="w-5 h-5 text-blue-500"></i>
+                  C. ไทม์ไลน์จุดสั่งซื้อซ้ำและจุดวิกฤตสต็อกล่วงหน้า 7 วัน (AI Auto-Reorder)
+                </h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400">กราฟแท่ง 3 มิติแสดงระดับสต็อกคงเหลือรายวันเทียบจุด Reorder Point (ROP)</p>
+              </div>
+              <button onclick="createAllAutoPOs()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-95 text-white text-xs font-bold shadow-lg shadow-blue-500/25 transition flex items-center gap-1.5">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i> ออกใบสั่งซื้ออัตโนมัติ (Auto-PO)
+              </button>
+            </div>
+
+            <div id="ropTimelineContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 4: INVENTORY & EXPIRY FLASH PROMOS
+        =============================================================== -->
+        <section id="tab-expiry" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">คลังสินค้า & แคมเปญลดราคาด่วน (Expiry & Flash Deals)</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400">จัดการวันหมดอายุของวัตถุดิบ กรองสถานะ และเปิดใช้งานโปรโมชันหน้าร้านอัตโนมัติ</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="expiryFilterSelect" onchange="renderExpiryTab()" class="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                <option value="all">สถานะทั้งหมด</option>
+                <option value="urgent">ใกล้หมดอายุ (≤ 2 วัน)</option>
+                <option value="warning">เฝ้าระวัง (3-4 วัน)</option>
+                <option value="fresh">สดใหม่ (> 4 วัน)</option>
+              </select>
+              <select id="expirySortSelect" onchange="renderExpiryTab()" class="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                <option value="daysAsc">เรียงตามวันหมดอายุ (เร็ว → ช้า)</option>
+                <option value="costDesc">เรียงตามมูลค่าสต็อก (มาก → น้อย)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="expiryListGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+
+          <div class="bento-card p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-extrabold flex items-center gap-2">
+                <i data-lucide="megaphone" class="w-5 h-5 text-emerald-500"></i> แคมเปญโปรโมชันที่กำลังเปิดใช้งานบนหน้าร้านลูกค้า
+              </h3>
+              <button onclick="promoOn('เซ็ตระบายสต็อกด่วนพิเศษ ฿89')" class="px-3.5 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold shadow">
+                + เปิดโปรโมชันด่วนทันที
+              </button>
+            </div>
+            <div id="activePromotionsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 5: MENU COSTING CALCULATOR (#costing-ai-alert, #table-price-kaprao, etc.)
+        =============================================================== -->
+        <section id="tab-costing" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">คำนวณต้นทุนเมนู & ตั้งราคาขายทำกำไร (Menu Costing 3D)</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400">คำนวณ Food Cost %, GP Delivery และแถบกำไรสุทธิ 3 มิติแบบเรียลไทม์</p>
+            </div>
+            <button onclick="openAddRecipeModal()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold shadow-lg transition flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มสูตรเมนูใหม่
+            </button>
+          </div>
+
+          <!-- Glowing AI Price Optimization Banner (#costing-ai-alert) -->
+          <div id="costing-ai-alert" class="bento-card p-5 border-emerald-500/40 bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-cyan-500/15 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shrink-0">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-extrabold text-sm sm:text-base">คำแนะนำการตั้งราคา AI: ข้าวกะเพราอกไก่ไข่ดาว</h3>
+                <p class="text-xs text-slate-600 dark:text-slate-300">ปรับราคาเป็น <strong>฿75</strong> (เพิ่มเซ็ตน้ำสมุนไพร) จะช่วยดัน Net Margin จาก 64.5% เป็น <strong>68.0%</strong> โดยลูกค้ายังตัดสินใจซื้อง่าย</p>
+              </div>
+            </div>
+            <button onclick="applySuggestedPrice()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-lg transition">
+              ใช้ราคาแนะนำ AI ทันที (฿75)
+            </button>
+          </div>
+
+          <!-- Interactive 3D Profit Margin Table -->
+          <div class="bento-card overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 uppercase text-[11px]">
+                  <tr>
+                    <th class="py-3.5 px-4">ชื่อเมนู</th>
+                    <th class="py-3.5 px-4">ต้นทุน/จาน</th>
+                    <th class="py-3.5 px-4">ราคาขาย</th>
+                    <th class="py-3.5 px-4">กำไรสุทธิ</th>
+                    <th class="py-3.5 px-4">Margin 3D Bar</th>
+                    <th class="py-3.5 px-4">สถานะ AI</th>
+                  </tr>
+                </thead>
+                <tbody id="costingTableBody" class="divide-y divide-slate-200/70 dark:divide-slate-800">
+                  <!-- Kaprao Row with Required IDs -->
+                  <tr class="hover:bg-slate-100/50 dark:hover:bg-slate-800/40">
+                    <td class="py-3.5 px-4 font-extrabold">ข้าวกะเพราอกไก่ไข่ดาว</td>
+                    <td class="py-3.5 px-4">฿24.5</td>
+                    <td id="table-price-kaprao" class="py-3.5 px-4 font-extrabold text-emerald-600 dark:text-emerald-400">฿69</td>
+                    <td id="table-profit-kaprao" class="py-3.5 px-4 font-extrabold">+฿44.5</td>
+                    <td class="py-3.5 px-4 w-44">
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 cylinder-3d h-3">
+                          <div id="bar-margin-kaprao" class="cylinder-liquid bg-gradient-to-r from-emerald-500 to-teal-400" style="width: 64.5%"></div>
+                        </div>
+                        <span id="table-margin-kaprao" class="text-xs font-extrabold">64.5%</span>
+                      </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                      <span id="table-badge-kaprao" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-[11px] font-bold">กำไรดีมาก</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="menuCostingGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 6: AI FINANCIAL FORECAST & WHAT-IF SIMULATOR
+        =============================================================== -->
+        <section id="tab-forecast" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">พยากรณ์การเงิน AI & What-If Simulator 3D</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400">ทดลองปรับราคาขาย ต้นทุนวัตถุดิบ และจำนวนลูกค้าต่อวัน เพื่อดูกราฟจุดคุ้มทุนและหลอดเงินสดสำรอง 3 มิติ</p>
+            </div>
+            <button onclick="resetWhatIfSliders()" class="px-3.5 py-2 rounded-xl bento-card text-xs font-bold hover:border-emerald-500 transition">
+              รีเซ็ตค่าเริ่มต้น
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Sliders Control Panel (5 cols) -->
+            <div class="lg:col-span-5 bento-card p-6 space-y-5">
+              <h3 class="text-base font-extrabold flex items-center gap-2">
+                <i data-lucide="sliders" class="w-5 h-5 text-violet-500"></i> ตัวแปรจำลองสถานการณ์ (What-If Controls)
+              </h3>
+
+              <div class="space-y-2">
+                <div class="flex justify-between text-xs font-bold">
+                  <span>ราคาขายเฉลี่ยต่อบิล (Avg Ticket)</span>
+                  <span id="simPriceVal" class="text-emerald-600 dark:text-emerald-400">฿135</span>
+                </div>
+                <input id="simPriceRange" type="range" min="60" max="350" value="135" oninput="updateFinancialSimulation()" class="w-full" />
+              </div>
+
+              <div class="space-y-2">
+                <div class="flex justify-between text-xs font-bold">
+                  <span>สัดส่วนต้นทุนวัตถุดิบ (Food Cost %)</span>
+                  <span id="simCostVal" class="text-blue-600 dark:text-blue-400">32%</span>
+                </div>
+                <input id="simCostRange" type="range" min="18" max="60" value="32" oninput="updateFinancialSimulation()" class="w-full" />
+              </div>
+
+              <div class="space-y-2">
+                <div class="flex justify-between text-xs font-bold">
+                  <span>จำนวนลูกค้า/ออเดอร์ต่อวัน</span>
+                  <span id="simTrafficVal" class="text-violet-600 dark:text-violet-400">140 บิล/วัน</span>
+                </div>
+                <input id="simTrafficRange" type="range" min="30" max="400" value="140" oninput="updateFinancialSimulation()" class="w-full" />
+              </div>
+
+              <!-- 3D Cash Flow Runway Progress Tube -->
+              <div class="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 space-y-2.5 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-slate-500">ค่าใช้จ่ายคงที่ (Fixed Cost/เดือน):</span>
+                  <span class="font-extrabold">฿95,000</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-500">จุดคุ้มทุน (Break-Even Point):</span>
+                  <span id="simBreakEven" class="font-extrabold text-amber-600 dark:text-amber-400">1,035 บิล/เดือน (35 บิล/วัน)</span>
+                </div>
+                <div class="space-y-1 pt-1">
+                  <div class="flex justify-between">
+                    <span class="text-slate-500 font-bold">Cash Flow Runway 3D Tube:</span>
+                    <span id="simRunway" class="font-extrabold text-emerald-600 dark:text-emerald-400">กำไรเป็นบวก</span>
+                  </div>
+                  <div class="cylinder-3d h-3.5">
+                    <div id="simRunwayTube" class="cylinder-liquid bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400" style="width: 92%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 30-Day Projection Result & Glowing SVG Area Chart (7 cols) -->
+            <div class="lg:col-span-7 bento-card p-6 flex flex-col justify-between space-y-5">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/25">
+                  <span class="text-xs text-slate-500 dark:text-slate-400">คาดการณ์รายรับ 30 วัน</span>
+                  <div id="sim30dRev" class="text-xl sm:text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">฿567,000</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/25">
+                  <span class="text-xs text-slate-500 dark:text-slate-400">ต้นทุนรวม 30 วัน</span>
+                  <div id="sim30dCost" class="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">฿276,440</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-violet-500/10 border border-violet-500/25">
+                  <span class="text-xs text-slate-500 dark:text-slate-400">กำไรสุทธิ 30 วัน</span>
+                  <div id="sim30dProfit" class="text-xl sm:text-2xl font-extrabold text-violet-600 dark:text-violet-400 mt-1">฿290,560</div>
+                </div>
+              </div>
+
+              <!-- Glowing Break-Even & Profit Curve SVG + 4-Week 3D Bars -->
+              <div class="space-y-3">
+                <div class="flex justify-between text-xs font-extrabold">
+                  <span>เส้นโค้งกำไรสะสม & จุดคุ้มทุน 30 วัน (Real-Time Area Curve)</span>
+                  <span class="text-emerald-500">อัปเดตตามแถบเลื่อนทันที</span>
+                </div>
+                <div class="rounded-2xl bg-slate-100/70 dark:bg-slate-800/50 p-4 border border-slate-200/70 dark:border-slate-700/70">
+                  <svg id="simAreaSvg" class="w-full h-36 overflow-visible" viewBox="0 0 400 120"></svg>
+                </div>
+                <div id="simWeeklyBars" class="h-32 flex items-end justify-around gap-4 pt-4 pb-1 px-4 rounded-2xl bg-slate-100/50 dark:bg-slate-800/30"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             TAB 7: ACCOUNTING & TAX REPORT
+        =============================================================== -->
+        <section id="tab-accounting" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">รายงานบัญชี ภาษีมูลค่าเพิ่ม (VAT) & ส่งออกข้อมูล</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400">บันทึกบัญชีรายรับ-รายจ่ายอัตโนมัติ รองรับส่งออก CSV ภาษาไทย (UTF-8 BOM) และพิมพ์ใบสรุปบัญชี</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5 no-print">
+              <button onclick="exportAccountingCSV()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold shadow-lg transition flex items-center gap-1.5">
+                <i data-lucide="download" class="w-4 h-4"></i> ส่งออก CSV (ภาษาไทย)
+              </button>
+              <button onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold shadow transition flex items-center gap-1.5">
+                <i data-lucide="printer" class="w-4 h-4"></i> พิมพ์ใบสรุปบัญชี
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bento-card tilt3d p-5">
+              <div class="glare-overlay"></div>
+              <span class="z-layer-1 text-xs text-slate-500 font-bold">รายรับรวมทางบัญชี</span>
+              <div id="accTotalIncome" class="z-layer-2 text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">฿0</div>
+            </div>
+            <div class="bento-card tilt3d p-5">
+              <div class="glare-overlay"></div>
+              <span class="z-layer-1 text-xs text-slate-500 font-bold">รายจ่าย & ต้นทุนซื้อวัตถุดิบ</span>
+              <div id="accTotalExpense" class="z-layer-2 text-2xl font-extrabold text-rose-500 mt-1">฿0</div>
+            </div>
+            <div class="bento-card tilt3d p-5">
+              <div class="glare-overlay"></div>
+              <span class="z-layer-1 text-xs text-slate-500 font-bold">ประมาณการภาษี VAT 7% สุทธิ</span>
+              <div id="accNetVat" class="z-layer-2 text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">฿0</div>
+            </div>
+          </div>
+
+          <div class="bento-card overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-extrabold text-sm">สมุดรายวันทั่วไป (General Ledger)</h3>
+              <select id="accFilterType" onchange="renderAccountingTab()" class="no-print px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold">
+                <option value="all">ทุกประเภท</option>
+                <option value="income">รายรับเท่านั้น</option>
+                <option value="expense">รายจ่ายเท่านั้น</option>
+              </select>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs sm:text-sm">
+                <thead class="bg-slate-100/80 dark:bg-slate-800/80 text-slate-500 uppercase text-[11px]">
+                  <tr>
+                    <th class="py-3 px-4">วันที่</th>
+                    <th class="py-3 px-4">รายการ</th>
+                    <th class="py-3 px-4">หมวดหมู่</th>
+                    <th class="py-3 px-4">ประเภท</th>
+                    <th class="py-3 px-4 text-right">จำนวนเงิน (บาท)</th>
+                  </tr>
+                </thead>
+                <tbody id="accountingTableBody" class="divide-y divide-slate-200/70 dark:divide-slate-800"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- ===================================================================
+         3. RIGHT AI CO-PILOT PANEL (Collapsible Real-time Assistant)
+    =================================================================== -->
+    <aside id="copilotPanel" class="no-print fixed xl:sticky top-0 right-0 z-40 h-screen w-80 sm:w-96 shrink-0 bento-card rounded-none border-y-0 border-r-0 flex flex-col justify-between transition-all duration-300 translate-x-full xl:translate-x-0">
+      <div class="p-4 border-b border-slate-200/70 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white shadow-lg">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm leading-tight">FreshFlow AI Co-Pilot</h3>
+            <p class="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">ผู้ช่วยการเงิน & ระบายสต็อก 3D</p>
+          </div>
+        </div>
+        <button onclick="toggleCopilotPanel()" class="p-2 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-800 text-slate-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div id="copilotMessages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs sm:text-sm">
+        <div class="p-3.5 rounded-2xl rounded-tl-none bg-slate-100/90 dark:bg-slate-800/90 space-y-1.5 border border-emerald-500/20">
+          <p class="font-extrabold text-emerald-600 dark:text-emerald-400 text-xs">✨ สวัสดีครับ! ผมคือ FreshFlow AI</p>
+          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">ผมวิเคราะห์วัตถุดิบในคลังของคุณแล้ว พบว่ามี <strong>เนื้ออกไก่สด</strong> และ <strong>นมสดพาสเจอร์ไรส์</strong> ที่ควรเร่งระบายภายใน 48 ชม. อยากให้ผมสรุปแผนจัดเซ็ตเมนูหรือดูจุดคุ้มทุนไหมครับ?</p>
+        </div>
+      </div>
+
+      <div class="p-3.5 border-t border-slate-200/70 dark:border-slate-800 space-y-2.5">
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="askCopilot('แนะนำวิธีระบายสต็อกวันนี้')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold hover:bg-emerald-500/25 transition">
+            🔥 วิธีระบายสต็อกวันนี้
+          </button>
+          <button onclick="askCopilot('สรุปจำนวนจานที่ผลิตได้')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[11px] font-bold hover:bg-amber-500/25 transition">
+            🍳 กำลังผลิตเมนู
+          </button>
+          <button onclick="askCopilot('วิเคราะห์กำไรและจุดคุ้มทุน')" class="px-2.5 py-1 rounded-lg bg-violet-500/15 text-violet-700 dark:text-violet-300 text-[11px] font-bold hover:bg-violet-500/25 transition">
+            📈 วิเคราะห์จุดคุ้มทุน
+          </button>
+        </div>
+        <form onsubmit="handleCopilotSubmit(event)" class="flex items-center gap-2">
+          <input id="copilotInput" type="text" placeholder="ถาม AI เรื่องสต็อก, ต้นทุน, โปรโมชัน..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500 outline-none" />
+          <button type="submit" class="p-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow transition">
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </div>
+    </aside>
+  </div>
+
+  <!-- =====================================================================
+       VIEW 6: ADMIN DATABASE VIEW (#view-admin)
+  ===================================================================== -->
+  <section id="view-admin" class="hidden min-h-screen w-full p-4 sm:p-8">
+    <div class="max-w-6xl mx-auto bento-card p-6 sm:p-8 space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-600 dark:text-violet-300 text-xs font-extrabold">Super Admin Console</span>
+          <h2 class="text-2xl font-extrabold mt-1">ระบบจัดการฐานข้อมูลกลาง FreshFlow Cloud</h2>
+        </div>
+        <button onclick="goToRoleSelection()" class="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold">← กลับหน้าเลือกบทบาท</button>
+      </div>
+      <div id="admin-stats" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+      <div id="admin-tabs" class="flex gap-2"></div>
+      <p id="admin-msg" class="text-xs text-emerald-500 font-bold"></p>
+      <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <table class="w-full text-left text-xs">
+          <thead id="admin-thead" class="bg-slate-100 dark:bg-slate-800"></thead>
+          <tbody id="admin-tbody" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       SUPABASE CONFIG MODAL (#view-config)
+  ===================================================================== -->
+  <div id="view-config" class="fixed inset-0 z-[110] bg-slate-950/65 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bento-card max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-lg flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-emerald-500"></i> เชื่อมต่อ Supabase Cloud
+        </h3>
+        <button onclick="closeConfig()" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400">เชื่อมต่อด้วย Supabase publishable key ข้อมูลร้านจะถูกบันทึกแยกตามบัญชีและป้องกันด้วย RLS</p>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">Supabase Project URL</label>
+          <input id="cfg-url" type="url" readonly class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+        </div>
+        <div>
+          <label class="block font-bold mb-1">Supabase Publishable Key</label>
+          <input id="cfg-key" type="password" readonly class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+        </div>
+        <p id="cfg-message" class="text-xs font-bold text-emerald-500"></p>
+      </div>
+      <div class="flex justify-between gap-2 pt-2">
+        <span class="text-[10px] text-slate-500">ใช้ publishable key เท่านั้น ห้ามใส่ service_role key</span>
+        <div class="flex gap-2">
+          <button onclick="closeConfig()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">ปิด</button>
+          <button onclick="saveConfig()" class="px-5 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold shadow">ทดสอบการเชื่อมต่อ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       NOTIFICATION & LINE LOG DRAWER
+  ===================================================================== -->
+  <div id="notificationDrawer" class="fixed inset-y-0 right-0 z-[105] w-80 sm:w-96 bento-card rounded-none p-5 flex flex-col justify-between translate-x-full transition-transform duration-300 shadow-2xl">
+    <div class="space-y-4 overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+        <h3 class="font-extrabold text-base flex items-center gap-2">
+          <i data-lucide="bell-ring" class="w-4 h-4 text-emerald-500"></i> แจ้งเตือนระบบ & LINE Notify
+        </h3>
+        <button onclick="toggleNotificationDrawer()" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="notificationList" class="space-y-2.5"></div>
+    </div>
+    <button onclick="clearNotifications()" class="w-full py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold hover:opacity-80 transition">
+      ล้างการแจ้งเตือนทั้งหมด
+    </button>
+  </div>
+
+  <!-- ADD RECIPE COSTING MODAL -->
+  <div id="addRecipeModal" class="fixed inset-0 z-[110] bg-slate-950/65 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="bento-card max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-lg">เพิ่มสูตรเมนูคำนวณต้นทุน</h3>
+        <button onclick="closeAddRecipeModal()" class="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="saveNewRecipe(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold mb-1">ชื่อเมนูอาหาร / เครื่องดื่ม</label>
+          <input id="recName" type="text" required placeholder="เช่น ข้าวกะเพราไก่ไข่ดาว" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold mb-1">ต้นทุนวัตถุดิบ/จาน (บาท)</label>
+            <input id="recCost" type="number" step="0.5" required placeholder="24" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+          </div>
+          <div>
+            <label class="block font-bold mb-1">ราคาขายหน้าร้าน (บาท)</label>
+            <input id="recPrice" type="number" step="1" required placeholder="69" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold mb-1">วัตถุดิบหลักที่ใช้</label>
+          <input id="recIngs" type="text" required placeholder="เนื้ออกไก่สด, ไข่ไก่, ใบกะเพรา" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeAddRecipeModal()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold">ยกเลิก</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-500 text-white font-bold shadow">บันทึกสูตรเมนู</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       JAVASCRIPT LOGIC (Interactive 3D Polyhedron Canvas, State, AI Forecast, Maps, Audio)
+  ===================================================================== -->
+  <script>
+    // ---------------------------------------------------------------------
+    // 1. PRESERVED CORE STATE & VARIABLES
+    // ---------------------------------------------------------------------
+    const SUPABASE_URL = 'https://gwoeflqvneecclrkxpci.supabase.co';
+    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QozSyC2h1m91-wdH4DtDGg__f--N4g-';
+    let sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+    let currentUser = null;
+    let cloudSaveTimer = null;
+    let cloudSaveQueue = Promise.resolve();
+    let cloudSaveRevision = 0;
+    let profile = { email: 'owner@freshflow.ai', role: 'owner' };
+    let currentStore = {
+      name: 'ครัวสดใหม่ FreshFlow Kitchen',
+      type: 'ร้านอาหารตามสั่ง & คาเฟ่',
+      address: 'สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ',
+      lat: 13.7262,
+      lng: 100.5698,
+      lineId: '@freshflow-shop'
+    };
+    let visitorStores = [
+      { name: 'ครัวสดใหม่ FreshFlow (สาขาสุขุมวิท 24)', address: 'สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ', lat: 13.7262, lng: 100.5698 },
+      { name: 'ครัวสดใหม่ FreshFlow (สาขาสยามสแควร์)', address: 'สยามสแควร์ ซอย 3 ปทุมวัน กรุงเทพฯ', lat: 13.7456, lng: 100.5341 }
+    ];
+    let viewStore = visitorStores[0];
+    let soundEnabled = true;
+    let currentTab = 'dashboard';
+    let currentTimeframe = 'today';
+    let forecastScenario = 'sunny';
+    let onboardMapInstance = null;
+    let onboardMarkerInstance = null;
+    let visitorMapInstance = null;
+    let visitorMarkerInstance = null;
+    let audioCtx = null;
+
+    // Escape user-provided text before inserting into innerHTML
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    // Safe icon refresh (does not crash if the CDN failed to load)
+    function refreshIcons() {
+      try { if (window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons(); } catch (e) {}
+    }
+    function newId(prefix) {
+      return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+
+    // Ingredients Inventory (Connected directly to Product Forecast & Stock Clearance)
+    let ingredients = [
+      { id: 1, name: 'เนื้ออกไก่สด', qty: 18, unit: 'กก.', cost: 1440, shelfLife: 2, category: 'เนื้อสัตว์', dailyUsage: 6.5, rop: 8 },
+      { id: 2, name: 'ไข่ไก่เบอร์ 1', qty: 150, unit: 'ฟอง', cost: 630, shelfLife: 5, category: 'เนื้อสัตว์', dailyUsage: 45, rop: 60 },
+      { id: 3, name: 'ใบกะเพราสด', qty: 4.5, unit: 'กก.', cost: 270, shelfLife: 2, category: 'ผักสด', dailyUsage: 1.4, rop: 2 },
+      { id: 4, name: 'นมสดพาสเจอร์ไรส์', qty: 24, unit: 'ลิตร', cost: 960, shelfLife: 2, category: 'นมและเครื่องดื่ม', dailyUsage: 7.0, rop: 10 },
+      { id: 5, name: 'เมล็ดกาแฟคั่วกลาง', qty: 6, unit: 'กก.', cost: 2100, shelfLife: 25, category: 'ของแห้ง', dailyUsage: 1.2, rop: 3 },
+      { id: 6, name: 'กุ้งขาวแกะเปลือก', qty: 5, unit: 'กก.', cost: 1150, shelfLife: 3, category: 'เนื้อสัตว์', dailyUsage: 2.2, rop: 4 }
+    ];
+
+    let notes = [
+      { id: 1, text: 'สั่งเนื้ออกไก่รอบเช้าวันพรุ่งนี้ลดลง 20% เพื่อระบายสต็อกเดิม', time: '14:15 น.' },
+      { id: 2, text: 'โปรโมชันเซ็ตคู่หู กะเพรา+ลาเต้ ขายดีมากช่วงบ่าย', time: '12:40 น.' }
+    ];
+
+    let menuRecipes = [
+      {
+        id: 'm1',
+        name: 'ข้าวกะเพราอกไก่ไข่ดาว',
+        price: 69,
+        cost: 24.5,
+        baseDailyVelocity: 42,
+        category: 'อาหารจานหลัก',
+        bom: [
+          { ingredientName: 'เนื้ออกไก่สด', perPortion: 0.15 },
+          { ingredientName: 'ไข่ไก่เบอร์ 1', perPortion: 1 },
+          { ingredientName: 'ใบกะเพราสด', perPortion: 0.03 }
+        ]
+      },
+      {
+        id: 'm2',
+        name: 'ลาเต้เย็นพรีเมียม (Iced Latte)',
+        price: 65,
+        cost: 19.0,
+        baseDailyVelocity: 38,
+        category: 'เครื่องดื่ม',
+        bom: [
+          { ingredientName: 'นมสดพาสเจอร์ไรส์', perPortion: 0.18 },
+          { ingredientName: 'เมล็ดกาแฟคั่วกลาง', perPortion: 0.02 }
+        ]
+      },
+      {
+        id: 'm3',
+        name: 'ข้าวผัดกุ้งสดไข่ข้น',
+        price: 89,
+        cost: 34.0,
+        baseDailyVelocity: 24,
+        category: 'อาหารจานหลัก',
+        bom: [
+          { ingredientName: 'กุ้งขาวแกะเปลือก', perPortion: 0.12 },
+          { ingredientName: 'ไข่ไก่เบอร์ 1', perPortion: 2 }
+        ]
+      },
+      {
+        id: 'm4',
+        name: 'ไก่ป๊อปสมุนไพรกรอบ',
+        price: 59,
+        cost: 21.0,
+        baseDailyVelocity: 20,
+        category: 'ของทานเล่น',
+        bom: [
+          { ingredientName: 'เนื้ออกไก่สด', perPortion: 0.16 }
+        ]
+      }
+    ];
+
+    let activePromotions = [
+      {
+        id: 'promo-1',
+        title: 'เซ็ตอิ่มคุ้มคู่ซี้: กะเพราอกไก่ไข่ดาว + ลาเต้เย็น',
+        originalPrice: 134,
+        promoPrice: 99,
+        netProfit: 55.5,
+        wasteReduction: '96%',
+        tag: 'AI Smart Combo 3D',
+        active: true
+      }
+    ];
+
+    let transactions = [
+      { id: 'TX-101', date: '2026-11-12', desc: 'ยอดขายหน้าร้าน & เดลิเวอรีรอบเช้า', category: 'ยอดขายอาหาร', type: 'income', amount: 11250 },
+      { id: 'TX-102', date: '2026-11-12', desc: 'ยอดขายเครื่องดื่ม & เซ็ตโปรโมชัน', category: 'ยอดขายเครื่องดื่ม', type: 'income', amount: 7200 },
+      { id: 'TX-103', date: '2026-11-12', desc: 'จัดซื้อวัตถุดิบสด (อกไก่, ไข่ไก่, นมสด)', category: 'ต้นทุนวัตถุดิบ', type: 'expense', amount: 3030 },
+      { id: 'TX-104', date: '2026-11-11', desc: 'ยอดขายรวมประจำวัน', category: 'ยอดขายอาหาร', type: 'income', amount: 17890 },
+      { id: 'TX-105', date: '2026-11-11', desc: 'ค่าบรรจุภัณฑ์รักษ์โลก & ค่าน้ำไฟ', category: 'ค่าดำเนินงาน', type: 'expense', amount: 1450 }
+    ];
+
+    let notifications = [
+      { id: 1, time: '14:55 น.', title: 'AI ตรวจพบวัตถุดิบใกล้หมดอายุ', msg: 'เนื้ออกไก่สด 18 กก. และนมสด 24 ลิตร เหลืออายุ 2 วัน แนะนำเปิดแคมเปญระบายสต็อก', type: 'warning' },
+      { id: 2, time: '13:10 น.', title: 'ส่งแจ้งเตือนเข้า LINE OA ร้านแล้ว', msg: 'สรุปยอดขายครึ่งวันเช้า ฿11,250 (+14% เทียบเมื่อวาน)', type: 'line' }
+    ];
+
+    function getPersistedAppState() {
+      const store = { ...currentStore };
+      delete store.lineToken;
+      return {
+        currentStore: store,
+        ingredients,
+        notes,
+        menuRecipes,
+        activePromotions,
+        transactions,
+        notifications
+      };
+    }
+
+    const demoSeedState = JSON.parse(JSON.stringify(getPersistedAppState()));
+
+    function applyPersistedAppState(state) {
+      const arrayKeys = ['ingredients', 'notes', 'menuRecipes', 'activePromotions', 'transactions', 'notifications'];
+      if (!state || !state.currentStore || arrayKeys.some(key => !Array.isArray(state[key]))) {
+        throw new Error('ข้อมูลร้านค้าในฐานข้อมูลมีรูปแบบไม่ถูกต้อง');
+      }
+
+      currentStore = { ...currentStore, ...state.currentStore };
+      ingredients = state.ingredients;
+      notes = state.notes;
+      menuRecipes = state.menuRecipes;
+      activePromotions = state.activePromotions;
+      transactions = state.transactions;
+      notifications = state.notifications;
+      Object.assign(visitorStores[0], {
+        name: currentStore.name,
+        address: currentStore.address,
+        lat: currentStore.lat,
+        lng: currentStore.lng
+      });
+      const storeName = document.getElementById('owner-navbar-store-name');
+      const storeAddress = document.getElementById('dash-store-address-label');
+      if (storeName) storeName.textContent = currentStore.name;
+      if (storeAddress) storeAddress.textContent = currentStore.address;
+    }
+
+    function renderPersistedViews() {
+      renderDashboard();
+      renderIngredientsTab();
+      renderProductForecastTab();
+      renderExpiryTab();
+      renderCostingTab();
+      renderAccountingTab();
+      renderNotifications();
+      updateSidebarExpiryBadge();
+    }
+
+    function setCloudStatus(message) {
+      const status = document.getElementById('connectionStatusText');
+      if (status) status.textContent = message;
+    }
+
+    function setAuthMessage(message, isError) {
+      const element = document.getElementById('auth-message');
+      element.textContent = message;
+      element.classList.toggle('hidden', !message);
+      element.classList.toggle('text-rose-500', isError);
+      element.classList.toggle('text-emerald-600', !isError);
+    }
+
+    async function loadUserState() {
+      const { data, error } = await sb
+        .from('freshflow_user_state')
+        .select('state')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+      if (error) throw error;
+
+      if (data) applyPersistedAppState(data.state);
+      renderPersistedViews();
+      setCloudStatus(data ? 'Supabase เชื่อมต่อแล้ว • ซิงก์ข้อมูล' : 'Supabase เชื่อมต่อแล้ว • บัญชีใหม่');
+    }
+
+    function scheduleCloudSave() {
+      if (!currentUser || !sb) return;
+      cloudSaveRevision++;
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = setTimeout(() => { saveUserState(); }, 500);
+    }
+
+    async function saveUserState() {
+      clearTimeout(cloudSaveTimer);
+      cloudSaveTimer = null;
+      if (!currentUser || !sb) return true;
+
+      const save = async () => {
+        while (true) {
+          const revision = cloudSaveRevision;
+          const userId = currentUser && currentUser.id;
+          if (!userId) return true;
+
+          setCloudStatus('กำลังบันทึกข้อมูลขึ้น Supabase...');
+          const { error } = await sb.from('freshflow_user_state').upsert({
+            user_id: userId,
+            state: getPersistedAppState(),
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id' });
+
+          if (error) {
+            setCloudStatus('บันทึก Supabase ไม่สำเร็จ');
+            showToast(`บันทึกข้อมูลไม่สำเร็จ: ${error.message}`);
+            return false;
+          }
+
+          if (revision === cloudSaveRevision) {
+            setCloudStatus('Supabase เชื่อมต่อแล้ว • บันทึกเรียบร้อย');
+            return true;
+          }
+        }
+      };
+
+      cloudSaveQueue = cloudSaveQueue.then(save, save);
+      try {
+        return await cloudSaveQueue;
+      } catch (error) {
+        setCloudStatus('บันทึก Supabase ไม่สำเร็จ');
+        showToast(`บันทึกข้อมูลไม่สำเร็จ: ${error.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อ'}`);
+        return false;
+      }
+    }
+
+    async function restoreSupabaseSession() {
+      if (!sb) {
+        setAuthMessage('โหลด Supabase SDK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วโหลดหน้าใหม่', true);
+        setCloudStatus('Supabase SDK ไม่พร้อมใช้งาน');
+        return;
+      }
+
+      const { data, error } = await sb.auth.getSession();
+      if (error) {
+        setAuthMessage(`ตรวจสอบเซสชันไม่สำเร็จ: ${error.message}`, true);
+        setCloudStatus('ตรวจสอบ Supabase ไม่สำเร็จ');
+        return;
+      }
+
+      if (!data.session) {
+        setCloudStatus('Supabase พร้อมใช้งาน • กรุณาเข้าสู่ระบบ');
+        return;
+      }
+
+      currentUser = data.session.user;
+      profile.email = currentUser.email || '';
+      document.getElementById('authUserEmail').textContent = profile.email;
+      try {
+        await loadUserState();
+        showOnlyView('view-role-selection');
+      } catch (loadError) {
+        let extra = '';
+        try {
+          const { error: signOutError } = await sb.auth.signOut();
+          if (signOutError) extra = ` (ออกจากระบบไม่สำเร็จ: ${signOutError.message})`;
+        } catch (signOutError) {
+          extra = ` (ออกจากระบบไม่สำเร็จ: ${signOutError.message})`;
+        }
+        currentUser = null;
+        setAuthMessage(`โหลดข้อมูลจากฐานข้อมูลไม่สำเร็จ: ${loadError.message}${extra}`, true);
+        setCloudStatus('เชื่อมต่อฐานข้อมูลไม่สำเร็จ');
+      }
+    }
+
+    // ---------------------------------------------------------------------
+    // 2. 60FPS INTERACTIVE 3D POLYHEDRON & LUMINOUS PARTICLE BACKDROP
+    // ---------------------------------------------------------------------
+    function init3DBackdropCanvas() {
+      const canvas = document.getElementById('bg-canvas-3d');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let w = (canvas.width = window.innerWidth);
+      let h = (canvas.height = window.innerHeight);
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetMouseX = 0;
+      let targetMouseY = 0;
+
+      window.addEventListener('resize', () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      });
+
+      window.addEventListener('mousemove', e => {
+        targetMouseX = (e.clientX / w - 0.5) * 2;
+        targetMouseY = (e.clientY / h - 0.5) * 2;
+      });
+
+      // 3D Icosahedron Vertices & Edges
+      const phi = (1 + Math.sqrt(5)) / 2;
+      const rawVerts = [
+        [-1, phi, 0], [1, phi, 0], [-1, -phi, 0], [1, -phi, 0],
+        [0, -1, phi], [0, 1, phi], [0, -1, -phi], [0, 1, -phi],
+        [phi, 0, -1], [phi, 0, 1], [-phi, 0, -1], [-phi, 0, 1]
+      ];
+      const edges = [];
+      for (let i = 0; i < rawVerts.length; i++) {
+        for (let j = i + 1; j < rawVerts.length; j++) {
+          const d = Math.hypot(rawVerts[i][0] - rawVerts[j][0], rawVerts[i][1] - rawVerts[j][1], rawVerts[i][2] - rawVerts[j][2]);
+          if (Math.abs(d - 2) < 1e-6) edges.push([i, j]);
+        }
+      }
+
+      // Floating 3D Depth Particles
+      const particles = Array.from({ length: 42 }, () => ({
+        x: (Math.random() - 0.5) * 1400,
+        y: (Math.random() - 0.5) * 900,
+        z: 100 + Math.random() * 800,
+        r: 1.5 + Math.random() * 2.5,
+        hue: Math.random() > 0.35 ? 160 : (Math.random() > 0.5 ? 190 : 38)
+      }));
+
+      let angleX = 0.4;
+      let angleY = 0.6;
+
+      function project3D(x, y, z, cx, cy, scale) {
+        const fov = 520;
+        const factor = fov / (fov + z);
+        return {
+          x: cx + x * scale * factor,
+          y: cy + y * scale * factor,
+          factor
+        };
+      }
+
+      function renderFrame() {
+        ctx.clearRect(0, 0, w, h);
+        const isDark = document.documentElement.classList.contains('dark');
+
+        mouseX += (targetMouseX - mouseX) * 0.05;
+        mouseY += (targetMouseY - mouseY) * 0.05;
+
+        if (!prefersReduced) {
+          angleX += 0.0022;
+          angleY += 0.0031;
+        }
+
+        const rx = angleX + mouseY * 0.35;
+        const ry = angleY + mouseX * 0.35;
+
+        // Draw Luminous 3D Particles
+        particles.forEach(p => {
+          if (!prefersReduced) {
+            p.z -= 0.45;
+            if (p.z < 50) p.z = 850;
+          }
+          const proj = project3D(p.x + mouseX * 45, p.y + mouseY * 45, p.z, w * 0.5, h * 0.5, 1);
+          const alpha = Math.min(0.55, (1 - p.z / 900) * (isDark ? 0.6 : 0.35));
+          ctx.fillStyle = `hsla(${p.hue}, 85%, ${isDark ? 62 : 45}%, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(proj.x, proj.y, p.r * proj.factor * 1.4, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Draw Floating Wireframe 3D Polyhedron in Top-Right Stage
+        const centerX = w * 0.82 - mouseX * 28;
+        const centerY = h * 0.24 - mouseY * 28;
+        const polyScale = Math.min(w, h) * 0.13;
+
+        const transformed = rawVerts.map(([vx, vy, vz]) => {
+          // Rotate Y
+          const x1 = vx * Math.cos(ry) - vz * Math.sin(ry);
+          const z1 = vx * Math.sin(ry) + vz * Math.cos(ry);
+          // Rotate X
+          const y2 = vy * Math.cos(rx) - z1 * Math.sin(rx);
+          const z2 = vy * Math.sin(rx) + z1 * Math.cos(rx);
+          return project3D(x1, y2, z2 + 4.5, centerX, centerY, polyScale);
+        });
+
+        ctx.lineWidth = 1.15;
+        ctx.strokeStyle = isDark ? 'rgba(52, 211, 153, 0.22)' : 'rgba(16, 185, 129, 0.18)';
+        edges.forEach(([a, b]) => {
+          ctx.beginPath();
+          ctx.moveTo(transformed[a].x, transformed[a].y);
+          ctx.lineTo(transformed[b].x, transformed[b].y);
+          ctx.stroke();
+        });
+
+        transformed.forEach(pt => {
+          ctx.fillStyle = isDark ? 'rgba(45, 212, 191, 0.45)' : 'rgba(5, 150, 105, 0.32)';
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 2.3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        requestAnimationFrame(renderFrame);
+      }
+
+      renderFrame();
+    }
+
+    // ---------------------------------------------------------------------
+    // 3. SOUND EFFECTS, CONFETTI & TOAST NOTIFICATIONS
+    // ---------------------------------------------------------------------
+    function setSound(enabled) {
+      soundEnabled = enabled;
+      const icon = document.getElementById('soundIcon');
+      if (icon) {
+        icon.setAttribute('data-lucide', enabled ? 'volume-2' : 'volume-x');
+        refreshIcons();
+      }
+      showToast(enabled ? 'เปิดเสียงแจ้งเตือน 3D Chime แล้ว' : 'ปิดเสียงแจ้งเตือนแล้ว');
+    }
+
+    function chime() {
+      if (!soundEnabled) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!audioCtx) audioCtx = new AudioCtx();
+        const ctx = audioCtx;
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+        [587.33, 880, 1174.66].forEach((f, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.001, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.11, now + idx * 0.08 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.42);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.44);
+        });
+      } catch (e) {}
+    }
+
+    function celebrate() {
+      const canvas = document.getElementById('confettiCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#10b981', '#06b6d4', '#f59e0b', '#ec4899', '#8b5cf6'];
+      const particles = Array.from({ length: 85 }, () => ({
+        x: Math.random() * canvas.width,
+        y: -20 - Math.random() * 120,
+        r: 4 + Math.random() * 5,
+        dx: -2 + Math.random() * 4,
+        dy: 3 + Math.random() * 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.random() * 10
+      }));
+
+      let frames = 0;
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          p.x += p.dx;
+          p.y += p.dy;
+          p.tilt += 0.1;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, p.r, p.r * 0.6, p.tilt, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        frames++;
+        if (frames < 105) requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      draw();
+    }
+
+    function showToast(msg) {
+      const toastEl = document.getElementById('toast');
+      const textEl = document.getElementById('toast-text');
+      if (!toastEl || !textEl) return;
+      textEl.textContent = msg;
+      toastEl.classList.remove('hidden');
+      toastEl.classList.add('flex');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toastEl.classList.add('hidden');
+        toastEl.classList.remove('flex');
+      }, 4200);
+    }
+
+    function saveLineId() {
+      const val = document.getElementById('line-id').value.trim();
+      if (val) {
+        currentStore.lineId = val;
+        scheduleCloudSave();
+        chime();
+        showToast(`บันทึก LINE ID (${val}) เรียบร้อยแล้ว`);
+      }
+    }
+
+    function sendLine(message) {
+      const timeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
+      notifications.unshift({
+        id: Date.now(),
+        time: timeStr,
+        title: `แจ้งเตือน LINE (จำลอง) • ${currentStore.lineId || 'ยังไม่เชื่อมต่อ'}`,
+        msg: message,
+        type: 'line'
+      });
+      scheduleCloudSave();
+      renderNotifications();
+      const dot = document.getElementById('notifDot');
+      if (dot) dot.classList.remove('hidden');
+      showToast(currentStore.lineToken
+        ? `บันทึกข้อความแจ้งเตือน LINE แล้ว: ${message}`
+        : `บันทึกการแจ้งเตือนในระบบแล้ว — ตั้งค่า LINE OA เพื่อส่งจริง`);
+    }
+
+    // ---------------------------------------------------------------------
+    // 4. VIEW SWITCHING, AUTH, ONBOARDING & LEAFLET MAPS
+    // ---------------------------------------------------------------------
+    function showOnlyView(viewId) {
+      ['view-login', 'view-role-selection', 'view-store-onboarding', 'view-visitor', 'view-owner', 'view-admin'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (id === viewId) {
+          el.classList.remove('hidden');
+          if (id !== 'view-admin') el.classList.add('flex');
+        } else {
+          el.classList.add('hidden');
+          el.classList.remove('flex');
+        }
+      });
+      initTilt3D();
+      refreshIcons();
+    }
+
+    function openConfig() {
+      const m = document.getElementById('view-config');
+      document.getElementById('cfg-url').value = SUPABASE_URL;
+      document.getElementById('cfg-key').value = SUPABASE_PUBLISHABLE_KEY;
+      document.getElementById('cfg-message').textContent = currentUser
+        ? 'התחברתแล้ว กดทดสอบเพื่อยืนยันสิทธิ์อ่าน/เขียนฐานข้อมูล'
+        : 'เชื่อมต่อโปรเจกต์แล้ว เข้าสู่ระบบเพื่อทดสอบฐานข้อมูล';
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+    function closeConfig() {
+      const m = document.getElementById('view-config');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+    async function saveConfig() {
+      const message = document.getElementById('cfg-message');
+      if (!sb) {
+        message.textContent = 'โหลด Supabase SDK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต';
+        return;
+      }
+      if (!currentUser) {
+        message.textContent = 'ตั้งค่า Supabase แล้ว กรุณาเข้าสู่ระบบก่อนทดสอบการอ่าน/เขียนฐานข้อมูล';
+        return;
+      }
+      try {
+        await loadUserState();
+        message.textContent = 'ทดสอบสำเร็จ: อ่านฐานข้อมูลและสิทธิ์ RLS ได้';
+        chime();
+      } catch (error) {
+        message.textContent = `ทดสอบไม่สำเร็จ: ${error.message}`;
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      if (!sb) {
+        setAuthMessage('โหลด Supabase SDK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วโหลดหน้าใหม่', true);
+        return;
+      }
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const loginButton = document.getElementById('btn-login');
+      const signupButton = document.getElementById('btn-signup');
+      loginButton.disabled = signupButton.disabled = true;
+      setAuthMessage('', true);
+      try {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        currentUser = data.user;
+        profile.email = currentUser.email || email;
+        document.getElementById('authUserEmail').textContent = profile.email;
+        await loadUserState();
+        document.getElementById('auth-password').value = '';
+        showOnlyView('view-role-selection');
+        chime();
+      } catch (error) {
+        let message = error.message;
+        if (currentUser) {
+          try {
+            const { error: signOutError } = await sb.auth.signOut();
+            if (signOutError) message += ` (ออกจากระบบหลังผิดพลาดไม่สำเร็จ: ${signOutError.message})`;
+          } catch (signOutError) {
+            message += ` (ออกจากระบบหลังผิดพลาดไม่สำเร็จ: ${signOutError.message})`;
+          }
+        }
+        currentUser = null;
+        setAuthMessage(`เข้าสู่ระบบไม่สำเร็จ: ${message}`, true);
+      } finally {
+        loginButton.disabled = signupButton.disabled = false;
+      }
+    }
+
+    async function handleSignup() {
+      if (!sb) {
+        setAuthMessage('โหลด Supabase SDK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วโหลดหน้าใหม่', true);
+        return;
+      }
+      if (!document.getElementById('login-form').reportValidity()) return;
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const loginButton = document.getElementById('btn-login');
+      const signupButton = document.getElementById('btn-signup');
+      loginButton.disabled = signupButton.disabled = true;
+      setAuthMessage('', true);
+      try {
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if (error) throw error;
+        if (!data.session) {
+          setAuthMessage('สมัครสมาชิกแล้ว กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ', false);
+          return;
+        }
+        currentUser = data.user;
+        profile.email = currentUser.email || email;
+        document.getElementById('authUserEmail').textContent = profile.email;
+        await loadUserState();
+        document.getElementById('auth-password').value = '';
+        showOnlyView('view-role-selection');
+        chime();
+      } catch (error) {
+        let message = error.message;
+        if (currentUser) {
+          try {
+            const { error: signOutError } = await sb.auth.signOut();
+            if (signOutError) message += ` (ออกจากระบบหลังผิดพลาดไม่สำเร็จ: ${signOutError.message})`;
+          } catch (signOutError) {
+            message += ` (ออกจากระบบหลังผิดพลาดไม่สำเร็จ: ${signOutError.message})`;
+          }
+        }
+        currentUser = null;
+        setAuthMessage(`สมัครสมาชิกไม่สำเร็จ: ${message}`, true);
+      } finally {
+        loginButton.disabled = signupButton.disabled = false;
+      }
+    }
+
+    function restoreDemoState() {
+      applyPersistedAppState(JSON.parse(JSON.stringify(demoSeedState)));
+      profile = { email: 'owner@freshflow.ai', role: 'owner' };
+      renderPersistedViews();
+    }
+
+    async function startDemo() {
+      if (currentUser) {
+        const saved = await saveUserState();
+        if (!saved) return;
+        try {
+          const { error } = await sb.auth.signOut();
+          if (error) throw error;
+        } catch (error) {
+          showToast(`ออกจากระบบเพื่อเข้า Demo ไม่สำเร็จ: ${error.message}`);
+          return;
+        }
+        currentUser = null;
+      }
+      restoreDemoState();
+      chime();
+      showOnlyView('view-owner');
+      switchTab('dashboard');
+    }
+
+    function guestVisit() {
+      switchRoleToVisitor();
+    }
+
+    function selectRole(role) {
+      profile.role = role;
+      if (role === 'owner') {
+        showOnlyView('view-owner');
+        switchTab('dashboard');
+      } else if (role === 'visitor') {
+        switchRoleToVisitor();
+      }
+    }
+
+    function openAdmin() {
+      showOnlyView('view-admin');
+      document.getElementById('admin-stats').innerHTML = `
+        <div class="bento-card p-4"><div class="text-xs text-slate-400">ร้านค้าในระบบ</div><div class="text-2xl font-extrabold text-emerald-500">128 ร้าน</div></div>
+        <div class="bento-card p-4"><div class="text-xs text-slate-400">คำนวณ AI วันนี้</div><div class="text-2xl font-extrabold text-blue-500">1,420 ครั้ง</div></div>
+        <div class="bento-card p-4"><div class="text-xs text-slate-400">ลดขยะอาหารสะสม</div><div class="text-2xl font-extrabold text-amber-500">4.8 ตัน</div></div>
+      `;
+      document.getElementById('admin-thead').innerHTML = `<tr><th class="p-3">ชื่อร้าน</th><th class="p-3">พิกัด</th><th class="p-3">สถานะ AI</th></tr>`;
+      document.getElementById('admin-tbody').innerHTML = `<tr><td class="p-3 font-bold">${esc(currentStore.name)}</td><td class="p-3">${esc(currentStore.address)}</td><td class="p-3 text-emerald-500 font-bold">Active 3D OS</td></tr>`;
+    }
+
+    function backToLogin() { showOnlyView('view-login'); }
+    function goToRoleSelection() { showOnlyView('view-role-selection'); }
+    async function logout() {
+      const saved = await saveUserState();
+      if (!saved) return;
+      try {
+        const { error } = await sb.auth.signOut();
+        if (error) throw error;
+      } catch (error) {
+        showToast(`ออกจากระบบไม่สำเร็จ: ${error.message}`);
+        return;
+      }
+      currentUser = null;
+      restoreDemoState();
+      showOnlyView('view-login');
+      showToast('ออกจากระบบเรียบร้อยแล้ว');
+    }
+
+    function openOnboardingAgain() {
+      showOnlyView('view-store-onboarding');
+      setTimeout(() => {
+        if (typeof L === 'undefined') return;
+        if (!onboardMapInstance) {
+          onboardMapInstance = L.map('onboard-map').setView([currentStore.lat, currentStore.lng], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(onboardMapInstance);
+          onboardMarkerInstance = L.marker([currentStore.lat, currentStore.lng], { draggable: true }).addTo(onboardMapInstance);
+          onboardMarkerInstance.on('dragend', () => {
+            const ll = onboardMarkerInstance.getLatLng();
+            currentStore.lat = +ll.lat.toFixed(4);
+            currentStore.lng = +ll.lng.toFixed(4);
+            scheduleCloudSave();
+            document.getElementById('pin-coords-text').textContent = `พิกัด GPS: ${currentStore.lat}, ${currentStore.lng}`;
+          });
+          onboardMapInstance.on('click', e => {
+            currentStore.lat = +e.latlng.lat.toFixed(4);
+            currentStore.lng = +e.latlng.lng.toFixed(4);
+            scheduleCloudSave();
+            onboardMarkerInstance.setLatLng([currentStore.lat, currentStore.lng]);
+            document.getElementById('pin-coords-text').textContent = `พิกัด GPS: ${currentStore.lat}, ${currentStore.lng}`;
+          });
+        } else {
+          onboardMapInstance.invalidateSize();
+        }
+      }, 150);
+    }
+
+    function quickPickLocation(addr, lat, lng) {
+      document.getElementById('onboard-address-input').value = addr;
+      currentStore.address = addr;
+      currentStore.lat = lat;
+      currentStore.lng = lng;
+      scheduleCloudSave();
+      document.getElementById('pin-coords-text').textContent = `พิกัด GPS: ${lat}, ${lng}`;
+      if (onboardMapInstance && onboardMarkerInstance) {
+        onboardMapInstance.setView([lat, lng], 15);
+        onboardMarkerInstance.setLatLng([lat, lng]);
+      }
+    }
+
+    async function searchAddressAndPin() {
+      const addr = document.getElementById('onboard-address-input').value.trim();
+      if (!addr) return;
+      currentStore.address = addr;
+      try {
+        const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(addr));
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          const lat = +parseFloat(data[0].lat).toFixed(4);
+          const lng = +parseFloat(data[0].lon).toFixed(4);
+          quickPickLocation(addr, lat, lng);
+          showToast(`ปักหมุดพิกัดสำหรับ "${addr}" เรียบร้อย`);
+          return;
+        }
+        showToast(`ไม่พบพิกัดของ "${addr}" ลองพิมพ์ให้ละเอียดขึ้น หรือคลิกบนแผนที่เพื่อปักหมุดเอง`);
+      } catch (e) {
+        showToast('ค้นหาพิกัดไม่สำเร็จ (ออฟไลน์?) กรุณาคลิกบนแผนที่เพื่อปักหมุดเอง');
+      }
+    }
+
+    function finishOnboardingAndEnterDashboard() {
+      const name = document.getElementById('onboard-store-name').value.trim();
+      const addr = document.getElementById('onboard-address-input').value.trim();
+      if (name) currentStore.name = name;
+      if (addr) currentStore.address = addr;
+      scheduleCloudSave();
+      document.getElementById('owner-navbar-store-name').textContent = currentStore.name;
+      document.getElementById('dash-store-address-label').textContent = currentStore.address;
+      // mutate in place so viewStore (which references this object) stays in sync
+      Object.assign(visitorStores[0], { name: currentStore.name, address: currentStore.address, lat: currentStore.lat, lng: currentStore.lng });
+      chime();
+      showOnlyView('view-owner');
+      switchTab('dashboard');
+      showToast('บันทึกข้อมูลร้านค้าและพิกัด GPS เรียบร้อยแล้ว');
+    }
+
+    function switchRoleToVisitor() {
+      showOnlyView('view-visitor');
+      document.getElementById('visitor-store-header-title').textContent = viewStore.name;
+      document.getElementById('visitor-store-address-display').textContent = viewStore.address;
+      renderStorefrontPromos();
+      setTimeout(() => {
+        if (typeof L === 'undefined') return;
+        if (!visitorMapInstance) {
+          visitorMapInstance = L.map('visitor-map').setView([viewStore.lat, viewStore.lng], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(visitorMapInstance);
+          visitorMarkerInstance = L.marker([viewStore.lat, viewStore.lng]).addTo(visitorMapInstance).bindPopup(`<b>${esc(viewStore.name)}</b>`).openPopup();
+        } else {
+          visitorMapInstance.setView([viewStore.lat, viewStore.lng], 15);
+          visitorMarkerInstance.setLatLng([viewStore.lat, viewStore.lng]);
+          visitorMarkerInstance.setPopupContent(`<b>${esc(viewStore.name)}</b>`).openPopup();
+          visitorMapInstance.invalidateSize();
+        }
+      }, 150);
+    }
+
+    function onVisitorStoreChange() {
+      const idx = parseInt(document.getElementById('visitor-store-select').value, 10) || 0;
+      viewStore = visitorStores[idx] || visitorStores[0];
+      switchRoleToVisitor();
+    }
+
+    function openGoogleMapsDirections() {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${viewStore.lat},${viewStore.lng}`, '_blank');
+    }
+
+    function switchRoleToOwner() {
+      showOnlyView('view-owner');
+      switchTab(currentTab);
+    }
+
+    // ---------------------------------------------------------------------
+    // 5. NAVIGATION, SIDEBAR, THEME & 3D SPECULAR TILT
+    // ---------------------------------------------------------------------
+    function switchTab(tabName) {
+      currentTab = tabName;
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+      const target = document.getElementById('tab-' + tabName);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const isTarget = btn.getAttribute('data-tab') === tabName;
+        const activeCls = ['font-bold', 'bg-gradient-to-r', 'from-emerald-500', 'to-teal-600', 'text-white', 'shadow-lg', 'shadow-emerald-500/25'];
+        const idleCls = ['font-medium', 'text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-200/60', 'dark:hover:bg-slate-800/70'];
+        btn.classList.remove(...(isTarget ? idleCls : activeCls));
+        btn.classList.add(...(isTarget ? activeCls : idleCls));
+      });
+
+      if (tabName === 'dashboard') renderDashboard();
+      if (tabName === 'scan') renderIngredientsTab();
+      if (tabName === 'product-forecast') renderProductForecastTab();
+      if (tabName === 'expiry') renderExpiryTab();
+      if (tabName === 'costing') renderCostingTab();
+      if (tabName === 'forecast') updateFinancialSimulation();
+      if (tabName === 'accounting') renderAccountingTab();
+
+      toggleMobileSidebar(false);
+      initTilt3D();
+      refreshIcons();
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('leftSidebar');
+      const labels = sidebar.querySelectorAll('.sidebar-label');
+      const isCollapsed = sidebar.classList.contains('w-20');
+      sidebar.classList.toggle('w-20', !isCollapsed);
+      sidebar.classList.toggle('w-72', isCollapsed);
+      labels.forEach(l => l.classList.toggle('hidden', !isCollapsed));
+    }
+
+    function toggleMobileSidebar(open) {
+      const sidebar = document.getElementById('leftSidebar');
+      const backdrop = document.getElementById('mobileSidebarBackdrop');
+      sidebar.classList.toggle('-translate-x-full', !open);
+      backdrop.classList.toggle('hidden', !open);
+    }
+
+    function toggleCopilotPanel() {
+      document.getElementById('copilotPanel').classList.toggle('translate-x-full');
+    }
+
+    function toggleNotificationDrawer() {
+      document.getElementById('notificationDrawer').classList.toggle('translate-x-full');
+      document.getElementById('notifDot').classList.add('hidden');
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      const isDark = html.classList.contains('dark');
+      document.getElementById('themeIcon').setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      refreshIcons();
+    }
+
+    function setTimeframe(tf, btnEl) {
+      currentTimeframe = tf;
+      document.querySelectorAll('.tf-btn').forEach(b => {
+        b.className = 'tf-btn px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white transition';
+      });
+      btnEl.className = 'tf-btn px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-xs text-emerald-600 dark:text-emerald-400 transition';
+      renderDashboard();
+    }
+
+    function initTilt3D() {
+      document.querySelectorAll('.tilt3d').forEach(card => {
+        if (card.dataset.tiltBound) return;
+        card.dataset.tiltBound = 'true';
+        card.addEventListener('mousemove', e => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -5;
+          const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 5;
+          card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.015, 1.015, 1.015)`;
+          card.style.setProperty('--mx', `${x}px`);
+          card.style.setProperty('--my', `${y}px`);
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+      });
+    }
+
+    // ---------------------------------------------------------------------
+    // 6. GLOBAL SEARCH (Menus, Ingredients, Notes, Ledger)
+    // ---------------------------------------------------------------------
+    function handleGlobalSearch(query) {
+      const dropdown = document.getElementById('globalSearchDropdown');
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+      const results = [];
+      ingredients.forEach(ing => {
+        if (ing.name.toLowerCase().includes(q) || ing.category.toLowerCase().includes(q)) {
+          results.push({ badge: 'วัตถุดิบ', title: `${esc(ing.name)} (${ing.qty} ${esc(ing.unit)})`, sub: `หมดอายุใน ${ing.shelfLife} วัน • ฿${ing.cost}`, action: () => switchTab('product-forecast') });
+        }
+      });
+      menuRecipes.forEach(rec => {
+        if (rec.name.toLowerCase().includes(q)) {
+          results.push({ badge: 'เมนูอาหาร', title: `${esc(rec.name)} (฿${rec.price})`, sub: `ต้นทุน ฿${rec.cost} • ขายเฉลี่ย ${rec.baseDailyVelocity} จาน/วัน`, action: () => switchTab('product-forecast') });
+        }
+      });
+      notes.forEach(n => {
+        if (n.text.toLowerCase().includes(q)) {
+          results.push({ badge: 'โน้ตร้าน', title: esc(n.text), sub: n.time, action: () => switchTab('dashboard') });
+        }
+      });
+
+      if (results.length === 0) {
+        dropdown.innerHTML = `<div class="p-3 text-xs text-slate-500 text-center">ไม่พบข้อมูลที่ตรงกับ "${esc(query)}"</div>`;
+        window._globalSearchActions = [];
+      } else {
+        dropdown.innerHTML = results.map((r, idx) => `
+          <button onclick="selectGlobalSearchResult(${idx})" class="w-full text-left p-2.5 rounded-xl hover:bg-emerald-500/10 transition flex items-center justify-between gap-2">
+            <div><div class="text-xs font-extrabold">${r.title}</div><div class="text-[11px] text-slate-500">${r.sub}</div></div>
+            <span class="px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-[10px] font-bold">${r.badge}</span>
+          </button>
+        `).join('');
+        window._globalSearchActions = results.map(r => r.action);
+      }
+      dropdown.classList.remove('hidden');
+    }
+
+    function selectGlobalSearchResult(idx) {
+      document.getElementById('globalSearchDropdown').classList.add('hidden');
+      document.getElementById('globalSearchInput').value = '';
+      if (window._globalSearchActions && window._globalSearchActions[idx]) window._globalSearchActions[idx]();
+    }
+
+    // ---------------------------------------------------------------------
+    // 7. DASHBOARD RENDER (Extruded 3D Isometric Bars + Notes)
+    // ---------------------------------------------------------------------
+    function renderDashboard() {
+      const multiplierMap = { today: 1, '7d': 6.8, month: 28.5, quarter: 84 };
+      const labelMap = { today: 'วันนี้', '7d': '7 วันล่าสุด', month: 'เดือนนี้', quarter: 'ไตรมาสนี้' };
+      const mult = multiplierMap[currentTimeframe] || 1;
+
+      const rev = Math.round(18450 * mult);
+      const exp = Math.round(7820 * mult);
+      const profit = rev - exp;
+      const margin = ((profit / rev) * 100).toFixed(1);
+      const atRiskValue = ingredients.filter(i => i.shelfLife <= 2).reduce((sum, i) => sum + i.cost, 0);
+
+      document.querySelectorAll('.tf-label').forEach(el => el.textContent = labelMap[currentTimeframe]);
+      document.getElementById('kpiRevenue').textContent = '฿' + rev.toLocaleString();
+      document.getElementById('kpiExpense').textContent = '฿' + exp.toLocaleString();
+      document.getElementById('kpiProfit').textContent = '฿' + profit.toLocaleString();
+      document.getElementById('kpiMargin').textContent = margin + '%';
+      document.getElementById('kpiAtRiskStock').textContent = '฿' + atRiskValue.toLocaleString();
+
+      // Isometric 3D Extruded Bars (#bars3d)
+      const days = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
+      const series = [
+        { rev: 14200, exp: 6100 },
+        { rev: 15800, exp: 6500 },
+        { rev: 15100, exp: 6300 },
+        { rev: 17400, exp: 7200 },
+        { rev: 21500, exp: 8400 },
+        { rev: 24800, exp: 9600 },
+        { rev: 18450, exp: 7820 }
+      ];
+      const maxVal = 26000;
+      const container = document.getElementById('bars3d');
+      const labelsEl = document.getElementById('barChartLabels');
+
+      container.innerHTML = series.map((d, idx) => {
+        const p = d.rev - d.exp;
+        const hRev = Math.round((d.rev / maxVal) * 100);
+        const hExp = Math.round((d.exp / maxVal) * 100);
+        const hProf = Math.round((p / maxVal) * 100);
+        return `
+          <div
+            onmouseenter="showBarTooltip('${days[idx]}', ${d.rev}, ${d.exp}, ${p})"
+            onmouseleave="hideBarTooltip()"
+            class="flex-1 h-full flex items-end justify-center gap-1.5 cursor-pointer group"
+          >
+            <div class="iso-bar w-3 sm:w-4 bg-gradient-to-t from-emerald-600 via-emerald-500 to-emerald-300" style="height: ${hRev}%"></div>
+            <div class="iso-bar w-3 sm:w-4 bg-gradient-to-t from-rose-600 via-rose-500 to-rose-300" style="height: ${hExp}%"></div>
+            <div class="iso-bar w-3 sm:w-4 bg-gradient-to-t from-indigo-600 via-indigo-500 to-indigo-300" style="height: ${hProf}%"></div>
+          </div>
+        `;
+      }).join('');
+      labelsEl.innerHTML = days.map(day => `<span class="flex-1 text-center">${day}</span>`).join('');
+
+      document.getElementById('dashboardRecentTx').innerHTML = transactions.slice(0, 4).map(tx => `
+        <div class="py-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl ${tx.type === 'income' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-rose-500/15 text-rose-500'} flex items-center justify-center shadow-xs">
+              <i data-lucide="${tx.type === 'income' ? 'arrow-down-left' : 'arrow-up-right'}" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="text-xs sm:text-sm font-bold">${esc(tx.desc)}</div>
+              <div class="text-[11px] text-slate-400">${tx.date} • ${esc(tx.category)}</div>
+            </div>
+          </div>
+          <div class="text-xs sm:text-sm font-extrabold ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}">
+            ${tx.type === 'income' ? '+' : '-'}฿${tx.amount.toLocaleString()}
+          </div>
+        </div>
+      `).join('');
+
+      renderNotesList();
+    }
+
+    function renderNotesList() {
+      const list = document.getElementById('note-list');
+      if (!list) return;
+      list.innerHTML = notes.map(n => `
+        <div class="p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/70 flex items-center justify-between gap-2 text-xs">
+          <div><span class="font-semibold">${esc(n.text)}</span> <span class="text-[10px] text-slate-400">(${n.time})</span></div>
+          <button onclick="deleteNote(${n.id})" class="text-slate-400 hover:text-rose-500"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+        </div>
+      `).join('');
+      refreshIcons();
+    }
+
+    function addNote() {
+      const inp = document.getElementById('note-body');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      notes.unshift({ id: Date.now(), text: txt, time: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.' });
+      scheduleCloudSave();
+      inp.value = '';
+      renderNotesList();
+      chime();
+      showToast('เพิ่มบันทึกช่วยจำร้านค้าเรียบร้อย');
+    }
+
+    function deleteNote(id) {
+      notes = notes.filter(n => n.id !== id);
+      scheduleCloudSave();
+      renderNotesList();
+    }
+
+    function showBarTooltip(day, rev, exp, prof) {
+      const tooltip = document.getElementById('barChartTooltip');
+      tooltip.innerHTML = `
+        <div class="font-extrabold mb-1 text-emerald-500">วัน${day} (3D Isometric)</div>
+        <div>รายรับ: <strong>฿${rev.toLocaleString()}</strong></div>
+        <div>รายจ่าย: <strong class="text-rose-500">฿${exp.toLocaleString()}</strong></div>
+        <div class="border-t border-slate-200 dark:border-slate-700 mt-1 pt-1 font-extrabold text-indigo-500">กำไรสุทธิ: ฿${prof.toLocaleString()}</div>
+      `;
+      tooltip.classList.remove('hidden');
+    }
+    function hideBarTooltip() { document.getElementById('barChartTooltip').classList.add('hidden'); }
+
+    // ---------------------------------------------------------------------
+    // 8. SMART INTAKE (#tab-scan) & COMBINED AI CALCULATION
+    // ---------------------------------------------------------------------
+    function renderIngredientsTab() {
+      const tbody = document.getElementById('ingredient-tbody');
+      const totalCost = ingredients.reduce((s, i) => s + Number(i.cost), 0);
+      document.getElementById('ingredientCountBadge').textContent = ingredients.length;
+      document.getElementById('intake-total-price').textContent = '฿' + totalCost.toLocaleString();
+
+      tbody.innerHTML = ingredients.map(ing => {
+        const urgent = ing.shelfLife <= 2;
+        return `
+          <tr class="hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition">
+            <td class="py-3 px-3.5 font-extrabold">${esc(ing.name)}<div class="text-[10px] text-slate-400 font-normal">${esc(ing.category)}</div></td>
+            <td class="py-3 px-3.5 font-bold">${ing.qty} ${esc(ing.unit)}</td>
+            <td class="py-3 px-3.5">
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${urgent ? 'bg-rose-500/15 text-rose-500' : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'}">
+                ${ing.shelfLife} วัน
+              </span>
+            </td>
+            <td class="py-3 px-3.5 text-right font-extrabold">฿${Number(ing.cost).toLocaleString()}</td>
+            <td class="py-3 px-3.5 text-center">
+              <button onclick="deleteIngredient(${ing.id})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      refreshIcons();
+    }
+
+    function addManualIngredient(e) {
+      if (e) e.preventDefault();
+      const name = document.getElementById('manual-name').value.trim();
+      const qtyRaw = document.getElementById('manual-qty').value.trim();
+      const cost = parseFloat(document.getElementById('manual-price').value);
+      if (!name) { showToast('กรุณากรอกชื่อวัตถุดิบ'); return; }
+      if (!Number.isFinite(cost) || cost <= 0) { showToast('กรุณากรอกต้นทุนเป็นตัวเลขมากกว่า 0'); return; }
+      const shelfLife = parseInt(document.getElementById('ingShelfLife').value, 10) || 3;
+      const category = document.getElementById('ingCategory').value;
+
+      const match = qtyRaw.match(/^([\d.,]+)\s*(.*)$/);
+      const qtyParsed = match ? parseFloat(match[1].replace(/,/g, '')) : NaN;
+      const qty = Number.isFinite(qtyParsed) && qtyParsed > 0 ? qtyParsed : 1;
+      const unit = (match && match[2]) ? match[2] : 'กก.';
+
+      const existing = ingredients.find(i => i.name === name);
+      if (existing) {
+        existing.qty = +(existing.qty + qty).toFixed(2);
+        existing.cost += cost;
+        existing.shelfLife = Math.min(existing.shelfLife, shelfLife);
+      } else {
+        ingredients.unshift({
+          id: Date.now(),
+          name,
+          qty,
+          unit,
+          cost,
+          shelfLife,
+          category,
+          dailyUsage: +(qty * 0.35).toFixed(1),
+          rop: +(qty * 0.4).toFixed(1)
+        });
+      }
+
+      transactions.unshift({
+        id: newId('TX-'),
+        date: new Date().toISOString().slice(0, 10),
+        desc: `นำเข้าวัตถุดิบ: ${name} (${qty} ${unit})`,
+        category: 'ต้นทุนวัตถุดิบ',
+        type: 'expense',
+        amount: cost
+      });
+      scheduleCloudSave();
+
+      if (e && e.target) e.target.reset();
+      document.getElementById('ingShelfLife').value = 3;
+      renderIngredientsTab();
+      updateSidebarExpiryBadge();
+      chime();
+      showToast(`เพิ่ม ${name} (${qty} ${unit}) เข้าคลังและลงบัญชีเรียบร้อย`);
+    }
+
+    function deleteIngredient(id) {
+      ingredients = ingredients.filter(i => i.id !== id);
+      scheduleCloudSave();
+      renderIngredientsTab();
+      updateSidebarExpiryBadge();
+    }
+
+    function simulateScanReceipt() {
+      const sampleItems = [
+        { name: 'เนื้ออกไก่สด', qty: 10, unit: 'กก.', cost: 800, shelfLife: 2, category: 'เนื้อสัตว์', dailyUsage: 6.5, rop: 8 },
+        { name: 'ใบกะเพราสด', qty: 3, unit: 'กก.', cost: 180, shelfLife: 2, category: 'ผักสด', dailyUsage: 1.4, rop: 2 }
+      ];
+      sampleItems.forEach(item => {
+        const found = ingredients.find(i => i.name === item.name);
+        if (found) {
+          found.qty += item.qty;
+          found.cost += item.cost;
+        } else {
+          ingredients.unshift({ id: Date.now() + Math.floor(Math.random() * 1000), ...item });
+        }
+      });
+      scheduleCloudSave();
+      renderIngredientsTab();
+      updateSidebarExpiryBadge();
+      chime();
+      showToast('AI 3D Vision สแกนใบเสร็จสำเร็จ: นำเข้าเนื้ออกไก่สด +10 กก. และใบกะเพราสด +3 กก.');
+    }
+
+    function runCombinedAICalculation() {
+      chime();
+      celebrate();
+      document.getElementById('forecastLastSyncBadge').textContent = 'อัปเดตล่าสุดเมื่อสักครู่ (' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ')';
+      switchTab('product-forecast');
+      showToast(`AI คำนวณกำลังผลิตและแผนระบายสต็อกเสร็จสิ้น! วิเคราะห์วัตถุดิบ ${ingredients.length} รายการ`);
+    }
+
+    // ---------------------------------------------------------------------
+    // 9. PRODUCT & STOCK CLEARANCE FORECAST (3D Cylindrical Meters)
+    // ---------------------------------------------------------------------
+    function setForecastScenario(scenario, btnEl) {
+      forecastScenario = scenario;
+      document.querySelectorAll('.scenario-btn').forEach(btn => {
+        btn.className = 'scenario-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/15 transition';
+      });
+      btnEl.className = 'scenario-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md transition';
+      renderProductForecastTab();
+    }
+
+    function renderProductForecastTab() {
+      const velocityMultiplier = forecastScenario === 'rainy' ? 0.75 : forecastScenario === 'weekend' ? 1.35 : 1.0;
+      const scenarioLabel = forecastScenario === 'rainy' ? 'ฝนตกช่วงบ่าย (-25%)' : forecastScenario === 'weekend' ? 'วันหยุดสุดสัปดาห์ (+35%)' : 'แดดจัดปกติ (1.0x)';
+
+      let totalPortions = 0;
+      let totalProjectedRevenue = 0;
+      let overstockItemsCount = 0;
+
+      const menuForecasts = menuRecipes.map(recipe => {
+        let maxPortions = Infinity;
+        let limitingIng = null;
+        let minShelfLife = 99;
+
+        recipe.bom.forEach(req => {
+          const stock = ingredients.find(i => i.name.includes(req.ingredientName) || req.ingredientName.includes(i.name));
+          if (!stock) {
+            maxPortions = 0;
+            limitingIng = req.ingredientName;
+            minShelfLife = 1;
+          } else {
+            const possible = Math.floor(stock.qty / req.perPortion);
+            if (possible < maxPortions) {
+              maxPortions = possible;
+              limitingIng = stock.name;
+            }
+            if (stock.shelfLife < minShelfLife) minShelfLife = stock.shelfLife;
+          }
+        });
+
+        if (maxPortions === Infinity) maxPortions = 0;
+        const adjustedVelocity = Math.max(1, Math.round(recipe.baseDailyVelocity * velocityMultiplier));
+        const daysToDeplete = +(maxPortions / adjustedVelocity).toFixed(1);
+        const expectedSoldBeforeExpiry = Math.min(maxPortions, Math.round(adjustedVelocity * minShelfLife));
+        const leftoverRiskPortions = Math.max(0, maxPortions - expectedSoldBeforeExpiry);
+
+        totalPortions += maxPortions;
+        totalProjectedRevenue += maxPortions * recipe.price;
+
+        let statusType = 'optimal';
+        let statusText = 'ขายหมดพอดีรอบสต็อก';
+        if (maxPortions < adjustedVelocity * 1.2) {
+          statusType = 'shortage';
+          statusText = 'สต็อกต่ำ เสี่ยงขาดแคลน';
+        } else if (leftoverRiskPortions > 8 || daysToDeplete > minShelfLife) {
+          statusType = 'overstock';
+          statusText = `สต็อกล้น เสี่ยงเหลือ ${leftoverRiskPortions} จาน`;
+          overstockItemsCount++;
+        }
+
+        return { ...recipe, maxPortions, limitingIng, minShelfLife, adjustedVelocity, daysToDeplete, leftoverRiskPortions, statusType, statusText };
+      });
+
+      document.getElementById('pfTotalPortions').textContent = totalPortions.toLocaleString() + ' จาน/แก้ว';
+      document.getElementById('pfScenarioNote').textContent = `สภาวะ: ${scenarioLabel}`;
+      document.getElementById('pfProjectedRevenue').textContent = '฿' + totalProjectedRevenue.toLocaleString();
+      document.getElementById('pfOverstockCount').textContent = overstockItemsCount + ' รายการ';
+      document.getElementById('pfWasteReduction').textContent = forecastScenario === 'rainy' ? '91.8%' : '96.4%';
+
+      // Part A: 3D Cylindrical Capacity Bars
+      document.getElementById('productForecastCards').innerHTML = menuForecasts.map(mf => {
+        const badgeStyles = {
+          optimal: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30',
+          overstock: 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30',
+          shortage: 'bg-rose-500/15 text-rose-500 border-rose-500/30'
+        };
+        const liquidGrad = mf.statusType === 'overstock'
+          ? 'bg-gradient-to-r from-amber-500 via-orange-400 to-yellow-300'
+          : mf.statusType === 'shortage'
+          ? 'bg-gradient-to-r from-rose-600 via-rose-500 to-pink-400'
+          : 'bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-400';
+
+        const sellThroughPct = mf.maxPortions > 0 ? Math.min(100, Math.round(((mf.maxPortions - mf.leftoverRiskPortions) / mf.maxPortions) * 100)) : 0;
+
+        return `
+          <div class="p-4 rounded-2xl bg-slate-100/75 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div class="font-extrabold text-sm sm:text-base">${esc(mf.name)}</div>
+                <div class="text-[11px] text-slate-500 dark:text-slate-400">
+                  วัตถุดิบหลัก: ${esc(mf.limitingIng || '-')} (อายุเหลือ ${mf.minShelfLife} วัน) • อัตราขาย ${mf.adjustedVelocity} จาน/วัน
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-xl border text-[11px] font-extrabold ${badgeStyles[mf.statusType]}">
+                ${mf.statusText}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 pt-1 text-xs">
+              <div class="p-2.5 rounded-xl bg-white/85 dark:bg-slate-900/70 shadow-2xs">
+                <span class="text-[10px] text-slate-400 block">ผลิตได้สูงสุด</span>
+                <strong class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">${mf.maxPortions} จาน</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/85 dark:bg-slate-900/70 shadow-2xs">
+                <span class="text-[10px] text-slate-400 block">คาดขายหมดใน</span>
+                <strong class="text-sm font-extrabold">${mf.daysToDeplete} วัน</strong>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/85 dark:bg-slate-900/70 shadow-2xs">
+                <span class="text-[10px] text-slate-400 block">คาดเหลือค้าง</span>
+                <strong class="text-sm font-extrabold ${mf.leftoverRiskPortions > 0 ? 'text-amber-500' : 'text-slate-500'}">${mf.leftoverRiskPortions} จาน</strong>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-[11px] font-extrabold">
+                <span>หลอดความจุ 3 มิติ: อัตราการระบายสต็อกทันเวลา</span>
+                <span>${sellThroughPct}%</span>
+              </div>
+              <div class="cylinder-3d h-3.5">
+                <div class="cylinder-liquid ${liquidGrad}" style="width: ${sellThroughPct}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Part B: AI Clearance Optimizer
+      const clearanceDeals = [
+        {
+          id: 'deal-combo-chicken-latte',
+          title: 'เซ็ตคู่หู Zero-Waste: กะเพราอกไก่ไข่ดาว + ลาเต้เย็น',
+          reason: 'เร่งระบาย "เนื้ออกไก่สด" และ "นมสดพาสเจอร์ไรส์" ที่เหลืออายุ 2 วันพร้อมกัน',
+          originalPrice: 134,
+          promoPrice: 99,
+          netProfit: 55.5,
+          wasteReduction: '96%',
+          targetPortions: 35
+        },
+        {
+          id: 'deal-flash-chicken-pop',
+          title: 'Flash Deal บ่ายนี้: ไก่ป๊อปสมุนไพรกรอบ ซื้อ 1 แถม 1',
+          reason: forecastScenario === 'rainy'
+            ? 'ชดเชยยอดหน้าร้านช่วงฝนตก ด้วยโปรเดลิเวอรีดึงดูดออเดอร์กลุ่ม'
+            : 'ลดปริมาณอกไก่ส่วนเกินก่อนรอบส่งของใหม่วันพรุ่งนี้',
+          originalPrice: 118,
+          promoPrice: 79,
+          netProfit: 37.0,
+          wasteReduction: '92%',
+          targetPortions: 25
+        }
+      ];
+
+      window._clearanceDeals = clearanceDeals;
+      document.getElementById('aiClearanceDealsContainer').innerHTML = clearanceDeals.map((deal, dealIdx) => {
+        const isActivated = activePromotions.some(p => p.id === deal.id);
+        return `
+          <div class="p-4 rounded-2xl bg-white/90 dark:bg-slate-900/85 border border-amber-500/35 shadow-md space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <h4 class="font-extrabold text-sm leading-snug">${deal.title}</h4>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-[10px] font-extrabold shrink-0">
+                ลดขยะ ${deal.wasteReduction}
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">${deal.reason}</p>
+
+            <div class="grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 text-xs">
+              <div>
+                <span class="text-[10px] text-slate-400 block">ราคาโปรโมชัน</span>
+                <span class="line-through text-slate-400 text-[11px]">฿${deal.originalPrice}</span>
+                <strong class="text-amber-600 dark:text-amber-400 font-extrabold ml-1">฿${deal.promoPrice}</strong>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block">กำไรสุทธิ/เซ็ต</span>
+                <strong class="text-emerald-600 dark:text-emerald-400 font-extrabold">+฿${deal.netProfit.toFixed(1)}</strong>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-400 block">เป้าหมายระบาย</span>
+                <strong class="font-extrabold">${deal.targetPortions} เซ็ต</strong>
+              </div>
+            </div>
+
+            <button
+              onclick="activateClearanceFromList(${dealIdx})"
+              class="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg ${
+                isActivated
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:scale-[1.01] text-white shadow-amber-500/30'
+              }"
+            >
+              <i data-lucide="${isActivated ? 'check-circle' : 'flame'}" class="w-4 h-4"></i>
+              <span>${isActivated ? 'เปิดแคมเปญและส่ง LINE เรียบร้อยแล้ว' : 'เปิดใช้แคมเปญระบายสต็อกทันที'}</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      // Part C: 7-Day 3D Timeline
+      document.getElementById('ropTimelineContainer').innerHTML = ingredients.slice(0, 4).map(ing => {
+        const adjUsage = +(ing.dailyUsage * velocityMultiplier).toFixed(1);
+        const daysLeft = +(ing.qty / Math.max(0.1, adjUsage)).toFixed(1);
+        const isCritical = daysLeft <= 2.2 || ing.qty <= ing.rop;
+
+        const dayBars = Array.from({ length: 7 }, (_, d) => {
+          const rem = Math.max(0, ing.qty - adjUsage * d);
+          const h = Math.min(100, Math.round((rem / Math.max(1, ing.qty)) * 100));
+          const col = rem <= ing.rop ? 'bg-gradient-to-t from-rose-600 to-rose-400' : 'bg-gradient-to-t from-blue-600 to-cyan-400';
+          return `<div class="flex-1 flex flex-col items-center gap-1">
+            <div class="w-full h-14 bg-slate-200/80 dark:bg-slate-700/70 rounded-lg flex items-end overflow-hidden shadow-inner">
+              <div class="w-full ${col} rounded-t-md transition-all" style="height:${h}%"></div>
+            </div>
+            <span class="text-[9px] font-bold text-slate-400">D${d + 1}</span>
+          </div>`;
+        }).join('');
+
+        return `
+          <div class="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/70 border ${isCritical ? 'border-rose-500/45' : 'border-slate-200/80 dark:border-slate-700'} space-y-3 flex flex-col justify-between">
+            <div class="space-y-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-extrabold text-sm">${esc(ing.name)}</span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold ${isCritical ? 'bg-rose-500 text-white shadow' : 'bg-blue-500/15 text-blue-600 dark:text-blue-300'}">
+                  ${isCritical ? 'ถึงจุดสั่งซื้อ (ROP)' : 'สต็อกปลอดภัย'}
+                </span>
+              </div>
+              <div class="text-xs text-slate-500 dark:text-slate-400">
+                คงเหลือ <strong>${ing.qty} ${esc(ing.unit)}</strong> • จุด ROP: ${ing.rop} ${esc(ing.unit)} (พอใช้ ${daysLeft} วัน)
+              </div>
+            </div>
+            <div class="flex items-end gap-1.5 pt-1">${dayBars}</div>
+            <button onclick="createSingleAutoPO(${ing.id}, ${Math.ceil(ing.rop * 1.5)})" class="w-full py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-blue-600 hover:text-white border border-slate-200 dark:border-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5">
+              <i data-lucide="file-plus" class="w-3.5 h-3.5"></i> สร้างใบสั่งซื้อ +${Math.ceil(ing.rop * 1.5)} ${esc(ing.unit)}
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      refreshIcons();
+    }
+
+    function activateClearanceCampaign(id, title, originalPrice, promoPrice, netProfit, wasteReduction) {
+      if (!activePromotions.some(p => p.id === id)) {
+        activePromotions.unshift({ id, title, originalPrice, promoPrice, netProfit, wasteReduction, tag: 'AI Flash Clearance 3D', active: true });
+        scheduleCloudSave();
+      }
+      sendLine(`🔥 เปิดแคมเปญระบายสต็อก AI: "${title}" ราคาพิเศษ ฿${promoPrice} (จาก ฿${originalPrice}) กำไรสุทธิ +฿${netProfit}/เซ็ต ลดขยะอาหาร ${wasteReduction}`);
+      chime();
+      celebrate();
+      renderProductForecastTab();
+      renderStorefrontPromos();
+    }
+
+    function activateClearanceFromList(idx) {
+      const d = (window._clearanceDeals || [])[idx];
+      if (!d) return;
+      activateClearanceCampaign(d.id, d.title, d.originalPrice, d.promoPrice, d.netProfit, d.wasteReduction);
+    }
+
+    function promoOn(title) {
+      activateClearanceCampaign('promo-' + Date.now(), title, 129, 89, 48, '94%');
+    }
+
+    function createSingleAutoPO(ingId, orderQty) {
+      const ing = ingredients.find(i => i.id === ingId);
+      if (!ing) return;
+      const name = ing.name, unit = ing.unit;
+      chime();
+      sendLine(`📦 ออกใบสั่งซื้ออัตโนมัติ (Auto-PO): ${name} จำนวน ${orderQty} ${unit} ส่งไปยังซัพพลายเออร์เรียบร้อย`);
+    }
+
+    function createAllAutoPOs() {
+      chime();
+      celebrate();
+      sendLine(`📦 ออกใบสั่งซื้ออัตโนมัติ (Batch Auto-PO) สำหรับวัตถุดิบที่ต่ำกว่าจุด Reorder Point ทุกรายการเรียบร้อยแล้ว`);
+    }
+
+    // ---------------------------------------------------------------------
+    // 10. EXPIRY & FLASH PROMOTIONS TAB
+    // ---------------------------------------------------------------------
+    function updateSidebarExpiryBadge() {
+      const urgentCount = ingredients.filter(i => i.shelfLife <= 2).length;
+      const badge = document.getElementById('sidebarExpiryBadge');
+      if (badge) badge.textContent = urgentCount;
+    }
+
+    function renderExpiryTab() {
+      const filterVal = document.getElementById('expiryFilterSelect').value;
+      const sortVal = document.getElementById('expirySortSelect').value;
+      let list = [...ingredients];
+      if (filterVal === 'urgent') list = list.filter(i => i.shelfLife <= 2);
+      if (filterVal === 'warning') list = list.filter(i => i.shelfLife >= 3 && i.shelfLife <= 4);
+      if (filterVal === 'fresh') list = list.filter(i => i.shelfLife > 4);
+      if (sortVal === 'daysAsc') list.sort((a, b) => a.shelfLife - b.shelfLife);
+      if (sortVal === 'costDesc') list.sort((a, b) => b.cost - a.cost);
+
+      document.getElementById('expiryListGrid').innerHTML = list.map(item => {
+        const isUrgent = item.shelfLife <= 2;
+        const badgeClass = isUrgent ? 'bg-rose-500 text-white shadow' : item.shelfLife <= 4 ? 'bg-amber-500 text-white shadow' : 'bg-emerald-500 text-white shadow';
+        return `
+          <div class="bento-card tilt3d p-5 space-y-3">
+            <div class="glare-overlay"></div>
+            <div class="flex items-start justify-between gap-2 z-layer-1">
+              <div>
+                <h4 class="font-extrabold text-base">${esc(item.name)}</h4>
+                <p class="text-xs text-slate-500">หมวด${esc(item.category)} • คงเหลือ ${item.qty} ${esc(item.unit)}</p>
+              </div>
+              <span class="z-layer-2 px-2.5 py-1 rounded-xl text-[11px] font-extrabold ${badgeClass}">เหลือ ${item.shelfLife} วัน</span>
+            </div>
+            <div class="z-layer-1 flex items-center justify-between text-xs pt-2 border-t border-slate-200/70 dark:border-slate-800">
+              <span class="text-slate-500">มูลค่าสต็อก: <strong class="text-slate-900 dark:text-white">฿${item.cost.toLocaleString()}</strong></span>
+              <button onclick="switchTab('product-forecast')" class="font-extrabold text-amber-600 dark:text-amber-400 hover:underline">ให้ AI จัดโปรระบาย →</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('activePromotionsList').innerHTML = activePromotions.map(p => `
+        <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3">
+          <div>
+            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-500 text-white">${esc(p.tag)}</span>
+            <h4 class="font-extrabold text-sm mt-1">${esc(p.title)}</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-300">ราคาโปร ฿${p.promoPrice} (ปกติ ฿${p.originalPrice}) • กำไร +฿${p.netProfit}</p>
+          </div>
+          <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">Active</span>
+        </div>
+      `).join('');
+      initTilt3D();
+    }
+
+    // ---------------------------------------------------------------------
+    // 11. MENU COSTING TAB (#applySuggestedPrice)
+    // ---------------------------------------------------------------------
+    function applySuggestedPrice() {
+      document.getElementById('table-price-kaprao').textContent = '฿75';
+      document.getElementById('table-profit-kaprao').textContent = '+฿50.5';
+      document.getElementById('table-margin-kaprao').textContent = '67.3%';
+      document.getElementById('bar-margin-kaprao').style.width = '67.3%';
+      document.getElementById('table-badge-kaprao').textContent = 'ใช้ราคา AI แล้ว ✨';
+      menuRecipes[0].price = 75;
+      scheduleCloudSave();
+      renderCostingTab();
+      chime();
+      celebrate();
+      showToast('ปรับราคาขายข้าวกะเพราอกไก่ไข่ดาวเป็น ฿75 ตามคำแนะนำ AI สำเร็จ!');
+    }
+
+    function renderCostingTab() {
+      document.getElementById('menuCostingGrid').innerHTML = menuRecipes.map(rec => {
+        const foodCostPct = rec.price > 0 ? ((rec.cost / rec.price) * 100).toFixed(1) : '0.0';
+        const grossProfit = (rec.price - rec.cost).toFixed(1);
+        const deliveryNet = (rec.price * 0.70 - rec.cost).toFixed(1);
+        return `
+          <div class="bento-card tilt3d p-5 space-y-3">
+            <div class="glare-overlay"></div>
+            <div class="flex items-start justify-between gap-2 z-layer-1">
+              <div>
+                <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400">${esc(rec.category)}</span>
+                <h3 class="font-extrabold text-base">${esc(rec.name)}</h3>
+              </div>
+              <div class="text-right z-layer-2">
+                <span class="text-xs text-slate-400 block">ราคาขาย</span>
+                <span class="text-xl font-extrabold">฿${rec.price}</span>
+              </div>
+            </div>
+            <div class="z-layer-1 grid grid-cols-3 gap-2 p-2.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 text-xs">
+              <div><span class="text-[10px] text-slate-400 block">ต้นทุนจาน</span><strong>฿${rec.cost}</strong></div>
+              <div><span class="text-[10px] text-slate-400 block">Food Cost</span><strong class="${foodCostPct <= 35 ? 'text-emerald-500' : 'text-amber-500'}">${foodCostPct}%</strong></div>
+              <div><span class="text-[10px] text-slate-400 block">กำไรหน้าร้าน</span><strong class="text-emerald-600 dark:text-emerald-400">+฿${grossProfit}</strong></div>
+            </div>
+            <div class="z-layer-1 text-[11px] text-slate-500 dark:text-slate-400 flex justify-between">
+              <span>กำไรสุทธิหลังหัก GP เดลิเวอรี (30%):</span>
+              <strong class="text-blue-500">+฿${deliveryNet}/จาน</strong>
+            </div>
+          </div>
+        `;
+      }).join('');
+      initTilt3D();
+    }
+
+    function openAddRecipeModal() {
+      const m = document.getElementById('addRecipeModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+    function closeAddRecipeModal() {
+      const m = document.getElementById('addRecipeModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+    function saveNewRecipe(e) {
+      e.preventDefault();
+      const name = document.getElementById('recName').value.trim();
+      const cost = parseFloat(document.getElementById('recCost').value);
+      const price = parseFloat(document.getElementById('recPrice').value);
+      const ingText = document.getElementById('recIngs').value.split(',')[0].trim();
+      if (!name || !Number.isFinite(cost) || !Number.isFinite(price) || cost < 0 || price <= 0) {
+        showToast('กรุณากรอกชื่อเมนู ต้นทุน และราคาขายให้ถูกต้อง (ราคาขายต้องมากกว่า 0)');
+        return;
+      }
+      menuRecipes.unshift({ id: 'm-' + Date.now(), name, price, cost, baseDailyVelocity: 25, category: 'เมนูใหม่', bom: [{ ingredientName: ingText || 'เนื้ออกไก่สด', perPortion: 0.15 }] });
+      scheduleCloudSave();
+      closeAddRecipeModal();
+      e.target.reset();
+      renderCostingTab();
+      chime();
+      showToast(`บันทึกสูตรเมนู "${name}" และเชื่อมกับระบบพยากรณ์สินค้าแล้ว`);
+    }
+
+    // ---------------------------------------------------------------------
+    // 12. FINANCIAL FORECAST & WHAT-IF SIMULATOR (Glowing SVG Area Curve)
+    // ---------------------------------------------------------------------
+    function updateFinancialSimulation() {
+      const avgPrice = parseInt(document.getElementById('simPriceRange').value, 10);
+      const foodCostPct = parseInt(document.getElementById('simCostRange').value, 10);
+      const dailyTraffic = parseInt(document.getElementById('simTrafficRange').value, 10);
+
+      document.getElementById('simPriceVal').textContent = '฿' + avgPrice;
+      document.getElementById('simCostVal').textContent = foodCostPct + '%';
+      document.getElementById('simTrafficVal').textContent = dailyTraffic + ' บิล/วัน';
+
+      const fixedCost = 95000;
+      const monthlyRev = avgPrice * dailyTraffic * 30;
+      const variableCost = Math.round(monthlyRev * (foodCostPct / 100));
+      const totalCost = fixedCost + variableCost;
+      const netProfit = monthlyRev - totalCost;
+
+      const contributionPerBill = avgPrice * (1 - foodCostPct / 100);
+      const breakEvenBills = contributionPerBill > 0 ? Math.ceil(fixedCost / contributionPerBill) : 0;
+      const breakEvenPerDay = Math.ceil(breakEvenBills / 30);
+
+      document.getElementById('sim30dRev').textContent = '฿' + monthlyRev.toLocaleString();
+      document.getElementById('sim30dCost').textContent = '฿' + totalCost.toLocaleString();
+      document.getElementById('sim30dProfit').textContent = (netProfit >= 0 ? '฿' : '-฿') + Math.abs(netProfit).toLocaleString();
+      document.getElementById('simBreakEven').textContent = `${breakEvenBills.toLocaleString()} บิล/เดือน (${breakEvenPerDay} บิล/วัน)`;
+
+      const cashReserve = 420000;
+      const tubeEl = document.getElementById('simRunwayTube');
+      if (netProfit >= 0) {
+        document.getElementById('simRunway').textContent = 'กำไรเป็นบวก (+฿' + netProfit.toLocaleString() + '/ด.)';
+        if (tubeEl) tubeEl.style.width = '94%';
+      } else {
+        const monthsLeft = (cashReserve / Math.abs(netProfit)).toFixed(1);
+        document.getElementById('simRunway').textContent = `อยู่ได้ ${monthsLeft} เดือน`;
+        if (tubeEl) tubeEl.style.width = Math.min(85, Math.max(15, monthsLeft * 8)) + '%';
+      }
+
+      // Render Glowing SVG Area & Break-Even Curve
+      const svg = document.getElementById('simAreaSvg');
+      if (svg) {
+        const startY = 95;
+        const endY = netProfit >= 0 ? Math.max(16, 85 - (netProfit / 450000) * 65) : 112;
+        const midY = (startY + endY) / 2 - 8;
+        const strokeCol = netProfit >= 0 ? '#10b981' : '#f43f5e';
+        svg.innerHTML = `
+          <defs>
+            <linearGradient id="simCurveGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${strokeCol}" stop-opacity="0.45" />
+              <stop offset="100%" stop-color="${strokeCol}" stop-opacity="0.0" />
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="88" x2="400" y2="88" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1" />
+          <text x="6" y="83" fill="#94a3b8" font-size="9" font-weight="bold">เส้นจุดคุ้มทุน (Break-Even)</text>
+          <path d="M 0 ${startY} Q 200 ${midY} 400 ${endY} L 400 120 L 0 120 Z" fill="url(#simCurveGrad)" />
+          <path d="M 0 ${startY} Q 200 ${midY} 400 ${endY}" fill="none" stroke="${strokeCol}" stroke-width="3.5" stroke-linecap="round" />
+          <circle cx="400" cy="${endY}" r="5" fill="${strokeCol}" />
+        `;
+      }
+
+      const weeklyBars = document.getElementById('simWeeklyBars');
+      const weeks = [0.23, 0.48, 0.74, 1.0];
+      const maxBar = Math.max(100000, Math.abs(netProfit));
+      weeklyBars.innerHTML = weeks.map((ratio, idx) => {
+        const val = Math.round(netProfit * ratio);
+        const h = Math.min(100, Math.max(16, Math.round((Math.abs(val) / maxBar) * 85)));
+        const color = val >= 0 ? 'from-emerald-600 via-teal-500 to-cyan-300' : 'from-rose-600 to-rose-400';
+        return `
+          <div class="flex-1 h-full flex flex-col items-center justify-end gap-1">
+            <span class="text-[11px] font-extrabold ${val >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}">
+              ${val >= 0 ? '+' : ''}฿${(val / 1000).toFixed(0)}k
+            </span>
+            <div class="iso-bar w-10 sm:w-14 bg-gradient-to-t ${color}" style="height: ${h}%"></div>
+            <span class="text-[10px] font-bold text-slate-500">สัปดาห์ ${idx + 1}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function resetWhatIfSliders() {
+      document.getElementById('simPriceRange').value = 135;
+      document.getElementById('simCostRange').value = 32;
+      document.getElementById('simTrafficRange').value = 140;
+      updateFinancialSimulation();
+    }
+
+    // ---------------------------------------------------------------------
+    // 13. ACCOUNTING, CSV EXPORT & AI CO-PILOT
+    // ---------------------------------------------------------------------
+    function renderAccountingTab() {
+      const filterType = document.getElementById('accFilterType').value;
+      const filtered = filterType === 'all' ? transactions : transactions.filter(t => t.type === filterType);
+      const totalInc = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+      const totalExp = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+      const netVat = Math.round((totalInc - totalExp) * 0.07);
+
+      document.getElementById('accTotalIncome').textContent = '฿' + totalInc.toLocaleString();
+      document.getElementById('accTotalExpense').textContent = '฿' + totalExp.toLocaleString();
+      document.getElementById('accNetVat').textContent = '฿' + Math.max(0, netVat).toLocaleString();
+
+      document.getElementById('accountingTableBody').innerHTML = filtered.map(tx => `
+        <tr class="hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition">
+          <td class="py-3 px-4 font-mono text-xs">${tx.date}</td>
+          <td class="py-3 px-4 font-bold">${esc(tx.desc)}</td>
+          <td class="py-3 px-4 text-xs text-slate-500">${esc(tx.category)}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold ${tx.type === 'income' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-rose-500/15 text-rose-500'}">
+              ${tx.type === 'income' ? 'รายรับ' : 'รายจ่าย'}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-right font-extrabold ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}">
+            ${tx.type === 'income' ? '+' : '-'}฿${tx.amount.toLocaleString()}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function exportAccountingCSV() {
+      const headers = ['รหัสรายการ', 'วันที่', 'รายละเอียด', 'หมวดหมู่', 'ประเภท', 'จำนวนเงิน(บาท)'];
+      const q = v => `"${String(v).replace(/"/g, '""')}"`;
+      const rows = transactions.map(t => [q(t.id), t.date, q(t.desc), q(t.category), t.type === 'income' ? 'รายรับ' : 'รายจ่าย', t.amount]);
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `FreshFlow_Accounting_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      chime();
+      showToast('ส่งออกไฟล์ CSV ภาษาไทย (UTF-8 BOM) สำเร็จ');
+    }
+
+    function handleCopilotSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('copilotInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      askCopilot(text);
+    }
+
+    function askCopilot(promptText) {
+      const box = document.getElementById('copilotMessages');
+      box.innerHTML += `<div class="flex justify-end"><div class="p-3 rounded-2xl rounded-tr-none bg-gradient-to-r from-emerald-500 to-teal-600 text-white max-w-[85%] shadow">${esc(promptText)}</div></div>`;
+      box.scrollTop = box.scrollHeight;
+
+      const urgentItems = ingredients.filter(i => i.shelfLife <= 2).map(i => `${esc(i.name)} (${i.qty} ${esc(i.unit)})`).join(', ') || 'ไม่มีรายการด่วน';
+      let reply = '';
+      if (promptText.includes('ระบาย') || promptText.includes('สต็อก')) {
+        reply = `จากสต็อกล่าสุด วัตถุดิบที่ต้องเร่งระบายใน 48 ชม. คือ <strong>${urgentItems}</strong> ครับ แนะนำให้เปิดแคมเปญ <em>"เซ็ตคู่หู Zero-Waste: กะเพราอกไก่ไข่ดาว + ลาเต้เย็น ฿99"</em> ซึ่งช่วยลดขยะอาหารได้ถึง 96% และได้กำไรสุทธิ +฿55.5/เซ็ตครับ`;
+      } else if (promptText.includes('จาน') || promptText.includes('ผลิต')) {
+        const chicken = ingredients.find(i => i.name.includes('ไก่'));
+        const milk = ingredients.find(i => i.name.includes('นม'));
+        const plates = chicken ? Math.floor(chicken.qty / 0.15) : 0;
+        const lattes = milk ? Math.floor(milk.qty / 0.18) : 0;
+        reply = `คำนวณจากวัตถุดิบปัจจุบัน ร้านสามารถผลิต <strong>ข้าวกะเพราอกไก่ไข่ดาวได้สูงสุด ${plates} จาน</strong> และ <strong>ลาเต้เย็นได้ ${lattes} แก้ว</strong> ดูหลอดความจุ 3 มิติได้ที่แท็บ <em>"3. พยากรณ์สินค้า & ระบายสต็อก"</em> ครับ`;
+      } else if (promptText.includes('คุ้มทุน') || promptText.includes('กำไร')) {
+        reply = `ปัจจุบันอัตรากำไรสุทธิ (Net Margin) ของร้านอยู่ที่ <strong>57.6%</strong> จุดคุ้มทุนเฉลี่ยอยู่ที่ <strong>35 บิล/วัน</strong> (1,035 บิล/เดือน) ลองปรับแถบเลื่อนในหน้า <em>"6. พยากรณ์การเงิน AI"</em> เพื่อดูกราฟจุดคุ้มทุนแบบ Real-time ได้เลยครับ`;
+      } else {
+        reply = `รับทราบครับ! ระบบซิงก์วัตถุดิบทั้งหมด ${ingredients.length} รายการเข้ากับแผนพยากรณ์สินค้า 3 มิติแล้ว คุณสามารถกดเปิดแคมเปญระบายสต็อกเพื่อส่งเข้า LINE ร้านได้ทันทีครับ`;
+      }
+
+      setTimeout(() => {
+        box.innerHTML += `<div class="p-3.5 rounded-2xl rounded-tl-none bg-slate-100/90 dark:bg-slate-800/90 space-y-1 border border-emerald-500/20"><div class="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400">FreshFlow AI</div><p class="text-slate-700 dark:text-slate-200 leading-relaxed">${reply}</p></div>`;
+        box.scrollTop = box.scrollHeight;
+      }, 260);
+    }
+
+    function renderStorefrontPromos() {
+      const grid = document.getElementById('storefrontPromoGrid');
+      if (!grid) return;
+      grid.innerHTML = activePromotions.map((p, promoIdx) => `
+        <div class="bento-card tilt3d p-6 flex flex-col justify-between space-y-4">
+          <div class="glare-overlay"></div>
+          <div class="space-y-2 z-layer-1">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 text-xs font-extrabold">${esc(p.tag)}</span>
+              <span class="text-xs font-extrabold text-teal-600">ลด Food Waste ${p.wasteReduction}</span>
+            </div>
+            <h4 class="text-lg font-extrabold">${esc(p.title)}</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">ปรุงสดใหม่จากวัตถุดิบคุณภาพประจำวัน จำนวนจำกัดเพื่อลดขยะอาหาร</p>
+          </div>
+          <div class="z-layer-2 flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800">
+            <div>
+              <span class="text-xs line-through text-slate-400">฿${p.originalPrice}</span>
+              <span class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 ml-1.5">฿${p.promoPrice}</span>
+            </div>
+            <button onclick="orderPromoCustomer(${promoIdx})" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-bold shadow-lg transition">
+              สั่งซื้อดีลนี้
+            </button>
+          </div>
+        </div>
+      `).join('');
+      initTilt3D();
+    }
+
+    function orderPromoCustomer(idx) {
+      const promo = activePromotions[idx];
+      if (!promo) return;
+      const title = promo.title, price = promo.promoPrice;
+      transactions.unshift({
+        id: newId('TX-'),
+        date: new Date().toISOString().slice(0, 10),
+        desc: `ออเดอร์ลูกค้าหน้าร้าน: ${title}`,
+        category: 'โปรโมชันระบายสต็อก',
+        type: 'income',
+        amount: price
+      });
+      scheduleCloudSave();
+      chime();
+      celebrate();
+      sendLine(`🛒 ลูกค้าสั่งซื้อดีลหน้าร้าน: "${title}" ยอดชำระ ฿${price}`);
+    }
+
+    function renderNotifications() {
+      document.getElementById('notificationList').innerHTML = notifications.map(n => `
+        <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 space-y-1 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-emerald-600 dark:text-emerald-400">${esc(n.title)}</span>
+            <span class="text-[10px] text-slate-400">${n.time}</span>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300">${esc(n.msg)}</p>
+        </div>
+      `).join('');
+    }
+    function clearNotifications() { notifications = []; scheduleCloudSave(); renderNotifications(); }
+
+    // ---------------------------------------------------------------------
+    // 14. WINDOW ONLOAD INITIALIZATION
+    // ---------------------------------------------------------------------
+    window.onload = function () {
+      const steps = [
+        init3DBackdropCanvas, refreshIcons, renderDashboard, renderIngredientsTab,
+        renderProductForecastTab, renderExpiryTab, renderCostingTab,
+        updateFinancialSimulation, renderAccountingTab, renderNotifications,
+        updateSidebarExpiryBadge, initTilt3D
+      ];
+      // run each step on its own so one failure cannot block the rest or the splash
+      steps.forEach(fn => { try { fn(); } catch (err) { console.error('init step failed:', fn.name, err); } });
+      restoreSupabaseSession().catch(error => {
+        setAuthMessage(`ตรวจสอบ Supabase ไม่สำเร็จ: ${error.message}`, true);
+        setCloudStatus('ตรวจสอบ Supabase ไม่สำเร็จ');
+      });
+
+      // Dismiss Splash Screen Smoothly
+      setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if (splash) {
+          splash.style.opacity = '0';
+          splash.style.pointerEvents = 'none';
+          setTimeout(() => splash.classList.add('hidden'), 500);
+        }
+      }, 650);
+    };
+  </script>
+</body>
+</html>
