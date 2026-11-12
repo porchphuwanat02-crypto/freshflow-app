@@ -630,6 +630,11 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
+        <nav class="flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 p-1" aria-label="เมนูหน้าร้าน">
+          <button onclick="showStorefrontPanel('home')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">หน้าแรก</button>
+          <button onclick="showStorefrontPanel('search')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ค้นหา</button>
+          <button onclick="showStorefrontPanel('contact')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ติดต่อร้าน</button>
+        </nav>
         <div id="visitor-store-picker" class="flex items-center gap-2">
           <select id="visitor-store-select" onchange="onVisitorStoreChange()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
             <option value="0">สาขาสุขุมวิท 24 (หลัก)</option>
@@ -644,6 +649,7 @@
     </header>
 
     <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+      <div id="visitor-panel-home" class="storefront-panel space-y-8">
       <!-- 3D Isometric Food Showcase Hero -->
       <div class="bento-card tilt3d p-7 sm:p-10 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white border-none overflow-hidden">
         <div class="glare-overlay"></div>
@@ -680,6 +686,61 @@
         <div id="storefrontPromoGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
       </section>
 
+      <section class="bento-card p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-xl font-extrabold">รีวิวจากลูกค้า</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">รีวิวจะแสดงหลังร้านตรวจสอบแล้ว</p>
+          </div>
+          <div class="text-right">
+            <span id="storeReviewAverage" class="text-2xl font-extrabold text-amber-500">-</span>
+            <span class="text-amber-500" aria-label="คะแนนดาว">★</span>
+            <span id="storeReviewCount" class="block text-xs text-slate-500">0 รีวิว</span>
+          </div>
+        </div>
+        <div id="storefrontReviewList" class="space-y-3" aria-live="polite">
+          <p class="text-sm text-slate-500">กำลังโหลดรีวิว...</p>
+        </div>
+        <form id="storeReviewForm" onsubmit="submitStoreReview(event)" class="border-t border-slate-200 dark:border-slate-700 pt-5 space-y-4">
+          <h4 class="font-extrabold">เขียนรีวิวให้ร้าน</h4>
+          <div>
+            <label for="review-customer-name" class="block text-sm font-bold mb-1">ชื่อที่ใช้แสดง</label>
+            <input id="review-customer-name" type="text" maxlength="80" autocomplete="nickname" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+          </div>
+          <fieldset>
+            <legend class="block text-sm font-bold mb-2">ให้คะแนนร้าน (1-5 ดาว)</legend>
+            <div class="flex flex-wrap gap-2">
+              <label class="cursor-pointer">
+                <input class="peer sr-only" type="radio" name="review-rating" value="1" required />
+                <span class="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 peer-checked:bg-amber-400/20 peer-checked:border-amber-500 peer-checked:text-amber-600"><span class="text-amber-500">★</span> 1</span>
+              </label>
+              <label class="cursor-pointer">
+                <input class="peer sr-only" type="radio" name="review-rating" value="2" />
+                <span class="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 peer-checked:bg-amber-400/20 peer-checked:border-amber-500 peer-checked:text-amber-600"><span class="text-amber-500">★★</span> 2</span>
+              </label>
+              <label class="cursor-pointer">
+                <input class="peer sr-only" type="radio" name="review-rating" value="3" />
+                <span class="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 peer-checked:bg-amber-400/20 peer-checked:border-amber-500 peer-checked:text-amber-600"><span class="text-amber-500">★★★</span> 3</span>
+              </label>
+              <label class="cursor-pointer">
+                <input class="peer sr-only" type="radio" name="review-rating" value="4" />
+                <span class="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 peer-checked:bg-amber-400/20 peer-checked:border-amber-500 peer-checked:text-amber-600"><span class="text-amber-500">★★★★</span> 4</span>
+              </label>
+              <label class="cursor-pointer">
+                <input class="peer sr-only" type="radio" name="review-rating" value="5" />
+                <span class="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 peer-checked:bg-amber-400/20 peer-checked:border-amber-500 peer-checked:text-amber-600"><span class="text-amber-500">★★★★★</span> 5</span>
+              </label>
+            </div>
+          </fieldset>
+          <div>
+            <label for="review-comment" class="block text-sm font-bold mb-1">ความคิดเห็น</label>
+            <textarea id="review-comment" rows="4" maxlength="2000" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></textarea>
+          </div>
+          <p id="storeReviewStatus" class="text-sm font-bold" role="status" aria-live="polite"></p>
+          <button id="storeReviewSubmit" type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-lg">ส่งรีวิว</button>
+        </form>
+      </section>
+
       <!-- Store Location Map -->
       <section class="bento-card p-6 space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -699,6 +760,45 @@
           </div>
         </div>
         <div id="visitor-map" class="w-full h-64 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 z-10"></div>
+      </section>
+      </div>
+
+      <section id="visitor-panel-search" class="storefront-panel hidden space-y-5">
+        <div class="space-y-1">
+          <h2 class="text-2xl font-extrabold">ค้นหาเมนู โปรโมชัน และสาขา</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">ค้นหาดีล เมนู หรือสาขาที่ต้องการ</p>
+        </div>
+        <label for="storefrontSearchInput" class="sr-only">ค้นหาเมนู โปรโมชัน หรือสาขา</label>
+        <input id="storefrontSearchInput" type="search" oninput="searchStorefront(this.value)" placeholder="พิมพ์ชื่อเมนู โปรโมชัน หรือสาขา..." class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500" />
+        <div id="storefrontSearchResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" aria-live="polite">
+          <p class="col-span-full text-sm text-slate-500">พิมพ์คำค้นเพื่อเริ่มค้นหา</p>
+        </div>
+      </section>
+
+      <section id="visitor-panel-contact" class="storefront-panel hidden">
+        <div class="max-w-3xl mx-auto bento-card p-6 sm:p-8 space-y-5">
+          <div>
+            <h2 class="text-2xl font-extrabold">ติดต่อร้านค้า</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">ส่งข้อความถึง <span id="contact-store-name" class="font-bold"></span> ร้านจะติดต่อกลับตามข้อมูลที่คุณให้ไว้</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">ข้อมูลติดต่อจะใช้เพื่อตอบกลับข้อความนี้เท่านั้น</p>
+          </div>
+          <form id="storeContactForm" onsubmit="submitStoreContact(event)" class="space-y-4">
+            <div>
+              <label for="contact-customer-name" class="block text-sm font-bold mb-1">ชื่อของคุณ</label>
+              <input id="contact-customer-name" type="text" maxlength="120" autocomplete="name" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+            <div>
+              <label for="contact-customer-info" class="block text-sm font-bold mb-1">เบอร์โทรหรืออีเมลสำหรับติดต่อกลับ</label>
+              <input id="contact-customer-info" type="text" maxlength="160" autocomplete="email" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+            <div>
+              <label for="contact-customer-message" class="block text-sm font-bold mb-1">ข้อความ</label>
+              <textarea id="contact-customer-message" rows="5" maxlength="3000" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></textarea>
+            </div>
+            <p id="storeContactStatus" class="text-sm font-bold" role="status" aria-live="polite"></p>
+            <button id="storeContactSubmit" type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg">ส่งข้อความถึงร้าน</button>
+          </form>
+        </div>
       </section>
     </main>
   </div>
@@ -1635,10 +1735,17 @@
           <span class="px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-600 dark:text-violet-300 text-xs font-extrabold">Super Admin Console</span>
           <h2 class="text-2xl font-extrabold mt-1">ระบบจัดการฐานข้อมูลกลาง FreshFlow Cloud</h2>
         </div>
-        <button onclick="goToRoleSelection()" class="px-4 py-2 rounded-xl bg-slate-900 dark:bg-slate-800 text-white text-xs font-bold">← กลับหน้าเลือกบทบาท</button>
+        <div class="flex gap-2">
+          <button onclick="goToRoleSelection()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">← กลับหน้าเลือกบทบาท</button>
+          <button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-500 text-white text-xs font-bold">ออกจากระบบ</button>
+        </div>
       </div>
       <div id="admin-stats" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
-      <div id="admin-tabs" class="flex gap-2"></div>
+      <div id="admin-tabs" class="flex flex-wrap gap-2">
+        <button onclick="showAdminTab('stores')" class="px-4 py-2 rounded-xl bg-violet-500 text-white text-xs font-bold">ร้านค้าและบัญชี</button>
+        <button onclick="showAdminTab('contacts')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">ข้อความจากลูกค้า</button>
+        <button onclick="showAdminTab('reviews')" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">รีวิว</button>
+      </div>
       <p id="admin-msg" class="text-xs text-emerald-500 font-bold"></p>
       <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
         <table class="w-full text-left text-xs">
@@ -1747,6 +1854,9 @@
     const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_QozSyC2h1m91-wdH4DtDGg__f--N4g-';
     let sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
     let currentUser = null;
+    let demoMode = false;
+    let adminStoreRows = [];
+    let adminContactRows = [];
     let cloudSaveTimer = null;
     let cloudSaveQueue = Promise.resolve();
     let cloudSaveRevision = 0;
@@ -1882,6 +1992,7 @@
       const store = { ...currentStore };
       delete store.lineToken;
       return {
+        ownerEmail: currentUser ? currentUser.email || '' : '',
         currentStore: store,
         ingredients,
         notes,
@@ -1951,7 +2062,11 @@
         .maybeSingle();
       if (error) throw error;
 
-      if (data) applyPersistedAppState(data.state);
+      if (data) {
+        applyPersistedAppState(data.state);
+      } else if (!await saveUserState()) {
+        throw new Error('สร้างข้อมูลเริ่มต้นของบัญชีไม่สำเร็จ');
+      }
       renderPersistedViews();
       setCloudStatus(data ? 'Supabase เชื่อมต่อแล้ว • ซิงก์ข้อมูล' : 'Supabase เชื่อมต่อแล้ว • บัญชีใหม่');
     }
@@ -2024,6 +2139,7 @@
       }
 
       currentUser = data.session.user;
+      demoMode = false;
       profile.email = currentUser.email || '';
       document.getElementById('authUserEmail').textContent = profile.email;
       try {
@@ -2358,6 +2474,7 @@
         const { data, error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw error;
         currentUser = data.user;
+        demoMode = false;
         profile.email = currentUser.email || email;
         document.getElementById('authUserEmail').textContent = profile.email;
         await loadUserState();
@@ -2401,6 +2518,7 @@
           return;
         }
         currentUser = data.user;
+        demoMode = false;
         profile.email = currentUser.email || email;
         document.getElementById('authUserEmail').textContent = profile.email;
         await loadUserState();
@@ -2443,6 +2561,7 @@
         }
         currentUser = null;
       }
+      demoMode = true;
       restoreDemoState();
       chime();
       showOnlyView('view-owner');
@@ -2463,15 +2582,237 @@
       }
     }
 
-    function openAdmin() {
+    function setAdminMessage(message, isError) {
+      const element = document.getElementById('admin-msg');
+      element.textContent = message;
+      element.classList.toggle('text-rose-500', isError);
+      element.classList.toggle('text-emerald-500', !isError);
+    }
+
+    async function openAdmin() {
+      if (!currentUser || !sb) {
+        showOnlyView('view-login');
+        setAuthMessage('กรุณาเข้าสู่ระบบด้วยบัญชีผู้ดูแลที่ได้รับอนุญาต', true);
+        return;
+      }
+
       showOnlyView('view-admin');
+      setAdminMessage('กำลังตรวจสอบสิทธิ์ผู้ดูแล...', false);
+      try {
+        const { data, error } = await sb
+          .from('freshflow_user_roles')
+          .select('role')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data || data.role !== 'admin') {
+          showOnlyView('view-role-selection');
+          showToast('บัญชีนี้ไม่มีสิทธิ์ผู้ดูแลระบบ');
+          return;
+        }
+        profile.role = 'admin';
+        await showAdminTab('stores');
+      } catch (error) {
+        setAdminMessage(`ตรวจสอบสิทธิ์ผู้ดูแลไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function showAdminTab(tabName) {
+      if (!currentUser || !['stores', 'contacts', 'reviews'].includes(tabName)) return;
+      try {
+        if (tabName === 'stores') await loadAdminStores();
+        else if (tabName === 'contacts') await loadAdminContacts();
+        else await loadAdminReviews();
+      } catch (error) {
+        setAdminMessage(`โหลดข้อมูลผู้ดูแลไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function loadAdminStores() {
+      setAdminMessage('กำลังโหลดร้านค้าและบัญชี...', false);
+      const [statesResult, controlsResult, contactsResult, reviewsResult] = await Promise.all([
+        sb.from('freshflow_user_state').select('user_id,state,updated_at').order('updated_at', { ascending: false }).limit(500),
+        sb.from('freshflow_account_controls').select('user_id,suspended'),
+        sb.from('store_contact_messages').select('id').limit(1000),
+        sb.from('store_reviews').select('id').limit(1000)
+      ]);
+      if (statesResult.error) throw statesResult.error;
+      if (controlsResult.error) throw controlsResult.error;
+      if (contactsResult.error) throw contactsResult.error;
+      if (reviewsResult.error) throw reviewsResult.error;
+
+      const controls = new Map((controlsResult.data || []).map(row => [row.user_id, row.suspended]));
+      adminStoreRows = (statesResult.data || []).map(row => ({
+        ...row,
+        suspended: controls.get(row.user_id) === true
+      }));
+
+      const suspendedCount = adminStoreRows.filter(row => row.suspended).length;
+      document.getElementById('admin-stats').className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4';
       document.getElementById('admin-stats').innerHTML = `
-        <div class="bento-card p-4"><div class="text-xs text-slate-400">ร้านค้าในระบบ</div><div class="text-2xl font-extrabold text-emerald-500">128 ร้าน</div></div>
-        <div class="bento-card p-4"><div class="text-xs text-slate-400">คำนวณ AI วันนี้</div><div class="text-2xl font-extrabold text-blue-500">1,420 ครั้ง</div></div>
-        <div class="bento-card p-4"><div class="text-xs text-slate-400">ลดขยะอาหารสะสม</div><div class="text-2xl font-extrabold text-amber-500">4.8 ตัน</div></div>
+        <div class="bento-card p-4"><div class="text-xs text-slate-400">ร้านค้า/บัญชีที่มีข้อมูล</div><div class="text-2xl font-extrabold text-emerald-500">${adminStoreRows.length}</div></div>
+        <div class="bento-card p-4"><div class="text-xs text-slate-400">ข้อความจากลูกค้า</div><div class="text-2xl font-extrabold text-blue-500">${contactsResult.data ? contactsResult.data.length : 0}</div></div>
+        <div class="bento-card p-4"><div class="text-xs text-slate-400">รีวิว</div><div class="text-2xl font-extrabold text-amber-500">${reviewsResult.data ? reviewsResult.data.length : 0}</div></div>
+        <div class="bento-card p-4"><div class="text-xs text-slate-400">บัญชีที่ระงับ</div><div class="text-2xl font-extrabold text-rose-500">${suspendedCount}</div></div>
       `;
-      document.getElementById('admin-thead').innerHTML = `<tr><th class="p-3">ชื่อร้าน</th><th class="p-3">พิกัด</th><th class="p-3">สถานะ AI</th></tr>`;
-      document.getElementById('admin-tbody').innerHTML = `<tr><td class="p-3 font-bold">${esc(currentStore.name)}</td><td class="p-3">${esc(currentStore.address)}</td><td class="p-3 text-emerald-500 font-bold">Active 3D OS</td></tr>`;
+      document.getElementById('admin-thead').innerHTML = `<tr><th class="p-3">ร้าน / เจ้าของ</th><th class="p-3">ที่อยู่</th><th class="p-3">ข้อมูล</th><th class="p-3">สถานะบัญชี</th><th class="p-3">จัดการ</th></tr>`;
+      document.getElementById('admin-tbody').innerHTML = adminStoreRows.length
+        ? adminStoreRows.map((row, index) => {
+          const state = row.state || {};
+          const store = state.currentStore || {};
+          const ingredientCount = Array.isArray(state.ingredients) ? state.ingredients.length : 0;
+          const transactionCount = Array.isArray(state.transactions) ? state.transactions.length : 0;
+          return `
+            <tr class="align-top">
+              <td class="p-3 min-w-56">
+                <input id="admin-store-name-${index}" value="${esc(store.name || '')}" maxlength="160" aria-label="ชื่อร้าน" class="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-bold" />
+                <div class="mt-1 text-[10px] text-slate-500 break-all">${esc(state.ownerEmail || '')}</div>
+                <div class="mt-1 text-[10px] text-slate-500 break-all">${esc(row.user_id)}</div>
+              </td>
+              <td class="p-3 min-w-56"><input id="admin-store-address-${index}" value="${esc(store.address || '')}" maxlength="300" aria-label="ที่อยู่ร้าน" class="w-full px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700" /></td>
+              <td class="p-3 whitespace-nowrap">${ingredientCount} วัตถุดิบ<br>${transactionCount} รายการบัญชี</td>
+              <td class="p-3">${row.suspended ? '<span class="font-bold text-rose-500">ระงับ</span>' : '<span class="font-bold text-emerald-500">ใช้งาน</span>'}</td>
+              <td class="p-3 whitespace-nowrap space-y-2">
+                <button onclick="saveAdminStore(${index})" class="block px-3 py-1.5 rounded-lg bg-violet-500 text-white font-bold">บันทึกร้าน</button>
+                <button onclick="setAccountSuspended('${esc(row.user_id)}',${!row.suspended})" class="block px-3 py-1.5 rounded-lg ${row.suspended ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'} font-bold">${row.suspended ? 'เปิดใช้บัญชี' : 'ระงับบัญชี'}</button>
+              </td>
+            </tr>
+          `;
+        }).join('')
+        : `<tr><td colspan="5" class="p-6 text-center text-slate-500">ยังไม่มีข้อมูลร้านค้าในระบบ</td></tr>`;
+      setAdminMessage('โหลดข้อมูลร้านค้าและบัญชีสำเร็จ', false);
+    }
+
+    async function saveAdminStore(index) {
+      const row = adminStoreRows[index];
+      if (!row || !row.state || !row.state.currentStore) {
+        setAdminMessage('ไม่พบข้อมูลร้านค้าที่ต้องการแก้ไข', true);
+        return;
+      }
+      const name = document.getElementById(`admin-store-name-${index}`).value.trim();
+      const address = document.getElementById(`admin-store-address-${index}`).value.trim();
+      if (!name || !address) {
+        setAdminMessage('กรุณากรอกชื่อร้านและที่อยู่ให้ครบ', true);
+        return;
+      }
+
+      const state = JSON.parse(JSON.stringify(row.state));
+      state.currentStore.name = name;
+      state.currentStore.address = address;
+      try {
+        const { error } = await sb.from('freshflow_user_state').update({
+          state,
+          updated_at: new Date().toISOString()
+        }).eq('user_id', row.user_id);
+        if (error) throw error;
+        row.state = state;
+        setAdminMessage(`บันทึกข้อมูลร้าน ${name} สำเร็จ`, false);
+      } catch (error) {
+        setAdminMessage(`บันทึกข้อมูลร้านไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function setAccountSuspended(userId, suspended) {
+      const action = suspended ? 'ระงับ' : 'เปิดใช้';
+      if (!confirm(`ยืนยัน${action}บัญชีนี้หรือไม่?`)) return;
+      setAdminMessage(`กำลัง${action}บัญชี...`, false);
+      try {
+        const { data, error } = await sb.functions.invoke('admin-account-status', {
+          body: { userId, suspended }
+        });
+        if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+        await loadAdminStores();
+        setAdminMessage(`${action}บัญชีสำเร็จ`, false);
+      } catch (error) {
+        setAdminMessage(`${action}บัญชีไม่สำเร็จ: ${error.message} (ตรวจสอบว่า Deploy Edge Function admin-account-status แล้ว)`, true);
+      }
+    }
+
+    async function loadAdminContacts() {
+      setAdminMessage('กำลังโหลดข้อความจากลูกค้า...', false);
+      const { data, error } = await sb
+        .from('store_contact_messages')
+        .select('id,store_name,customer_name,contact_info,message,status,created_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      adminContactRows = data || [];
+      document.getElementById('admin-thead').innerHTML = `<tr><th class="p-3">วันเวลา</th><th class="p-3">ร้าน / ลูกค้า</th><th class="p-3">ช่องทางติดต่อ</th><th class="p-3">ข้อความ</th><th class="p-3">สถานะ</th></tr>`;
+      document.getElementById('admin-tbody').innerHTML = adminContactRows.length
+        ? adminContactRows.map(row => `
+          <tr class="align-top">
+            <td class="p-3 whitespace-nowrap">${esc(new Date(row.created_at).toLocaleString('th-TH'))}</td>
+            <td class="p-3">${esc(row.store_name)}<br><strong>${esc(row.customer_name)}</strong></td>
+            <td class="p-3">${esc(row.contact_info)}</td>
+            <td class="p-3 min-w-64 whitespace-pre-wrap">${esc(row.message)}</td>
+            <td class="p-3">
+              <select onchange="updateContactStatus('${esc(row.id)}',this.value)" class="px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                <option value="new" ${row.status === 'new' ? 'selected' : ''}>ใหม่</option>
+                <option value="read" ${row.status === 'read' ? 'selected' : ''}>อ่านแล้ว</option>
+                <option value="closed" ${row.status === 'closed' ? 'selected' : ''}>ปิดเรื่อง</option>
+              </select>
+            </td>
+          </tr>
+        `).join('')
+        : `<tr><td colspan="5" class="p-6 text-center text-slate-500">ยังไม่มีข้อความจากลูกค้า</td></tr>`;
+      setAdminMessage(`แสดงข้อความลูกค้า ${adminContactRows.length} รายการ`, false);
+    }
+
+    async function loadAdminReviews() {
+      setAdminMessage('กำลังโหลดรีวิว...', false);
+      const { data, error } = await sb
+        .from('store_reviews')
+        .select('id,store_name,reviewer_name,rating,comment,status,created_at')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+
+      const reviews = data || [];
+      document.getElementById('admin-thead').innerHTML = `<tr><th class="p-3">วันเวลา</th><th class="p-3">ร้าน / ผู้รีวิว</th><th class="p-3">คะแนน</th><th class="p-3">ความคิดเห็น</th><th class="p-3">สถานะ</th></tr>`;
+      document.getElementById('admin-tbody').innerHTML = reviews.length
+        ? reviews.map(review => `
+          <tr class="align-top">
+            <td class="p-3 whitespace-nowrap">${esc(new Date(review.created_at).toLocaleString('th-TH'))}</td>
+            <td class="p-3">${esc(review.store_name)}<br><strong>${esc(review.reviewer_name)}</strong></td>
+            <td class="p-3 whitespace-nowrap text-amber-500">${'★'.repeat(Number(review.rating))} (${Number(review.rating)}/5)</td>
+            <td class="p-3 min-w-64 whitespace-pre-wrap">${esc(review.comment)}</td>
+            <td class="p-3">
+              <select onchange="updateReviewStatus(${Number(review.id)},this.value)" class="px-2 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+                <option value="pending" ${review.status === 'pending' ? 'selected' : ''}>รอตรวจ</option>
+                <option value="approved" ${review.status === 'approved' ? 'selected' : ''}>เผยแพร่</option>
+                <option value="hidden" ${review.status === 'hidden' ? 'selected' : ''}>ซ่อน</option>
+              </select>
+            </td>
+          </tr>
+        `).join('')
+        : `<tr><td colspan="5" class="p-6 text-center text-slate-500">ยังไม่มีรีวิว</td></tr>`;
+      setAdminMessage(`แสดงรีวิว ${reviews.length} รายการ`, false);
+    }
+
+    async function updateReviewStatus(reviewId, status) {
+      if (!Number.isSafeInteger(reviewId) || !['pending', 'approved', 'hidden'].includes(status)) {
+        setAdminMessage('ข้อมูลสถานะรีวิวไม่ถูกต้อง', true);
+        return;
+      }
+      try {
+        const { error } = await sb.from('store_reviews').update({ status }).eq('id', reviewId);
+        if (error) throw error;
+        setAdminMessage('อัปเดตสถานะรีวิวสำเร็จ', false);
+      } catch (error) {
+        setAdminMessage(`อัปเดตสถานะรีวิวไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function updateContactStatus(messageId, status) {
+      if (!Number.isSafeInteger(Number(messageId)) || !['new', 'read', 'closed'].includes(status)) return;
+      try {
+        const { error } = await sb.from('store_contact_messages').update({ status }).eq('id', messageId);
+        if (error) throw error;
+        setAdminMessage('อัปเดตสถานะข้อความลูกค้าสำเร็จ', false);
+      } catch (error) {
+        setAdminMessage(`อัปเดตสถานะข้อความไม่สำเร็จ: ${error.message}`, true);
+      }
     }
 
     function backToLogin() { showOnlyView('view-login'); }
@@ -2487,6 +2828,7 @@
         return;
       }
       currentUser = null;
+      demoMode = false;
       restoreDemoState();
       showOnlyView('view-login');
       showToast('ออกจากระบบเรียบร้อยแล้ว');
@@ -2571,9 +2913,12 @@
 
     function switchRoleToVisitor() {
       showOnlyView('view-visitor');
+      showStorefrontPanel('home');
       document.getElementById('visitor-store-header-title').textContent = viewStore.name;
       document.getElementById('visitor-store-address-display').textContent = viewStore.address;
+      document.getElementById('contact-store-name').textContent = viewStore.name;
       renderStorefrontPromos();
+      loadApprovedStoreReviews();
       setTimeout(() => {
         if (typeof L === 'undefined') return;
         if (!visitorMapInstance) {
@@ -2589,6 +2934,215 @@
       }, 150);
     }
 
+    function showStorefrontPanel(panelName) {
+      const panelIds = {
+        home: 'visitor-panel-home',
+        search: 'visitor-panel-search',
+        contact: 'visitor-panel-contact'
+      };
+      if (!panelIds[panelName]) return;
+      Object.entries(panelIds).forEach(([name, id]) => {
+        document.getElementById(id).classList.toggle('hidden', name !== panelName);
+      });
+      if (panelName === 'contact') {
+        document.getElementById('contact-store-name').textContent = viewStore.name;
+      }
+      if (panelName === 'search') {
+        searchStorefront(document.getElementById('storefrontSearchInput').value);
+      }
+      initTilt3D();
+    }
+
+    function searchStorefront(query) {
+      const resultsContainer = document.getElementById('storefrontSearchResults');
+      if (!resultsContainer) return;
+      const term = String(query || '').trim().toLocaleLowerCase('th-TH');
+      if (!term) {
+        resultsContainer.innerHTML = '<p class="col-span-full text-sm text-slate-500">พิมพ์คำค้นเพื่อเริ่มค้นหา</p>';
+        return;
+      }
+
+      const matches = [];
+      visitorStores.forEach((store, index) => {
+        if (`${store.name} ${store.address}`.toLocaleLowerCase('th-TH').includes(term)) {
+          matches.push(`
+            <article class="bento-card p-5 space-y-3">
+              <span class="text-[10px] font-extrabold text-blue-600">สาขา</span>
+              <h3 class="font-extrabold">${esc(store.name)}</h3>
+              <p class="text-xs text-slate-500">${esc(store.address)}</p>
+              <button onclick="selectVisitorStoreFromSearch(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">ดูสาขานี้</button>
+            </article>
+          `);
+        }
+      });
+      activePromotions.forEach((promo, index) => {
+        if (`${promo.title} ${promo.tag}`.toLocaleLowerCase('th-TH').includes(term)) {
+          matches.push(`
+            <article class="bento-card p-5 space-y-3">
+              <span class="text-[10px] font-extrabold text-amber-600">โปรโมชัน</span>
+              <h3 class="font-extrabold">${esc(promo.title)}</h3>
+              <p class="text-sm font-extrabold text-emerald-600">฿${Number(promo.promoPrice).toLocaleString()}</p>
+              <button onclick="showPromoFromSearch(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">ดูโปรโมชัน</button>
+            </article>
+          `);
+        }
+      });
+      menuRecipes.forEach(recipe => {
+        if (`${recipe.name} ${recipe.category}`.toLocaleLowerCase('th-TH').includes(term)) {
+          matches.push(`
+            <article class="bento-card p-5 space-y-3">
+              <span class="text-[10px] font-extrabold text-violet-600">เมนู</span>
+              <h3 class="font-extrabold">${esc(recipe.name)}</h3>
+              <p class="text-xs text-slate-500">${esc(recipe.category)}</p>
+              <p class="text-sm font-extrabold text-emerald-600">฿${Number(recipe.price).toLocaleString()}</p>
+            </article>
+          `);
+        }
+      });
+
+      resultsContainer.innerHTML = matches.length
+        ? matches.join('')
+        : '<p class="col-span-full text-sm text-slate-500">ไม่พบเมนู โปรโมชัน หรือสาขาที่ตรงกับคำค้น</p>';
+      initTilt3D();
+    }
+
+    function selectVisitorStoreFromSearch(index) {
+      if (!Number.isInteger(index) || !visitorStores[index]) return;
+      document.getElementById('visitor-store-select').value = String(index);
+      onVisitorStoreChange();
+    }
+
+    function showPromoFromSearch(index) {
+      if (!Number.isInteger(index) || !activePromotions[index]) return;
+      showStorefrontPanel('home');
+      document.getElementById('storefrontPromoGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function submitStoreContact(event) {
+      event.preventDefault();
+      const status = document.getElementById('storeContactStatus');
+      const submitButton = document.getElementById('storeContactSubmit');
+      if (!sb) {
+        status.textContent = 'ระบบติดต่อร้านยังเชื่อมต่อฐานข้อมูลไม่ได้ กรุณาลองใหม่ภายหลัง';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+
+      const customerName = document.getElementById('contact-customer-name').value.trim();
+      const contactInfo = document.getElementById('contact-customer-info').value.trim();
+      const message = document.getElementById('contact-customer-message').value.trim();
+      if (!customerName || !contactInfo || !message) {
+        status.textContent = 'กรุณากรอกชื่อ ช่องทางติดต่อ และข้อความให้ครบ';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+
+      submitButton.disabled = true;
+      status.textContent = 'กำลังส่งข้อความ...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        const { error } = await sb.from('store_contact_messages').insert({
+          store_name: viewStore.name,
+          customer_name: customerName,
+          contact_info: contactInfo,
+          message
+        });
+        if (error) throw error;
+        document.getElementById('storeContactForm').reset();
+        status.textContent = 'ส่งข้อความถึงร้านแล้ว ร้านจะติดต่อกลับตามข้อมูลที่ให้ไว้';
+        status.className = 'text-sm font-bold text-emerald-600';
+      } catch (error) {
+        status.textContent = `ส่งข้อความไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
+    async function loadApprovedStoreReviews() {
+      const list = document.getElementById('storefrontReviewList');
+      if (!sb) {
+        list.innerHTML = '<p class="text-sm text-rose-500">โหลดรีวิวไม่สำเร็จ: ไม่พบการเชื่อมต่อฐานข้อมูล</p>';
+        return;
+      }
+
+      try {
+        const { data, error } = await sb
+          .from('store_reviews')
+          .select('reviewer_name,rating,comment,created_at')
+          .eq('store_name', viewStore.name)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+          .limit(50);
+        if (error) throw error;
+
+        const reviews = data || [];
+        const average = reviews.length
+          ? (reviews.reduce((sum, review) => sum + Number(review.rating), 0) / reviews.length).toFixed(1)
+          : '-';
+        document.getElementById('storeReviewAverage').textContent = average;
+        document.getElementById('storeReviewCount').textContent = `${reviews.length} รีวิว`;
+        list.innerHTML = reviews.length
+          ? reviews.map(review => {
+            const rating = Number(review.rating);
+            return `
+              <article class="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-800/70 space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <strong>${esc(review.reviewer_name)}</strong>
+                  <span class="text-xs text-slate-500">${esc(new Date(review.created_at).toLocaleDateString('th-TH'))}</span>
+                </div>
+                <div class="text-amber-500" aria-label="คะแนน ${rating} จาก 5 ดาว">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>
+                <p class="text-sm whitespace-pre-wrap">${esc(review.comment)}</p>
+              </article>
+            `;
+          }).join('')
+          : '<p class="text-sm text-slate-500">ยังไม่มีรีวิวที่เผยแพร่ เป็นคนแรกที่รีวิวร้านนี้ได้เลย</p>';
+      } catch (error) {
+        list.innerHTML = `<p class="text-sm text-rose-500">โหลดรีวิวไม่สำเร็จ: ${esc(error.message)}</p>`;
+      }
+    }
+
+    async function submitStoreReview(event) {
+      event.preventDefault();
+      const status = document.getElementById('storeReviewStatus');
+      const submitButton = document.getElementById('storeReviewSubmit');
+      const reviewerName = document.getElementById('review-customer-name').value.trim();
+      const comment = document.getElementById('review-comment').value.trim();
+      const rating = Number(new FormData(event.currentTarget).get('review-rating'));
+
+      if (!reviewerName || !comment || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+        status.textContent = 'กรุณากรอกชื่อ ความคิดเห็น และเลือกคะแนน 1-5 ดาว';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+      if (!sb) {
+        status.textContent = 'ส่งรีวิวไม่สำเร็จ: ไม่พบการเชื่อมต่อฐานข้อมูล';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+
+      submitButton.disabled = true;
+      status.textContent = 'กำลังส่งรีวิว...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        const { error } = await sb.from('store_reviews').insert({
+          store_name: viewStore.name,
+          reviewer_name: reviewerName,
+          rating,
+          comment
+        });
+        if (error) throw error;
+        document.getElementById('storeReviewForm').reset();
+        status.textContent = 'ส่งรีวิวแล้ว ขอบคุณครับ รีวิวจะแสดงหลังร้านตรวจสอบ';
+        status.className = 'text-sm font-bold text-emerald-600';
+      } catch (error) {
+        status.textContent = `ส่งรีวิวไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
     function onVisitorStoreChange() {
       const idx = parseInt(document.getElementById('visitor-store-select').value, 10) || 0;
       viewStore = visitorStores[idx] || visitorStores[0];
@@ -2600,6 +3154,11 @@
     }
 
     function switchRoleToOwner() {
+      if (!currentUser && !demoMode) {
+        showOnlyView('view-login');
+        setAuthMessage('กรุณาเข้าสู่ระบบก่อนเข้าหลังบ้านร้านค้า', true);
+        return;
+      }
       showOnlyView('view-owner');
       switchTab(currentTab);
     }
