@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FreshFlow Atelier — Premium Restaurant Operations</title>
+  <title>FreshFlow — ระบบจัดการร้านอาหารและค้นหาร้านค้า</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -409,11 +409,9 @@
     <div class="relative w-24 h-24 gyro-stage flex items-center justify-center mb-5">
       <div class="gyro-ring gyro-ring-1"></div>
       <div class="gyro-ring gyro-ring-2"></div>
-      <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-500/40">
-        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
-      </div>
+      <img src="assets/freshflow-logo.png" alt="FreshFlow" class="relative z-10 w-16 h-16 rounded-2xl object-cover shadow-2xl shadow-emerald-500/40" />
     </div>
-    <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 bg-clip-text text-transparent">FreshFlow AI 3D OS</h1>
+    <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300 bg-clip-text text-transparent">FreshFlow</h1>
     <p class="text-xs text-slate-400 mt-1">กำลังจัดเตรียมครัวและวัตถุดิบสำหรับวันนี้...</p>
   </div>
 
@@ -436,8 +434,8 @@
           <div class="gyro-ring gyro-ring-1"></div>
           <div class="gyro-ring gyro-ring-2"></div>
           <div class="gyro-ring gyro-ring-3"></div>
-          <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-2xl shadow-emerald-500/40 animate-float-3d">
-            <i data-lucide="layers" class="w-11 h-11"></i>
+          <div class="w-24 h-24 rounded-3xl overflow-hidden shadow-2xl shadow-emerald-500/40 animate-float-3d">
+            <img src="assets/freshflow-logo.png" alt="โลโก้ FreshFlow" class="w-full h-full object-cover" />
           </div>
           <!-- Floating 3D Orbital Badges -->
           <div class="absolute -top-2 -right-4 bento-card px-3 py-1.5 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-300 shadow-xl animate-float-3d">
@@ -457,7 +455,7 @@
             FreshFlow <span class="bg-gradient-to-r from-amber-700 via-lime-700 to-emerald-800 bg-clip-text text-transparent">Culinary Atelier</span>
           </h1>
           <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-md">
-            พื้นที่ทำงานสำหรับร้านอาหารระดับพรีเมียม จัดการวัตถุดิบ ต้นทุนเมนู ยอดขาย และการลด Food Waste ในมุมมองเดียว
+            ระบบสำหรับเจ้าของร้านจัดการร้านอาหาร และสำหรับลูกค้าค้นหาร้านค้าทั้งหมดที่เข้าร่วม FreshFlow
           </p>
         </div>
 
@@ -479,10 +477,14 @@
         <div class="bento-card tilt3d p-7 sm:p-9 space-y-5">
           <div class="glare-overlay"></div>
           <div class="z-layer-1 space-y-1">
-            <h2 class="text-2xl font-extrabold">เข้าสู่ระบบจัดการร้านค้า</h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">เข้าสู่ระบบเพื่อซิงก์ข้อมูลร้านค้ากับ Supabase Cloud</p>
+            <h2 id="auth-title" class="text-2xl font-extrabold">เข้าสู่ระบบเจ้าของร้าน</h2>
+            <p id="auth-description" class="text-xs text-slate-500 dark:text-slate-400">เข้าสู่ระบบหรือสมัครร้านค้าใหม่เพื่อเริ่มจัดการร้านด้วย FreshFlow</p>
           </div>
           <form id="login-form" onsubmit="handleLogin(event)" class="z-layer-1 space-y-4">
+            <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 p-1">
+              <button id="auth-mode-owner" type="button" onclick="setAuthMode('owner')" class="py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 shadow">เจ้าของร้าน</button>
+              <button id="auth-mode-customer" type="button" onclick="setAuthMode('customer')" class="py-2 rounded-lg text-xs font-bold text-slate-500">ลูกค้า</button>
+            </div>
             <div>
               <label class="block text-xs font-bold mb-1.5">อีเมลผู้ใช้งาน</label>
               <input id="auth-email" type="email" autocomplete="email" required class="w-full px-4 py-3 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-emerald-500" />
@@ -500,10 +502,14 @@
                 สมัครสมาชิกใหม่
               </button>
             </div>
+            <button type="button" onclick="guestVisit()" class="w-full py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline">ค้นหาร้านค้าโดยไม่ต้องเข้าสู่ระบบ</button>
           </form>
         </div>
       </div>
     </div>
+    <button onclick="openAdmin()" class="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/80 text-slate-300 hover:text-white text-[11px] font-semibold border border-white/10" aria-label="เข้าสู่ระบบ Admin Developer">
+      <i data-lucide="shield-check" class="w-4 h-4"></i> Admin Developer
+    </button>
   </section>
 
   <!-- =====================================================================
@@ -517,7 +523,7 @@
         <p class="text-sm text-slate-500 dark:text-slate-400">สัมผัสประสบการณ์ 3D Bento Workspace สำหรับเจ้าของร้าน หรือดูมุมมองหน้าร้านลูกค้า</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
         <div onclick="selectRole('owner')" class="bento-card tilt3d p-6 cursor-pointer group space-y-4">
           <div class="glare-overlay"></div>
           <div class="z-layer-2 w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center shadow-xl shadow-emerald-500/30">
@@ -540,16 +546,6 @@
           </div>
         </div>
 
-        <div id="btn-admin-entry" onclick="openAdmin()" class="bento-card tilt3d p-6 cursor-pointer group space-y-4">
-          <div class="glare-overlay"></div>
-          <div class="z-layer-2 w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white flex items-center justify-center shadow-xl shadow-violet-500/30">
-            <i data-lucide="shield-check" class="w-7 h-7"></i>
-          </div>
-          <div class="z-layer-1 space-y-1">
-            <h3 class="text-lg font-extrabold group-hover:text-violet-500 transition">ผู้ดูแลระบบ (Admin)</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">ตรวจสอบฐานข้อมูลร้านค้า สมาชิก และสถานะระบบคลาวด์ทั้งหมด</p>
-          </div>
-        </div>
       </div>
 
       <div>
@@ -574,11 +570,12 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
         <div>
           <label class="block font-bold mb-1">ชื่อร้านอาหาร / คาเฟ่</label>
-          <input id="onboard-store-name" type="text" value="ครัวสดใหม่ FreshFlow Kitchen" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+          <input id="onboard-store-name" type="text" required maxlength="160" placeholder="กรอกชื่อร้านของคุณ" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
         </div>
         <div>
           <label class="block font-bold mb-1">ประเภทร้านค้า</label>
-          <select id="onboard-store-type" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+          <select id="onboard-store-type" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+            <option value="" selected disabled>เลือกประเภทร้านค้า</option>
             <option value="ร้านอาหารตามสั่ง & คาเฟ่">ร้านอาหารตามสั่ง & คาเฟ่</option>
             <option value="ร้านกาแฟและเบเกอรี">ร้านกาแฟและเบเกอรี</option>
             <option value="ร้านอาหารสุขภาพ / Clean Food">ร้านอาหารสุขภาพ / Clean Food</option>
@@ -589,7 +586,7 @@
       <div class="space-y-2 text-xs">
         <label class="block font-bold">ค้นหาที่อยู่หรือเลือกย่านด่วน</label>
         <div class="flex flex-wrap gap-2">
-          <input id="onboard-address-input" type="text" value="สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร" class="flex-1 min-w-[200px] px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+          <input id="onboard-address-input" type="text" required maxlength="300" placeholder="กรอกที่อยู่ร้านของคุณ" class="flex-1 min-w-[200px] px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
           <button id="btn-search-address" type="button" onclick="searchAddressAndPin()" class="px-4 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-700 text-white font-bold">ค้นหาพิกัด</button>
         </div>
         <div class="flex flex-wrap gap-1.5 pt-1">
@@ -618,14 +615,12 @@
   <div id="view-visitor" class="hidden min-h-screen flex-col">
     <header class="sticky top-0 z-40 bento-card rounded-none border-x-0 border-t-0 px-4 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-500/30">
-          <i data-lucide="leaf" class="w-5 h-5"></i>
+        <div class="w-11 h-11 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/30">
+          <img src="assets/freshflow-logo.png" alt="FreshFlow" class="w-full h-full object-cover" />
         </div>
         <div>
-          <h1 id="visitor-store-header-title" class="font-extrabold text-lg leading-tight">ครัวสดใหม่ FreshFlow Kitchen</h1>
-          <p class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> เปิดรับออเดอร์ • ดีลลดขยะอาหาร AI ประจำวัน
-          </p>
+          <h1 id="visitor-store-header-title" class="font-extrabold text-lg leading-tight">FreshFlow</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400">ค้นหาร้านค้าที่เข้าร่วม FreshFlow</p>
         </div>
       </div>
 
@@ -637,8 +632,7 @@
         </nav>
         <div id="visitor-store-picker" class="flex items-center gap-2">
           <select id="visitor-store-select" onchange="onVisitorStoreChange()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold">
-            <option value="0">สาขาสุขุมวิท 24 (หลัก)</option>
-            <option value="1">สาขาสยามสแควร์</option>
+            <option value="">เลือกร้านค้า</option>
           </select>
         </div>
         <button onclick="switchRoleToOwner()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 dark:from-emerald-600 dark:to-teal-600 text-white text-xs font-bold hover:opacity-95 transition flex items-center gap-2 shadow-lg">
@@ -649,6 +643,20 @@
     </header>
 
     <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-8">
+      <section class="bento-card p-5 sm:p-7 space-y-4">
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-extrabold">ร้านค้าทั้งหมดใน FreshFlow</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">ค้นหาร้านอาหารและคาเฟ่ที่สมัครเข้าร่วมกับเรา</p>
+          </div>
+          <span id="visitor-store-count" class="text-xs font-bold text-emerald-600 dark:text-emerald-300"></span>
+        </div>
+        <label for="visitorStoreDirectorySearch" class="sr-only">ค้นหาชื่อร้านหรือที่อยู่</label>
+        <input id="visitorStoreDirectorySearch" type="search" oninput="renderVisitorStoreDirectory(this.value)" placeholder="ค้นหาด้วยชื่อร้านหรือที่อยู่..." class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-emerald-500" />
+        <div id="visitorStoreDirectory" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" aria-live="polite">
+          <p class="col-span-full text-sm text-slate-500">กำลังโหลดร้านค้า...</p>
+        </div>
+      </section>
       <div id="visitor-panel-home" class="storefront-panel space-y-8">
       <!-- 3D Isometric Food Showcase Hero -->
       <div class="bento-card tilt3d p-7 sm:p-10 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white border-none overflow-hidden">
@@ -818,8 +826,8 @@
       <div class="p-4 space-y-4">
         <div class="flex items-center justify-between gap-2 px-1">
           <div class="flex items-center gap-3 overflow-hidden">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600 flex items-center justify-center text-white font-extrabold shadow-lg shadow-emerald-500/30 shrink-0">
-              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            <div class="w-10 h-10 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/30 shrink-0">
+              <img src="assets/freshflow-logo.png" alt="FreshFlow" class="w-full h-full object-cover" />
             </div>
             <div class="sidebar-label truncate">
               <div class="flex items-center gap-1.5">
@@ -1732,8 +1740,9 @@
     <div class="max-w-6xl mx-auto bento-card p-6 sm:p-8 space-y-6">
       <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
-          <span class="px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-600 dark:text-violet-300 text-xs font-extrabold">Super Admin Console</span>
-          <h2 class="text-2xl font-extrabold mt-1">ระบบจัดการฐานข้อมูลกลาง FreshFlow Cloud</h2>
+          <span class="px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-600 dark:text-violet-300 text-xs font-extrabold">Admin Developer</span>
+          <h2 class="text-2xl font-extrabold mt-1">ดูแลซอฟต์แวร์ ระบบ และช่วยเหลือร้านค้า</h2>
+          <p class="text-xs text-slate-500 mt-1">จัดการบัญชีร้านค้า ตรวจสอบปัญหา และช่วยเหลือผู้ใช้งาน FreshFlow</p>
         </div>
         <div class="flex gap-2">
           <button onclick="goToRoleSelection()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">← กลับหน้าเลือกบทบาท</button>
@@ -1855,6 +1864,8 @@
     let sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
     let currentUser = null;
     let demoMode = false;
+    let customerSession = false;
+    let authMode = 'owner';
     let adminStoreRows = [];
     let adminContactRows = [];
     let cloudSaveTimer = null;
@@ -1869,11 +1880,8 @@
       lng: 100.5698,
       lineId: '@freshflow-shop'
     };
-    let visitorStores = [
-      { name: 'ครัวสดใหม่ FreshFlow (สาขาสุขุมวิท 24)', address: 'สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ', lat: 13.7262, lng: 100.5698 },
-      { name: 'ครัวสดใหม่ FreshFlow (สาขาสยามสแควร์)', address: 'สยามสแควร์ ซอย 3 ปทุมวัน กรุงเทพฯ', lat: 13.7456, lng: 100.5341 }
-    ];
-    let viewStore = visitorStores[0];
+    let visitorStores = [];
+    let viewStore = null;
     let soundEnabled = true;
     let currentTab = 'dashboard';
     let currentTimeframe = 'today';
@@ -2018,16 +2026,22 @@
       activePromotions = state.activePromotions;
       transactions = state.transactions;
       notifications = state.notifications;
-      Object.assign(visitorStores[0], {
-        name: currentStore.name,
-        address: currentStore.address,
-        lat: currentStore.lat,
-        lng: currentStore.lng
-      });
       const storeName = document.getElementById('owner-navbar-store-name');
       const storeAddress = document.getElementById('dash-store-address-label');
       if (storeName) storeName.textContent = currentStore.name;
       if (storeAddress) storeAddress.textContent = currentStore.address;
+    }
+
+    function createEmptyAccountState() {
+      return {
+        currentStore: { name: '', type: '', address: '', lat: 0, lng: 0, lineId: '' },
+        ingredients: [],
+        notes: [],
+        menuRecipes: [],
+        activePromotions: [],
+        transactions: [],
+        notifications: []
+      };
     }
 
     function renderPersistedViews() {
@@ -2054,6 +2068,21 @@
       element.classList.toggle('text-emerald-600', !isError);
     }
 
+    function setAuthMode(mode) {
+      if (!['owner', 'customer'].includes(mode)) return;
+      authMode = mode;
+      const ownerButton = document.getElementById('auth-mode-owner');
+      const customerButton = document.getElementById('auth-mode-customer');
+      ownerButton.className = `py-2 rounded-lg text-xs font-bold ${mode === 'owner' ? 'bg-white dark:bg-slate-700 shadow' : 'text-slate-500'}`;
+      customerButton.className = `py-2 rounded-lg text-xs font-bold ${mode === 'customer' ? 'bg-white dark:bg-slate-700 shadow' : 'text-slate-500'}`;
+      document.getElementById('auth-title').textContent = mode === 'owner' ? 'เข้าสู่ระบบเจ้าของร้าน' : 'เข้าสู่ระบบลูกค้า';
+      document.getElementById('auth-description').textContent = mode === 'owner'
+        ? 'เข้าสู่ระบบหรือสมัครร้านค้าใหม่เพื่อเริ่มจัดการร้านด้วย FreshFlow'
+        : 'เข้าสู่ระบบเพื่อใช้งานในมุมมองลูกค้า หรือค้นหาร้านค้าโดยไม่ต้องมีบัญชี';
+      document.getElementById('btn-signup').textContent = mode === 'owner' ? 'สมัครร้านค้าใหม่' : 'สมัครบัญชีลูกค้า';
+      setAuthMessage('', false);
+    }
+
     async function loadUserState() {
       const { data, error } = await sb
         .from('freshflow_user_state')
@@ -2064,8 +2093,10 @@
 
       if (data) {
         applyPersistedAppState(data.state);
-      } else if (!await saveUserState()) {
-        throw new Error('สร้างข้อมูลเริ่มต้นของบัญชีไม่สำเร็จ');
+        if (!await saveUserState()) throw new Error('ซิงก์โปรไฟล์ร้านค้าไม่สำเร็จ');
+      } else {
+        applyPersistedAppState(createEmptyAccountState());
+        if (!await saveUserState()) throw new Error('สร้างข้อมูลเริ่มต้นของบัญชีไม่สำเร็จ');
       }
       renderPersistedViews();
       setCloudStatus(data ? 'Supabase เชื่อมต่อแล้ว • ซิงก์ข้อมูล' : 'Supabase เชื่อมต่อแล้ว • บัญชีใหม่');
@@ -2099,6 +2130,21 @@
           if (error) {
             setCloudStatus('บันทึก Supabase ไม่สำเร็จ');
             showToast(`บันทึกข้อมูลไม่สำเร็จ: ${error.message}`);
+            return false;
+          }
+
+          const { error: publicStoreError } = await sb.from('freshflow_public_stores').upsert({
+            user_id: userId,
+            store_name: currentStore.name || '',
+            store_type: currentStore.type || '',
+            address: currentStore.address || '',
+            latitude: Number.isFinite(Number(currentStore.lat)) ? Number(currentStore.lat) : 0,
+            longitude: Number.isFinite(Number(currentStore.lng)) ? Number(currentStore.lng) : 0,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id' });
+          if (publicStoreError) {
+            setCloudStatus('บันทึกโปรไฟล์ร้านไม่สำเร็จ');
+            showToast(`บันทึกโปรไฟล์ร้านไม่สำเร็จ: ${publicStoreError.message}`);
             return false;
           }
 
@@ -2142,9 +2188,15 @@
       demoMode = false;
       profile.email = currentUser.email || '';
       document.getElementById('authUserEmail').textContent = profile.email;
+      customerSession = (currentUser.user_metadata || {}).account_type === 'customer';
       try {
-        await loadUserState();
-        showOnlyView('view-role-selection');
+        if (customerSession) {
+          setAuthMode('customer');
+          await switchRoleToVisitor();
+        } else {
+          await loadUserState();
+          showOnlyView('view-role-selection');
+        }
       } catch (loadError) {
         let extra = '';
         try {
@@ -2154,6 +2206,7 @@
           extra = ` (ออกจากระบบไม่สำเร็จ: ${signOutError.message})`;
         }
         currentUser = null;
+        customerSession = false;
         setAuthMessage(`โหลดข้อมูลจากฐานข้อมูลไม่สำเร็จ: ${loadError.message}${extra}`, true);
         setCloudStatus('เชื่อมต่อฐานข้อมูลไม่สำเร็จ');
       }
@@ -2475,11 +2528,16 @@
         if (error) throw error;
         currentUser = data.user;
         demoMode = false;
+        customerSession = authMode === 'customer';
         profile.email = currentUser.email || email;
         document.getElementById('authUserEmail').textContent = profile.email;
-        await loadUserState();
+        if (customerSession) {
+          await switchRoleToVisitor();
+        } else {
+          await loadUserState();
+        }
         document.getElementById('auth-password').value = '';
-        showOnlyView('view-role-selection');
+        if (!customerSession) showOnlyView('view-role-selection');
         chime();
       } catch (error) {
         let message = error.message;
@@ -2492,6 +2550,7 @@
           }
         }
         currentUser = null;
+        customerSession = false;
         setAuthMessage(`เข้าสู่ระบบไม่สำเร็จ: ${message}`, true);
       } finally {
         loginButton.disabled = signupButton.disabled = false;
@@ -2511,7 +2570,11 @@
       loginButton.disabled = signupButton.disabled = true;
       setAuthMessage('', true);
       try {
-        const { data, error } = await sb.auth.signUp({ email, password });
+        const { data, error } = await sb.auth.signUp({
+          email,
+          password,
+          options: { data: { account_type: authMode } }
+        });
         if (error) throw error;
         if (!data.session) {
           setAuthMessage('สมัครสมาชิกแล้ว กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ', false);
@@ -2519,11 +2582,13 @@
         }
         currentUser = data.user;
         demoMode = false;
+        customerSession = authMode === 'customer';
         profile.email = currentUser.email || email;
         document.getElementById('authUserEmail').textContent = profile.email;
-        await loadUserState();
+        if (customerSession) await switchRoleToVisitor();
+        else await loadUserState();
         document.getElementById('auth-password').value = '';
-        showOnlyView('view-role-selection');
+        if (!customerSession) showOnlyView('view-role-selection');
         chime();
       } catch (error) {
         let message = error.message;
@@ -2536,6 +2601,7 @@
           }
         }
         currentUser = null;
+        customerSession = false;
         setAuthMessage(`สมัครสมาชิกไม่สำเร็จ: ${message}`, true);
       } finally {
         loginButton.disabled = signupButton.disabled = false;
@@ -2545,6 +2611,11 @@
     function restoreDemoState() {
       applyPersistedAppState(JSON.parse(JSON.stringify(demoSeedState)));
       profile = { email: 'owner@freshflow.ai', role: 'owner' };
+      visitorStores = [
+        { id: 'demo-main', name: currentStore.name, type: currentStore.type, address: currentStore.address, lat: currentStore.lat, lng: currentStore.lng },
+        { id: 'demo-siam', name: 'ครัวสดใหม่ FreshFlow (สาขาสยามสแควร์)', type: currentStore.type, address: 'สยามสแควร์ ซอย 3 ปทุมวัน กรุงเทพฯ', lat: 13.7456, lng: 100.5341 }
+      ];
+      viewStore = visitorStores[0];
       renderPersistedViews();
     }
 
@@ -2562,6 +2633,7 @@
         currentUser = null;
       }
       demoMode = true;
+      customerSession = false;
       restoreDemoState();
       chime();
       showOnlyView('view-owner');
@@ -2575,8 +2647,17 @@
     function selectRole(role) {
       profile.role = role;
       if (role === 'owner') {
-        showOnlyView('view-owner');
-        switchTab('dashboard');
+        if (customerSession) {
+          showOnlyView('view-visitor');
+          showToast('บัญชีลูกค้าไม่สามารถเปิดหลังบ้านร้านค้าได้');
+          return;
+        }
+        if (!currentStore.name || !currentStore.address || !currentStore.type) {
+          openOnboardingAgain();
+        } else {
+          showOnlyView('view-owner');
+          switchTab('dashboard');
+        }
       } else if (role === 'visitor') {
         switchRoleToVisitor();
       }
@@ -2606,7 +2687,8 @@
           .maybeSingle();
         if (error) throw error;
         if (!data || data.role !== 'admin') {
-          showOnlyView('view-role-selection');
+          showOnlyView('view-login');
+          setAuthMessage('บัญชีนี้ไม่มีสิทธิ์ Admin Developer', true);
           showToast('บัญชีนี้ไม่มีสิทธิ์ผู้ดูแลระบบ');
           return;
         }
@@ -2818,8 +2900,10 @@
     function backToLogin() { showOnlyView('view-login'); }
     function goToRoleSelection() { showOnlyView('view-role-selection'); }
     async function logout() {
-      const saved = await saveUserState();
-      if (!saved) return;
+      if (!customerSession) {
+        const saved = await saveUserState();
+        if (!saved) return;
+      }
       try {
         const { error } = await sb.auth.signOut();
         if (error) throw error;
@@ -2829,12 +2913,16 @@
       }
       currentUser = null;
       demoMode = false;
+      customerSession = false;
       restoreDemoState();
       showOnlyView('view-login');
       showToast('ออกจากระบบเรียบร้อยแล้ว');
     }
 
     function openOnboardingAgain() {
+      document.getElementById('onboard-store-name').value = currentStore.name || '';
+      document.getElementById('onboard-store-type').value = currentStore.type || '';
+      document.getElementById('onboard-address-input').value = currentStore.address || '';
       showOnlyView('view-store-onboarding');
       setTimeout(() => {
         if (typeof L === 'undefined') return;
@@ -2897,30 +2985,103 @@
 
     function finishOnboardingAndEnterDashboard() {
       const name = document.getElementById('onboard-store-name').value.trim();
+      const type = document.getElementById('onboard-store-type').value;
       const addr = document.getElementById('onboard-address-input').value.trim();
-      if (name) currentStore.name = name;
-      if (addr) currentStore.address = addr;
+      if (!name || !type || !addr) {
+        showToast('กรุณากรอกชื่อร้าน ประเภทร้านค้า และที่อยู่ให้ครบก่อนบันทึก');
+        return;
+      }
+      currentStore.name = name;
+      currentStore.type = type;
+      currentStore.address = addr;
       scheduleCloudSave();
       document.getElementById('owner-navbar-store-name').textContent = currentStore.name;
       document.getElementById('dash-store-address-label').textContent = currentStore.address;
-      // mutate in place so viewStore (which references this object) stays in sync
-      Object.assign(visitorStores[0], { name: currentStore.name, address: currentStore.address, lat: currentStore.lat, lng: currentStore.lng });
       chime();
       showOnlyView('view-owner');
       switchTab('dashboard');
       showToast('บันทึกข้อมูลร้านค้าและพิกัด GPS เรียบร้อยแล้ว');
     }
 
-    function switchRoleToVisitor() {
+    async function loadPublicStores() {
+      if (!sb) throw new Error('Supabase ยังไม่พร้อมใช้งาน');
+      const { data, error } = await sb
+        .from('freshflow_public_stores')
+        .select('user_id,store_name,store_type,address,latitude,longitude')
+        .order('store_name');
+      if (error) throw error;
+
+      visitorStores = (data || []).map(store => ({
+        id: store.user_id,
+        name: store.store_name,
+        type: store.store_type,
+        address: store.address,
+        lat: Number(store.latitude) || 0,
+        lng: Number(store.longitude) || 0
+      }));
+      if (demoMode && !visitorStores.length) {
+        visitorStores = [
+          { id: 'demo-main', name: 'ครัวสดใหม่ FreshFlow (สาขาสุขุมวิท 24)', address: 'สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ', lat: 13.7262, lng: 100.5698 },
+          { id: 'demo-siam', name: 'ครัวสดใหม่ FreshFlow (สาขาสยามสแควร์)', address: 'สยามสแควร์ ซอย 3 ปทุมวัน กรุงเทพฯ', lat: 13.7456, lng: 100.5341 }
+        ];
+      }
+
+      if (!viewStore || !visitorStores.some(store => store.id === viewStore.id)) {
+        viewStore = visitorStores[0] || null;
+      }
+      renderVisitorStorePicker();
+      renderVisitorStoreDirectory(document.getElementById('visitorStoreDirectorySearch').value);
+    }
+
+    function renderVisitorStorePicker() {
+      const picker = document.getElementById('visitor-store-picker');
+      const select = document.getElementById('visitor-store-select');
+      picker.classList.toggle('hidden', visitorStores.length < 2);
+      select.innerHTML = visitorStores.map((store, index) =>
+        `<option value="${index}" ${viewStore && store.id === viewStore.id ? 'selected' : ''}>${esc(store.name)}</option>`
+      ).join('');
+    }
+
+    function renderVisitorStoreDirectory(query) {
+      const container = document.getElementById('visitorStoreDirectory');
+      if (!container) return;
+      const term = String(query || '').trim().toLocaleLowerCase('th-TH');
+      const matches = visitorStores.filter(store =>
+        `${store.name} ${store.type || ''} ${store.address}`.toLocaleLowerCase('th-TH').includes(term)
+      );
+      document.getElementById('visitor-store-count').textContent = `${visitorStores.length} ร้าน`;
+      container.innerHTML = matches.length
+        ? matches.map(store => {
+          const index = visitorStores.indexOf(store);
+          return `
+            <article class="bento-card p-5 space-y-3">
+              <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-300">${esc(store.type || 'ร้านค้า FreshFlow')}</span>
+              <h3 class="font-extrabold">${esc(store.name)}</h3>
+              <p class="text-xs text-slate-500">${esc(store.address)}</p>
+              <button onclick="selectVisitorStoreFromSearch(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">ดูข้อมูลร้าน</button>
+            </article>
+          `;
+        }).join('')
+        : `<p class="col-span-full text-sm text-slate-500">${visitorStores.length ? 'ไม่พบร้านค้าที่ตรงกับคำค้น' : 'ยังไม่มีร้านค้าที่เผยแพร่ข้อมูล กดสมัครร้านค้าเพื่อเพิ่มร้านของคุณ'}</p>`;
+      initTilt3D();
+    }
+
+    async function switchRoleToVisitor() {
       showOnlyView('view-visitor');
+      try {
+        await loadPublicStores();
+      } catch (error) {
+        document.getElementById('visitorStoreDirectory').innerHTML = `<p class="col-span-full text-sm text-rose-500">โหลดรายชื่อร้านค้าไม่สำเร็จ: ${esc(error.message)}</p>`;
+        showToast(`โหลดรายชื่อร้านค้าไม่สำเร็จ: ${error.message}`);
+      }
       showStorefrontPanel('home');
-      document.getElementById('visitor-store-header-title').textContent = viewStore.name;
-      document.getElementById('visitor-store-address-display').textContent = viewStore.address;
-      document.getElementById('contact-store-name').textContent = viewStore.name;
+      document.getElementById('visitor-store-header-title').textContent = viewStore ? viewStore.name : 'FreshFlow';
+      document.getElementById('visitor-store-address-display').textContent = viewStore ? viewStore.address : 'เลือกร้านค้าเพื่อดูรายละเอียด';
+      document.getElementById('contact-store-name').textContent = viewStore ? viewStore.name : '';
       renderStorefrontPromos();
       loadApprovedStoreReviews();
       setTimeout(() => {
-        if (typeof L === 'undefined') return;
+        if (typeof L === 'undefined' || !viewStore) return;
         if (!visitorMapInstance) {
           visitorMapInstance = L.map('visitor-map').setView([viewStore.lat, viewStore.lng], 15);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(visitorMapInstance);
@@ -2945,7 +3106,7 @@
         document.getElementById(id).classList.toggle('hidden', name !== panelName);
       });
       if (panelName === 'contact') {
-        document.getElementById('contact-store-name').textContent = viewStore.name;
+        document.getElementById('contact-store-name').textContent = viewStore ? viewStore.name : '';
       }
       if (panelName === 'search') {
         searchStorefront(document.getElementById('storefrontSearchInput').value);
@@ -2975,30 +3136,33 @@
           `);
         }
       });
-      activePromotions.forEach((promo, index) => {
-        if (`${promo.title} ${promo.tag}`.toLocaleLowerCase('th-TH').includes(term)) {
-          matches.push(`
-            <article class="bento-card p-5 space-y-3">
-              <span class="text-[10px] font-extrabold text-amber-600">โปรโมชัน</span>
-              <h3 class="font-extrabold">${esc(promo.title)}</h3>
-              <p class="text-sm font-extrabold text-emerald-600">฿${Number(promo.promoPrice).toLocaleString()}</p>
-              <button onclick="showPromoFromSearch(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">ดูโปรโมชัน</button>
-            </article>
-          `);
-        }
-      });
-      menuRecipes.forEach(recipe => {
-        if (`${recipe.name} ${recipe.category}`.toLocaleLowerCase('th-TH').includes(term)) {
-          matches.push(`
-            <article class="bento-card p-5 space-y-3">
-              <span class="text-[10px] font-extrabold text-violet-600">เมนู</span>
-              <h3 class="font-extrabold">${esc(recipe.name)}</h3>
-              <p class="text-xs text-slate-500">${esc(recipe.category)}</p>
-              <p class="text-sm font-extrabold text-emerald-600">฿${Number(recipe.price).toLocaleString()}</p>
-            </article>
-          `);
-        }
-      });
+      const canSearchStoreContent = demoMode || (currentUser && viewStore && currentUser.id === viewStore.id);
+      if (canSearchStoreContent) {
+        activePromotions.forEach((promo, index) => {
+          if (`${promo.title} ${promo.tag}`.toLocaleLowerCase('th-TH').includes(term)) {
+            matches.push(`
+              <article class="bento-card p-5 space-y-3">
+                <span class="text-[10px] font-extrabold text-amber-600">โปรโมชัน</span>
+                <h3 class="font-extrabold">${esc(promo.title)}</h3>
+                <p class="text-sm font-extrabold text-emerald-600">฿${Number(promo.promoPrice).toLocaleString()}</p>
+                <button onclick="showPromoFromSearch(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">ดูโปรโมชัน</button>
+              </article>
+            `);
+          }
+        });
+        menuRecipes.forEach(recipe => {
+          if (`${recipe.name} ${recipe.category}`.toLocaleLowerCase('th-TH').includes(term)) {
+            matches.push(`
+              <article class="bento-card p-5 space-y-3">
+                <span class="text-[10px] font-extrabold text-violet-600">เมนู</span>
+                <h3 class="font-extrabold">${esc(recipe.name)}</h3>
+                <p class="text-xs text-slate-500">${esc(recipe.category)}</p>
+                <p class="text-sm font-extrabold text-emerald-600">฿${Number(recipe.price).toLocaleString()}</p>
+              </article>
+            `);
+          }
+        });
+      }
 
       resultsContainer.innerHTML = matches.length
         ? matches.join('')
@@ -3022,6 +3186,11 @@
       event.preventDefault();
       const status = document.getElementById('storeContactStatus');
       const submitButton = document.getElementById('storeContactSubmit');
+      if (!viewStore) {
+        status.textContent = 'กรุณาเลือกร้านค้าที่ต้องการติดต่อ';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
       if (!sb) {
         status.textContent = 'ระบบติดต่อร้านยังเชื่อมต่อฐานข้อมูลไม่ได้ กรุณาลองใหม่ภายหลัง';
         status.className = 'text-sm font-bold text-rose-500';
@@ -3061,6 +3230,10 @@
 
     async function loadApprovedStoreReviews() {
       const list = document.getElementById('storefrontReviewList');
+      if (!viewStore) {
+        list.innerHTML = '<p class="text-sm text-slate-500">เลือกร้านค้าเพื่อดูรีวิว</p>';
+        return;
+      }
       if (!sb) {
         list.innerHTML = '<p class="text-sm text-rose-500">โหลดรีวิวไม่สำเร็จ: ไม่พบการเชื่อมต่อฐานข้อมูล</p>';
         return;
@@ -3106,6 +3279,11 @@
       event.preventDefault();
       const status = document.getElementById('storeReviewStatus');
       const submitButton = document.getElementById('storeReviewSubmit');
+      if (!viewStore) {
+        status.textContent = 'กรุณาเลือกร้านค้าที่ต้องการรีวิว';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
       const reviewerName = document.getElementById('review-customer-name').value.trim();
       const comment = document.getElementById('review-comment').value.trim();
       const rating = Number(new FormData(event.currentTarget).get('review-rating'));
@@ -3144,17 +3322,18 @@
     }
 
     function onVisitorStoreChange() {
-      const idx = parseInt(document.getElementById('visitor-store-select').value, 10) || 0;
-      viewStore = visitorStores[idx] || visitorStores[0];
+      const idx = parseInt(document.getElementById('visitor-store-select').value, 10);
+      viewStore = Number.isInteger(idx) ? visitorStores[idx] || null : null;
       switchRoleToVisitor();
     }
 
     function openGoogleMapsDirections() {
+      if (!viewStore) return;
       window.open(`https://www.google.com/maps/search/?api=1&query=${viewStore.lat},${viewStore.lng}`, '_blank');
     }
 
     function switchRoleToOwner() {
-      if (!currentUser && !demoMode) {
+      if ((!currentUser || customerSession) && !demoMode) {
         showOnlyView('view-login');
         setAuthMessage('กรุณาเข้าสู่ระบบก่อนเข้าหลังบ้านร้านค้า', true);
         return;
@@ -4121,6 +4300,11 @@
     function renderStorefrontPromos() {
       const grid = document.getElementById('storefrontPromoGrid');
       if (!grid) return;
+      const canShowPromotions = demoMode || (currentUser && viewStore && currentUser.id === viewStore.id);
+      if (!canShowPromotions) {
+        grid.innerHTML = '<p class="col-span-full text-sm text-slate-500">ร้านค้านี้ยังไม่มีโปรโมชันเผยแพร่</p>';
+        return;
+      }
       grid.innerHTML = activePromotions.map((p, promoIdx) => `
         <div class="bento-card tilt3d p-6 flex flex-col justify-between space-y-4">
           <div class="glare-overlay"></div>
