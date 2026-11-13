@@ -629,6 +629,7 @@
         <nav class="flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 p-1" aria-label="เมนูหน้าร้าน">
           <button onclick="showStorefrontPanel('home')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">หน้าแรก</button>
           <button onclick="showStorefrontPanel('search')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ค้นหา</button>
+          <button onclick="showStorefrontPanel('custom-menu')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">วัตถุดิบ / เมนูพิเศษ</button>
           <button onclick="showStorefrontPanel('contact')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ติดต่อร้าน</button>
         </nav>
         <div id="visitor-store-picker" class="flex items-center gap-2">
@@ -809,6 +810,49 @@
           </form>
         </div>
       </section>
+
+      <section id="visitor-panel-custom-menu" class="storefront-panel hidden space-y-5">
+        <div class="space-y-1">
+          <h2 class="text-2xl font-extrabold">วัตถุดิบที่ร้านเผยแพร่ และเมนูพิเศษของคุณ</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">ดูวัตถุดิบที่ร้านเลือกเปิดเผย แล้วส่งคำขอเมนูให้ร้านพิจารณาได้ โดยยังไม่ใช่คำสั่งซื้อ</p>
+        </div>
+
+        <div class="bento-card p-5 space-y-3">
+          <h3 class="font-extrabold">วัตถุดิบของ <span id="custom-menu-store-name">เลือกร้านค้าก่อน</span></h3>
+          <p class="text-xs text-slate-500">แสดงเฉพาะชื่อและสถานะมี/หมด ไม่แสดงจำนวน ต้นทุน หรือวันหมดอายุ</p>
+          <div id="visitor-public-ingredients" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" aria-live="polite">
+            <p class="text-sm text-slate-500">เลือกร้านค้าเพื่อดูวัตถุดิบที่ร้านเผยแพร่</p>
+          </div>
+        </div>
+
+        <form id="custom-menu-request-form" onsubmit="submitCustomMenuRequest(event)" class="bento-card max-w-3xl p-5 sm:p-7 space-y-4">
+          <div>
+            <h3 class="text-lg font-extrabold">ส่งคำขอเมนูที่อยากรับประทาน</h3>
+            <p class="text-xs text-slate-500 mt-1">ร้านจะตรวจสอบวัตถุดิบ ความเป็นไปได้ และความปลอดภัยก่อนตอบกลับ</p>
+          </div>
+          <div>
+            <label for="custom-menu-name" class="block text-sm font-bold mb-1">ชื่อเมนูที่ต้องการ</label>
+            <input id="custom-menu-name" type="text" maxlength="160" required placeholder="เช่น หมกปลาแซลมอน, อ่อมปลาค่อ หรือเมนูวากิวตามต้องการ" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+          </div>
+          <div>
+            <label for="custom-menu-notes" class="block text-sm font-bold mb-1">รายละเอียดเพิ่มเติม (ไม่บังคับ)</label>
+            <textarea id="custom-menu-notes" rows="3" maxlength="1000" placeholder="วัตถุดิบที่อยากเพิ่ม/ไม่ใส่ หรือระดับความเผ็ด" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="custom-menu-customer-name" class="block text-sm font-bold mb-1">ชื่อสำหรับติดต่อกลับ</label>
+              <input id="custom-menu-customer-name" type="text" maxlength="120" autocomplete="name" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+            <div>
+              <label for="custom-menu-contact" class="block text-sm font-bold mb-1">เบอร์โทรหรืออีเมล</label>
+              <input id="custom-menu-contact" type="text" maxlength="160" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+          </div>
+          <p class="text-xs text-slate-500">ข้อมูลติดต่อจะส่งให้ร้านที่เลือกเพื่อใช้ตอบคำขอนี้เท่านั้น</p>
+          <p id="custom-menu-request-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
+          <button id="custom-menu-request-submit" type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg">ส่งคำขอให้ร้าน</button>
+        </form>
+      </section>
     </main>
   </div>
 
@@ -821,7 +865,7 @@
     <div id="mobileSidebarBackdrop" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 hidden lg:hidden"></div>
 
     <!-- ===================================================================
-         1. LEFT COLLAPSIBLE SIDEBAR (7 Navigation Items)
+         1. LEFT COLLAPSIBLE SIDEBAR (9 Navigation Items)
     =================================================================== -->
     <aside id="leftSidebar" class="no-print fixed lg:sticky top-0 left-0 z-50 h-screen w-72 shrink-0 bento-card rounded-none border-y-0 border-l-0 flex flex-col justify-between transition-all duration-300 -translate-x-full lg:translate-x-0">
       <div class="p-4 space-y-4">
@@ -903,6 +947,14 @@
           <button onclick="switchTab('packages')" data-tab="packages" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
             <i data-lucide="badge-percent" class="w-4 h-4 shrink-0 text-amber-500"></i>
             <span class="sidebar-label truncate">8. แพ็กเกจสมาชิก</span>
+          </button>
+
+          <button onclick="switchTab('custom-requests')" data-tab="custom-requests" class="nav-btn w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <span class="flex items-center gap-3 min-w-0">
+              <i data-lucide="clipboard-list" class="w-4 h-4 shrink-0 text-violet-500"></i>
+              <span class="sidebar-label truncate">9. คำขอเมนูลูกค้า</span>
+            </span>
+            <span id="custom-request-badge" class="sidebar-label hidden px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-violet-500 text-white">0</span>
           </button>
         </nav>
       </div>
@@ -1217,7 +1269,7 @@
               <form id="ingredientForm" onsubmit="addManualIngredient(event)" class="space-y-3">
                 <div>
                   <label class="block text-xs font-bold mb-1">ชื่อวัตถุดิบ</label>
-                  <input id="manual-name" type="text" required placeholder="เช่น เนื้ออกไก่สด, ไข่ไก่เบอร์ 1, ใบกะเพรา" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  <input id="manual-name" type="text" maxlength="160" required placeholder="เช่น เนื้ออกไก่สด, ไข่ไก่เบอร์ 1, ใบกะเพรา" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                   <div>
@@ -1257,6 +1309,7 @@
                   <div>
                     <h3 class="text-base font-extrabold">รายการวัตถุดิบในคลังปัจจุบัน (<span id="ingredientCountBadge">0</span> รายการ)</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400">ซิงก์เข้าสู่สมองกล AI เพื่อคำนวณกำลังผลิตและจุดระบายสต็อก</p>
+                    <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">เลือก “เผยแพร่” เฉพาะวัตถุดิบที่ต้องการให้ลูกค้าเห็น ระบบจะแสดงเพียงชื่อและสถานะมี/หมด</p>
                   </div>
                   <div class="text-right">
                     <span class="text-xs text-slate-400">มูลค่ารวมวัตถุดิบ</span>
@@ -1272,6 +1325,7 @@
                         <th class="py-2.5 px-3.5">ปริมาณ</th>
                         <th class="py-2.5 px-3.5">อายุเหลือ</th>
                         <th class="py-2.5 px-3.5 text-right">ต้นทุน</th>
+                        <th class="py-2.5 px-3.5 text-center">เผยแพร่</th>
                         <th class="py-2.5 px-3.5 text-center">จัดการ</th>
                       </tr>
                     </thead>
@@ -1771,6 +1825,20 @@
           </div>
         </section>
 
+        <section id="tab-custom-requests" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">คำขอเมนูพิเศษจากลูกค้า</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">ตรวจสอบเมนูที่ลูกค้าต้องการ แล้วตอบรับหรือปฏิเสธคำขอ</p>
+            </div>
+            <button onclick="loadCustomMenuRequests()" class="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">รีเฟรชรายการ</button>
+          </div>
+          <p id="custom-request-owner-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
+          <div id="custom-menu-requests-list" class="space-y-3">
+            <p class="text-sm text-slate-500">เปิดหน้านี้เพื่อโหลดคำขอจากลูกค้า</p>
+          </div>
+        </section>
+
       </main>
     </div>
 
@@ -2096,6 +2164,9 @@
       lineId: '@freshflow-shop'
     };
     let visitorStores = [];
+    let visitorStoreIngredients = [];
+    let visitorIngredientLoadError = '';
+    let customMenuRequests = [];
     let viewStore = null;
     let soundEnabled = true;
     let currentTab = 'dashboard';
@@ -2376,6 +2447,23 @@
       cloudSaveTimer = setTimeout(() => { saveUserState(); }, 500);
     }
 
+    async function syncPublicStoreIngredients(userId) {
+      const rows = ingredients
+        .filter(ingredient => ingredient.publicVisible)
+        .map(ingredient => ({
+          user_id: userId,
+          ingredient_id: String(ingredient.id),
+          ingredient_name: ingredient.name,
+          is_available: Number(ingredient.qty) > 0,
+          updated_at: new Date().toISOString()
+        }));
+      if (!rows.length) return;
+      const { error } = await sb
+        .from('freshflow_public_store_ingredients')
+        .upsert(rows, { onConflict: 'user_id,ingredient_id' });
+      if (error) throw error;
+    }
+
     async function saveUserState() {
       clearTimeout(cloudSaveTimer);
       cloudSaveTimer = null;
@@ -2412,6 +2500,14 @@
           if (publicStoreError) {
             setCloudStatus('บันทึกโปรไฟล์ร้านไม่สำเร็จ');
             showToast(`บันทึกโปรไฟล์ร้านไม่สำเร็จ: ${publicStoreError.message}`);
+            return false;
+          }
+
+          try {
+            await syncPublicStoreIngredients(userId);
+          } catch (error) {
+            setCloudStatus('บันทึกวัตถุดิบที่เผยแพร่ไม่สำเร็จ');
+            showToast(`บันทึกข้อมูลวัตถุดิบสาธารณะไม่สำเร็จ: ${error.message}`);
             return false;
           }
 
@@ -3672,10 +3768,25 @@
         lat: Number(store.latitude) || 0,
         lng: Number(store.longitude) || 0
       }));
+      const { data: ingredientData, error: ingredientError } = await sb
+        .from('freshflow_public_store_ingredients')
+        .select('user_id,ingredient_id,ingredient_name,is_available')
+        .order('ingredient_name');
+      visitorIngredientLoadError = ingredientError ? ingredientError.message : '';
+      visitorStoreIngredients = ingredientError ? [] : ingredientData || [];
+
       if (demoMode && !visitorStores.length) {
         visitorStores = [
           { id: 'demo-main', name: 'ครัวสดใหม่ FreshFlow (สาขาสุขุมวิท 24)', address: 'สุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพฯ', lat: 13.7262, lng: 100.5698 },
           { id: 'demo-siam', name: 'ครัวสดใหม่ FreshFlow (สาขาสยามสแควร์)', address: 'สยามสแควร์ ซอย 3 ปทุมวัน กรุงเทพฯ', lat: 13.7456, lng: 100.5341 }
+        ];
+      }
+      if (demoMode && visitorStores.some(store => String(store.id).startsWith('demo-')) && !visitorStoreIngredients.length) {
+        visitorIngredientLoadError = '';
+        visitorStoreIngredients = [
+          { user_id: 'demo-main', ingredient_id: 'salmon', ingredient_name: 'ปลาแซลมอน', is_available: true },
+          { user_id: 'demo-main', ingredient_id: 'basil', ingredient_name: 'ใบกะเพราสด', is_available: true },
+          { user_id: 'demo-siam', ingredient_id: 'wagyu', ingredient_name: 'เนื้อวากิว', is_available: true }
         ];
       }
 
@@ -3695,6 +3806,36 @@
       ).join('');
     }
 
+    function getPublicIngredientsForStore(storeId) {
+      return visitorStoreIngredients.filter(item => item.user_id === storeId);
+    }
+
+    function renderVisitorPublicIngredients() {
+      const container = document.getElementById('visitor-public-ingredients');
+      const storeName = document.getElementById('custom-menu-store-name');
+      if (!container || !storeName) return;
+      storeName.textContent = viewStore ? viewStore.name : 'เลือกร้านก่อน';
+
+      if (visitorIngredientLoadError) {
+        container.innerHTML = `<p class="col-span-full text-sm text-rose-500">โหลดวัตถุดิบไม่สำเร็จ: ${esc(visitorIngredientLoadError)} กรุณาให้ผู้ดูแลติดตั้ง schema ล่าสุด</p>`;
+        return;
+      }
+      if (!viewStore) {
+        container.innerHTML = '<p class="col-span-full text-sm text-slate-500">เลือกร้านค้าจากรายการร้านก่อน</p>';
+        return;
+      }
+
+      const items = getPublicIngredientsForStore(viewStore.id);
+      container.innerHTML = items.length
+        ? items.map(item => `
+          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-between gap-2">
+            <span class="text-sm font-bold">${esc(item.ingredient_name)}</span>
+            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.is_available ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700'}">${item.is_available ? 'มี' : 'หมด'}</span>
+          </div>
+        `).join('')
+        : '<p class="col-span-full text-sm text-slate-500">ร้านนี้ยังไม่ได้เลือกเผยแพร่วัตถุดิบ</p>';
+    }
+
     function renderVisitorStoreDirectory(query) {
       const container = document.getElementById('visitorStoreDirectory');
       if (!container) return;
@@ -3706,12 +3847,22 @@
       container.innerHTML = matches.length
         ? matches.map(store => {
           const index = visitorStores.indexOf(store);
+          const storeIngredients = getPublicIngredientsForStore(store.id);
+          const ingredientPreview = visitorIngredientLoadError
+            ? `<p class="text-[11px] text-rose-500">โหลดวัตถุดิบไม่สำเร็จ: ${esc(visitorIngredientLoadError)}</p>`
+            : storeIngredients.length
+              ? `<p class="text-[11px] text-slate-500">วัตถุดิบที่ร้านเผยแพร่ ${storeIngredients.length} รายการ: ${storeIngredients.slice(0, 3).map(item => esc(item.ingredient_name)).join('、')}${storeIngredients.length > 3 ? '…' : ''}</p>`
+              : '<p class="text-[11px] text-slate-500">ร้านยังไม่ได้เผยแพร่วัตถุดิบ</p>';
           return `
             <article class="bento-card p-5 space-y-3">
               <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-300">${esc(store.type || 'ร้านค้า FreshFlow')}</span>
               <h3 class="font-extrabold">${esc(store.name)}</h3>
               <p class="text-xs text-slate-500">${esc(store.address)}</p>
-              <button onclick="selectVisitorStoreFromSearch(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">ดูข้อมูลร้าน</button>
+              ${ingredientPreview}
+              <div class="flex flex-wrap gap-2">
+                <button onclick="selectVisitorStoreFromSearch(${index})" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-xs font-bold">ดูข้อมูลร้าน</button>
+                <button onclick="selectVisitorStoreForCustomMenu(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">วัตถุดิบ / ขอเมนูพิเศษ</button>
+              </div>
             </article>
           `;
         }).join('')
@@ -3719,7 +3870,7 @@
       initTilt3D();
     }
 
-    async function switchRoleToVisitor() {
+    async function switchRoleToVisitor(panelName = 'home') {
       showOnlyView('view-visitor');
       try {
         await loadPublicStores();
@@ -3727,7 +3878,7 @@
         document.getElementById('visitorStoreDirectory').innerHTML = `<p class="col-span-full text-sm text-rose-500">โหลดรายชื่อร้านค้าไม่สำเร็จ: ${esc(error.message)}</p>`;
         showToast(`โหลดรายชื่อร้านค้าไม่สำเร็จ: ${error.message}`);
       }
-      showStorefrontPanel('home');
+      showStorefrontPanel(panelName);
       document.getElementById('visitor-store-header-title').textContent = viewStore ? viewStore.name : 'FreshFlow';
       document.getElementById('visitor-store-address-display').textContent = viewStore ? viewStore.address : 'เลือกร้านค้าเพื่อดูรายละเอียด';
       document.getElementById('contact-store-name').textContent = viewStore ? viewStore.name : '';
@@ -3752,7 +3903,8 @@
       const panelIds = {
         home: 'visitor-panel-home',
         search: 'visitor-panel-search',
-        contact: 'visitor-panel-contact'
+        contact: 'visitor-panel-contact',
+        'custom-menu': 'visitor-panel-custom-menu'
       };
       if (!panelIds[panelName]) return;
       Object.entries(panelIds).forEach(([name, id]) => {
@@ -3764,6 +3916,7 @@
       if (panelName === 'search') {
         searchStorefront(document.getElementById('storefrontSearchInput').value);
       }
+      if (panelName === 'custom-menu') renderVisitorPublicIngredients();
       initTilt3D();
     }
 
@@ -3881,6 +4034,60 @@
       }
     }
 
+    async function submitCustomMenuRequest(event) {
+      event.preventDefault();
+      const status = document.getElementById('custom-menu-request-status');
+      const submitButton = document.getElementById('custom-menu-request-submit');
+      if (!viewStore) {
+        status.textContent = 'กรุณาเลือกร้านค้าที่ต้องการส่งคำขอ';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+
+      const menuRequest = document.getElementById('custom-menu-name').value.trim();
+      const notesText = document.getElementById('custom-menu-notes').value.trim();
+      const customerName = document.getElementById('custom-menu-customer-name').value.trim();
+      const contactInfo = document.getElementById('custom-menu-contact').value.trim();
+      if (!menuRequest || !customerName || !contactInfo) {
+        status.textContent = 'กรุณากรอกชื่อเมนู ชื่อผู้ติดต่อ และช่องทางติดต่อให้ครบ';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+      if (!sb) {
+        status.textContent = 'ส่งคำขอไม่สำเร็จ: ระบบยังเชื่อมต่อฐานข้อมูลไม่ได้';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+      if (demoMode || String(viewStore.id).startsWith('demo-')) {
+        status.textContent = 'โหมด Demo ไม่ได้ส่งคำขอจริง เลือกร้านที่สมัครใช้งาน FreshFlow เพื่อส่งคำขอ';
+        status.className = 'text-sm font-bold text-amber-600';
+        return;
+      }
+
+      submitButton.disabled = true;
+      status.textContent = 'กำลังส่งคำขอให้ร้าน...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        const { error } = await sb.from('freshflow_custom_menu_requests').insert({
+          store_user_id: viewStore.id,
+          store_name: viewStore.name,
+          customer_name: customerName,
+          contact_info: contactInfo,
+          menu_request: menuRequest,
+          notes: notesText
+        });
+        if (error) throw error;
+        document.getElementById('custom-menu-request-form').reset();
+        status.textContent = 'ส่งคำขอเมนูให้ร้านแล้ว ร้านจะตรวจสอบและติดต่อกลับตามข้อมูลที่ให้ไว้';
+        status.className = 'text-sm font-bold text-emerald-600';
+      } catch (error) {
+        status.textContent = `ส่งคำขอไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      } finally {
+        submitButton.disabled = false;
+      }
+    }
+
     async function loadApprovedStoreReviews() {
       const list = document.getElementById('storefrontReviewList');
       if (!viewStore) {
@@ -3977,7 +4184,16 @@
     function onVisitorStoreChange() {
       const idx = parseInt(document.getElementById('visitor-store-select').value, 10);
       viewStore = Number.isInteger(idx) ? visitorStores[idx] || null : null;
-      switchRoleToVisitor();
+      const activePanel = ['home', 'search', 'contact', 'custom-menu']
+        .find(name => !document.getElementById(`visitor-panel-${name}`).classList.contains('hidden')) || 'home';
+      switchRoleToVisitor(activePanel);
+    }
+
+    async function selectVisitorStoreForCustomMenu(index) {
+      if (!Number.isInteger(index) || !visitorStores[index]) return;
+      viewStore = visitorStores[index];
+      document.getElementById('visitor-store-select').value = String(index);
+      await switchRoleToVisitor('custom-menu');
     }
 
     function openGoogleMapsDirections() {
@@ -4030,10 +4246,99 @@
       if (tabName === 'forecast') updateFinancialSimulation();
       if (tabName === 'accounting') renderAccountingTab();
       if (tabName === 'packages') renderSubscriptionPlan();
+      if (tabName === 'custom-requests') loadCustomMenuRequests();
 
       toggleMobileSidebar(false);
       initTilt3D();
       refreshIcons();
+    }
+
+    async function loadCustomMenuRequests() {
+      const container = document.getElementById('custom-menu-requests-list');
+      const status = document.getElementById('custom-request-owner-status');
+      if (!currentUser || customerSession || supplierSession || !sb) {
+        container.innerHTML = '<p class="text-sm text-slate-500">เข้าสู่ระบบด้วยบัญชีเจ้าของร้านเพื่อดูคำขอเมนู</p>';
+        return;
+      }
+
+      status.textContent = 'กำลังโหลดคำขอ...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        const { data, error } = await sb
+          .from('freshflow_custom_menu_requests')
+          .select('id,store_user_id,customer_name,contact_info,menu_request,notes,status,created_at')
+          .eq('store_user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        customMenuRequests = data || [];
+        renderCustomMenuRequests();
+        status.textContent = '';
+      } catch (error) {
+        status.textContent = `โหลดคำขอไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      }
+    }
+
+    function renderCustomMenuRequests() {
+      const container = document.getElementById('custom-menu-requests-list');
+      const badge = document.getElementById('custom-request-badge');
+      const newCount = customMenuRequests.filter(request => request.status === 'new').length;
+      if (badge) {
+        badge.textContent = newCount;
+        badge.classList.toggle('hidden', newCount === 0);
+      }
+      if (!customMenuRequests.length) {
+        container.innerHTML = '<p class="text-sm text-slate-500">ยังไม่มีคำขอเมนูจากลูกค้า</p>';
+        return;
+      }
+
+      const statusLabels = { new: 'รอตรวจสอบ', accepted: 'รับคำขอแล้ว', declined: 'ปฏิเสธคำขอ', completed: 'ติดต่อแล้ว' };
+      container.innerHTML = customMenuRequests.map((request, index) => {
+        let actions = '';
+        if (request.status === 'new') {
+          actions = `
+            <button onclick="updateCustomMenuRequestStatus(${index}, 'accepted')" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">รับคำขอ</button>
+            <button onclick="updateCustomMenuRequestStatus(${index}, 'declined')" class="px-3 py-2 rounded-lg bg-rose-500/10 text-rose-600 text-xs font-bold">ปฏิเสธ</button>
+          `;
+        } else if (request.status === 'accepted') {
+          actions = `<button onclick="updateCustomMenuRequestStatus(${index}, 'completed')" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold">ทำเครื่องหมายว่าติดต่อแล้ว</button>`;
+        }
+        return `
+          <article class="bento-card p-5 space-y-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-[10px] font-bold text-violet-600">คำขอเมนูพิเศษ</p>
+                <h3 class="text-lg font-extrabold">${esc(request.menu_request)}</h3>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold">${statusLabels[request.status] || esc(request.status)}</span>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300">${esc(request.notes || 'ไม่มีรายละเอียดเพิ่มเติม')}</p>
+            <p class="text-xs text-slate-500">ติดต่อกลับ: ${esc(request.customer_name)} • ${esc(request.contact_info)}</p>
+            <p class="text-[11px] text-slate-400">${esc(new Date(request.created_at).toLocaleString('th-TH'))}</p>
+            ${actions ? `<div class="flex flex-wrap gap-2 pt-1">${actions}</div>` : ''}
+          </article>
+        `;
+      }).join('');
+    }
+
+    async function updateCustomMenuRequestStatus(index, newStatus) {
+      const request = customMenuRequests[index];
+      if (!request || !currentUser || !['accepted', 'declined', 'completed'].includes(newStatus)) return;
+      const status = document.getElementById('custom-request-owner-status');
+      status.textContent = 'กำลังบันทึกสถานะ...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        const { error } = await sb
+          .from('freshflow_custom_menu_requests')
+          .update({ status: newStatus })
+          .eq('id', request.id)
+          .eq('store_user_id', currentUser.id);
+        if (error) throw error;
+        await loadCustomMenuRequests();
+      } catch (error) {
+        status.textContent = `อัปเดตสถานะไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      }
     }
 
     function toggleSidebarCollapse() {
@@ -4273,7 +4578,7 @@
       document.getElementById('ingredientCountBadge').textContent = ingredients.length;
       document.getElementById('intake-total-price').textContent = '฿' + totalCost.toLocaleString();
 
-      tbody.innerHTML = ingredients.map(ing => {
+      tbody.innerHTML = ingredients.map((ing, index) => {
         const urgent = ing.shelfLife <= 2;
         return `
           <tr class="hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition">
@@ -4286,6 +4591,12 @@
             </td>
             <td class="py-3 px-3.5 text-right font-extrabold">฿${Number(ing.cost).toLocaleString()}</td>
             <td class="py-3 px-3.5 text-center">
+              <label class="inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+                <input type="checkbox" ${ing.publicVisible ? 'checked' : ''} onchange="toggleIngredientVisibility(${index}, this.checked)" aria-label="เผยแพร่ ${esc(ing.name)} ให้ลูกค้าเห็น" class="accent-emerald-500" />
+                <span class="text-[10px] font-bold text-slate-500">เผยแพร่</span>
+              </label>
+            </td>
+            <td class="py-3 px-3.5 text-center">
               <button onclick="deleteIngredient(${ing.id})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
@@ -4294,6 +4605,43 @@
         `;
       }).join('');
       refreshIcons();
+    }
+
+    async function toggleIngredientVisibility(index, isVisible) {
+      const ingredient = ingredients[index];
+      if (!ingredient) return;
+      const publish = Boolean(isVisible);
+
+      if (currentUser && sb) {
+        try {
+          let result;
+          if (publish) {
+            result = await sb.from('freshflow_public_store_ingredients').upsert({
+              user_id: currentUser.id,
+              ingredient_id: String(ingredient.id),
+              ingredient_name: ingredient.name,
+              is_available: Number(ingredient.qty) > 0,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id,ingredient_id' });
+          } else {
+            result = await sb
+              .from('freshflow_public_store_ingredients')
+              .delete()
+              .eq('user_id', currentUser.id)
+              .eq('ingredient_id', String(ingredient.id));
+          }
+          if (result.error) throw result.error;
+        } catch (error) {
+          renderIngredientsTab();
+          showToast(`เปลี่ยนการเผยแพร่วัตถุดิบไม่สำเร็จ: ${error.message}`);
+          return;
+        }
+      }
+
+      ingredient.publicVisible = publish;
+      scheduleCloudSave();
+      renderIngredientsTab();
+      showToast(publish ? 'เผยแพร่ชื่อและสถานะวัตถุดิบให้ลูกค้าแล้ว' : 'ซ่อนวัตถุดิบจากหน้าลูกค้าแล้ว');
     }
 
     function addManualIngredient(e) {
@@ -4348,7 +4696,21 @@
       showToast(`เพิ่ม ${name} (${qty} ${unit}) เข้าคลังและลงบัญชีเรียบร้อย`);
     }
 
-    function deleteIngredient(id) {
+    async function deleteIngredient(id) {
+      const ingredient = ingredients.find(item => item.id === id);
+      if (ingredient && ingredient.publicVisible && currentUser && sb) {
+        try {
+          const { error } = await sb
+            .from('freshflow_public_store_ingredients')
+            .delete()
+            .eq('user_id', currentUser.id)
+            .eq('ingredient_id', String(ingredient.id));
+          if (error) throw error;
+        } catch (error) {
+          showToast(`ลบข้อมูลวัตถุดิบที่เผยแพร่ไม่สำเร็จ: ${error.message}`);
+          return;
+        }
+      }
       ingredients = ingredients.filter(i => i.id !== id);
       scheduleCloudSave();
       renderIngredientsTab();
