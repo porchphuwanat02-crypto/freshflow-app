@@ -580,6 +580,11 @@
             <option value="ร้านอาหารตามสั่ง & คาเฟ่">ร้านอาหารตามสั่ง & คาเฟ่</option>
             <option value="ร้านกาแฟและเบเกอรี">ร้านกาแฟและเบเกอรี</option>
             <option value="ร้านอาหารสุขภาพ / Clean Food">ร้านอาหารสุขภาพ / Clean Food</option>
+            <option value="ร้านอาหารไทย / อีสาน">ร้านอาหารไทย / อีสาน</option>
+            <option value="ร้านปิ้งย่าง / ชาบู">ร้านปิ้งย่าง / ชาบู</option>
+            <option value="ร้านอาหารญี่ปุ่น / เกาหลี">ร้านอาหารญี่ปุ่น / เกาหลี</option>
+            <option value="ร้านอาหารทะเล">ร้านอาหารทะเล</option>
+            <option value="ร้านอาหารประเภทอื่น">ร้านอาหารประเภทอื่น</option>
           </select>
         </div>
       </div>
@@ -626,9 +631,10 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
-        <nav class="flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 p-1" aria-label="เมนูหน้าร้าน">
+        <nav class="flex flex-wrap items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 p-1" aria-label="เมนูหน้าร้าน">
           <button onclick="showStorefrontPanel('home')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">หน้าแรก</button>
           <button onclick="showStorefrontPanel('search')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ค้นหา</button>
+          <button onclick="showStorefrontPanel('food-order')" class="px-3 py-2 rounded-lg text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-white dark:hover:bg-slate-700 transition">สั่งอาหาร + AI</button>
           <button onclick="showStorefrontPanel('custom-menu')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">วัตถุดิบ / เมนูพิเศษ</button>
           <button onclick="showStorefrontPanel('contact')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ติดต่อร้าน</button>
         </nav>
@@ -810,6 +816,60 @@
           </form>
         </div>
       </section>
+      <section id="visitor-panel-food-order" class="storefront-panel hidden space-y-5">
+        <div class="bento-card overflow-hidden border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-cyan-500/10 p-5 sm:p-7">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="max-w-3xl space-y-2">
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300"><i data-lucide="sparkles" class="h-3.5 w-3.5"></i> FreshFlow AI • เมนูตามสต็อกจริง</span>
+              <h2 class="text-2xl font-extrabold sm:text-3xl">ปรับจานของคุณ ให้ร้านทำได้จริง</h2>
+              <p class="text-sm text-slate-600 dark:text-slate-300">เลือกเมนู ปรับวัตถุดิบหรือบอกความต้องการ ระบบช่วยตรวจสต็อกและเสนอวัตถุดิบทดแทน ออเดอร์จะรอร้านยืนยันก่อนตัดสต็อก และยังไม่มีการชำระเงินออนไลน์</p>
+            </div>
+            <div class="rounded-2xl border border-emerald-500/20 bg-white/70 p-3 text-xs dark:bg-slate-900/70">
+              <strong class="block text-emerald-700 dark:text-emerald-300">AI วิเคราะห์ก่อนยืนยัน</strong>
+              <span class="text-slate-500">วัตถุดิบ • ต้นทุน • กำไรต่อจาน</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h3 class="text-xl font-extrabold">เมนูของ <span id="food-order-store-name">เลือกร้านค้าก่อน</span></h3>
+              <p class="text-xs text-slate-500">ร้านเป็นผู้กำหนดเมนูและราคาขาย • กำไรและต้นทุนจะแสดงให้เจ้าของร้านเท่านั้น</p>
+            </div>
+            <button type="button" onclick="loadPublicStoreMenus()" class="rounded-lg bg-slate-200 px-3 py-2 text-xs font-bold dark:bg-slate-800">รีเฟรชเมนู</button>
+          </div>
+          <p id="food-order-menu-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
+          <div id="visitor-food-menu-list" class="grid grid-cols-1 gap-4 md:grid-cols-2" aria-live="polite">
+            <p class="text-sm text-slate-500">เลือกร้านค้าเพื่อดูเมนู</p>
+          </div>
+        </div>
+
+        <form id="food-order-checkout-form" onsubmit="submitFoodOrder(event)" class="bento-card space-y-4 p-5 sm:p-7">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-lg font-extrabold">ตะกร้าและข้อมูลติดต่อ</h3>
+              <p class="text-xs text-slate-500">ร้านจะตรวจสอบออเดอร์และสต็อกก่อนยืนยัน</p>
+            </div>
+            <strong id="food-order-cart-total" class="text-lg text-emerald-600">รวม ฿0</strong>
+          </div>
+          <div id="food-order-cart" class="space-y-2" aria-live="polite">
+            <p class="text-sm text-slate-500">ยังไม่มีเมนูในตะกร้า</p>
+          </div>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label for="food-order-customer-name" class="mb-1 block text-sm font-bold">ชื่อผู้สั่ง</label>
+              <input id="food-order-customer-name" type="text" maxlength="120" autocomplete="name" required class="w-full rounded-xl bg-slate-100 px-4 py-3 dark:bg-slate-800" />
+            </div>
+            <div>
+              <label for="food-order-contact" class="mb-1 block text-sm font-bold">เบอร์โทรหรืออีเมล</label>
+              <input id="food-order-contact" type="text" maxlength="160" required class="w-full rounded-xl bg-slate-100 px-4 py-3 dark:bg-slate-800" />
+            </div>
+          </div>
+          <p id="food-order-submit-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
+          <button id="food-order-submit" type="submit" class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 font-bold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50">ส่งออเดอร์ให้ร้านยืนยัน</button>
+        </form>
+      </section>
 
       <section id="visitor-panel-custom-menu" class="storefront-panel hidden space-y-5">
         <div class="space-y-1">
@@ -865,7 +925,7 @@
     <div id="mobileSidebarBackdrop" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 hidden lg:hidden"></div>
 
     <!-- ===================================================================
-         1. LEFT COLLAPSIBLE SIDEBAR (9 Navigation Items)
+         1. LEFT COLLAPSIBLE SIDEBAR (10 Navigation Items)
     =================================================================== -->
     <aside id="leftSidebar" class="no-print fixed lg:sticky top-0 left-0 z-50 h-screen w-72 shrink-0 bento-card rounded-none border-y-0 border-l-0 flex flex-col justify-between transition-all duration-300 -translate-x-full lg:translate-x-0">
       <div class="p-4 space-y-4">
@@ -955,6 +1015,14 @@
               <span class="sidebar-label truncate">9. คำขอเมนูลูกค้า</span>
             </span>
             <span id="custom-request-badge" class="sidebar-label hidden px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-violet-500 text-white">0</span>
+          </button>
+
+          <button onclick="switchTab('food-orders')" data-tab="food-orders" class="nav-btn w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <span class="flex items-center gap-3 min-w-0">
+              <i data-lucide="utensils" class="w-4 h-4 shrink-0 text-emerald-500"></i>
+              <span class="sidebar-label truncate">10. ออเดอร์อาหาร + AI</span>
+            </span>
+            <span id="food-order-badge" class="sidebar-label hidden px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500 text-white">0</span>
           </button>
         </nav>
       </div>
@@ -1839,6 +1907,21 @@
           </div>
         </section>
 
+        <section id="tab-food-orders" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-extrabold text-emerald-700 dark:text-emerald-300">FreshFlow AI • ตรวจสต็อกและกำไร</span>
+              <h1 class="mt-2 text-2xl font-extrabold sm:text-3xl">ออเดอร์อาหารจากลูกค้า</h1>
+              <p class="mt-1 text-sm text-slate-500">ตรวจสอบการปรับแต่งและคำแนะนำวัตถุดิบก่อนยืนยัน • ระบบตัดสต็อกแบบ atomic เมื่อกดยืนยันเท่านั้น</p>
+            </div>
+            <button onclick="loadFoodOrders()" class="rounded-xl bg-slate-200 px-4 py-2.5 text-xs font-bold dark:bg-slate-800">รีเฟรชออเดอร์</button>
+          </div>
+          <p id="food-orders-owner-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
+          <div id="food-orders-list" class="space-y-3">
+            <p class="text-sm text-slate-500">เปิดหน้านี้เพื่อโหลดออเดอร์อาหาร</p>
+          </div>
+        </section>
+
       </main>
     </div>
 
@@ -2112,8 +2195,9 @@
           </div>
         </div>
         <div>
-          <label class="block font-bold mb-1">วัตถุดิบหลักที่ใช้</label>
-          <input id="recIngs" type="text" required placeholder="เนื้ออกไก่สด, ไข่ไก่, ใบกะเพรา" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+          <label class="block font-bold mb-1">สูตรตัดสต็อกต่อจาน</label>
+          <input id="recIngs" type="text" required placeholder="เนื้ออกไก่สด=0.15, ไข่ไก่เบอร์ 1=1" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+          <p class="mt-1 text-[11px] text-slate-500">รูปแบบ ชื่อวัตถุดิบ=ปริมาณ/จาน ใช้ชื่อและหน่วยเดียวกับคลังสินค้า เช่น กก. หรือ ฟอง</p>
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="closeAddRecipeModal()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold">ยกเลิก</button>
@@ -2154,6 +2238,7 @@
     let cloudSaveTimer = null;
     let cloudSaveQueue = Promise.resolve();
     let cloudSaveRevision = 0;
+    let lastStateUpdatedAt = null;
     let profile = { email: 'owner@freshflow.ai', role: 'owner' };
     let currentStore = {
       name: 'ครัวสดใหม่ FreshFlow Kitchen',
@@ -2166,7 +2251,11 @@
     let visitorStores = [];
     let visitorStoreIngredients = [];
     let visitorIngredientLoadError = '';
+    let visitorFoodMenus = [];
+    let foodCart = [];
+    let foodCartStoreId = null;
     let customMenuRequests = [];
+    let foodOrders = [];
     let viewStore = null;
     let soundEnabled = true;
     let currentTab = 'dashboard';
@@ -2213,10 +2302,11 @@
         cost: 24.5,
         baseDailyVelocity: 42,
         category: 'อาหารจานหลัก',
+        publicVisible: true,
         bom: [
-          { ingredientName: 'เนื้ออกไก่สด', perPortion: 0.15 },
-          { ingredientName: 'ไข่ไก่เบอร์ 1', perPortion: 1 },
-          { ingredientName: 'ใบกะเพราสด', perPortion: 0.03 }
+          { ingredientName: 'เนื้ออกไก่สด', perPortion: 0.15, unitCost: 80 },
+          { ingredientName: 'ไข่ไก่เบอร์ 1', perPortion: 1, unitCost: 4.2 },
+          { ingredientName: 'ใบกะเพราสด', perPortion: 0.03, unitCost: 60 }
         ]
       },
       {
@@ -2226,9 +2316,10 @@
         cost: 19.0,
         baseDailyVelocity: 38,
         category: 'เครื่องดื่ม',
+        publicVisible: true,
         bom: [
-          { ingredientName: 'นมสดพาสเจอร์ไรส์', perPortion: 0.18 },
-          { ingredientName: 'เมล็ดกาแฟคั่วกลาง', perPortion: 0.02 }
+          { ingredientName: 'นมสดพาสเจอร์ไรส์', perPortion: 0.18, unitCost: 40 },
+          { ingredientName: 'เมล็ดกาแฟคั่วกลาง', perPortion: 0.02, unitCost: 350 }
         ]
       },
       {
@@ -2238,9 +2329,10 @@
         cost: 34.0,
         baseDailyVelocity: 24,
         category: 'อาหารจานหลัก',
+        publicVisible: true,
         bom: [
-          { ingredientName: 'กุ้งขาวแกะเปลือก', perPortion: 0.12 },
-          { ingredientName: 'ไข่ไก่เบอร์ 1', perPortion: 2 }
+          { ingredientName: 'กุ้งขาวแกะเปลือก', perPortion: 0.12, unitCost: 230 },
+          { ingredientName: 'ไข่ไก่เบอร์ 1', perPortion: 2, unitCost: 4.2 }
         ]
       },
       {
@@ -2250,8 +2342,9 @@
         cost: 21.0,
         baseDailyVelocity: 20,
         category: 'ของทานเล่น',
+        publicVisible: true,
         bom: [
-          { ingredientName: 'เนื้ออกไก่สด', perPortion: 0.16 }
+          { ingredientName: 'เนื้ออกไก่สด', perPortion: 0.16, unitCost: 80 }
         ]
       }
     ];
@@ -2312,7 +2405,17 @@
         : 'free';
       ingredients = state.ingredients;
       notes = state.notes;
-      menuRecipes = state.menuRecipes;
+      menuRecipes = state.menuRecipes.map(recipe => ({
+        ...recipe,
+        bom: (Array.isArray(recipe.bom) ? recipe.bom : []).map(requirement => {
+          if (Number.isFinite(Number(requirement.unitCost)) && Number(requirement.unitCost) >= 0) return requirement;
+          const ingredient = state.ingredients.find(item => item.name === requirement.ingredientName);
+          const unitCost = ingredient && Number(ingredient.qty) > 0
+            ? Number(ingredient.cost) / Number(ingredient.qty)
+            : 0;
+          return { ...requirement, unitCost };
+        })
+      }));
       activePromotions = state.activePromotions;
       transactions = state.transactions;
       notifications = state.notifications;
@@ -2424,15 +2527,17 @@
     async function loadUserState() {
       const { data, error } = await sb
         .from('freshflow_user_state')
-        .select('state')
+        .select('state,updated_at')
         .eq('user_id', currentUser.id)
         .maybeSingle();
       if (error) throw error;
 
       if (data) {
+        lastStateUpdatedAt = data.updated_at;
         applyPersistedAppState(data.state);
         if (!await saveUserState()) throw new Error('ซิงก์โปรไฟล์ร้านค้าไม่สำเร็จ');
       } else {
+        lastStateUpdatedAt = null;
         applyPersistedAppState(createEmptyAccountState());
         if (!await saveUserState()) throw new Error('สร้างข้อมูลเริ่มต้นของบัญชีไม่สำเร็จ');
       }
@@ -2476,17 +2581,34 @@
           if (!userId) return true;
 
           setCloudStatus('กำลังบันทึกข้อมูลขึ้น Supabase...');
-          const { error } = await sb.from('freshflow_user_state').upsert({
-            user_id: userId,
+          const nextUpdatedAt = new Date().toISOString();
+          const stateUpdate = {
             state: getPersistedAppState(),
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'user_id' });
+            updated_at: nextUpdatedAt
+          };
+          const stateWrite = lastStateUpdatedAt
+            ? await sb.from('freshflow_user_state')
+              .update(stateUpdate)
+              .eq('user_id', userId)
+              .eq('updated_at', lastStateUpdatedAt)
+              .select('updated_at')
+              .maybeSingle()
+            : await sb.from('freshflow_user_state')
+              .insert({ user_id: userId, ...stateUpdate })
+              .select('updated_at')
+              .single();
 
-          if (error) {
+          if (stateWrite.error) {
             setCloudStatus('บันทึก Supabase ไม่สำเร็จ');
-            showToast(`บันทึกข้อมูลไม่สำเร็จ: ${error.message}`);
+            showToast(`บันทึกข้อมูลไม่สำเร็จ: ${stateWrite.error.message}`);
             return false;
           }
+          if (!stateWrite.data) {
+            setCloudStatus('พบข้อมูลใหม่ในคลัง กรุณาโหลดข้อมูลร้านก่อนบันทึก');
+            showToast('มีข้อมูลร้านหรือสต็อกที่เปลี่ยนจากอุปกรณ์อื่น กรุณาเข้าสู่ระบบใหม่ก่อนบันทึกเพื่อป้องกันข้อมูลทับกัน');
+            return false;
+          }
+          lastStateUpdatedAt = stateWrite.data.updated_at;
 
           const { error: publicStoreError } = await sb.from('freshflow_public_stores').upsert({
             user_id: userId,
@@ -3660,6 +3782,7 @@
         return;
       }
       currentUser = null;
+      lastStateUpdatedAt = null;
       demoMode = false;
       customerSession = false;
       supplierSession = false;
@@ -3836,6 +3959,254 @@
         : '<p class="col-span-full text-sm text-slate-500">ร้านนี้ยังไม่ได้เลือกเผยแพร่วัตถุดิบ</p>';
     }
 
+    async function loadPublicStoreMenus() {
+      const status = document.getElementById('food-order-menu-status');
+      if (!viewStore) {
+        visitorFoodMenus = [];
+        status.textContent = 'เลือกร้านค้าก่อนเพื่อดูเมนู';
+        status.className = 'text-sm font-bold text-slate-500';
+        renderVisitorFoodMenus();
+        return;
+      }
+
+      document.getElementById('food-order-store-name').textContent = viewStore.name;
+      if (foodCartStoreId !== viewStore.id) {
+        foodCart = [];
+        foodCartStoreId = viewStore.id;
+        renderFoodCart();
+      }
+      status.textContent = 'กำลังตรวจเมนูและสต็อกที่พร้อมให้สั่ง...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        if (demoMode && String(viewStore.id).startsWith('demo-')) {
+          visitorFoodMenus = menuRecipes.filter(recipe => recipe.publicVisible).map(recipe => ({
+            menu_id: recipe.id,
+            menu_name: recipe.name,
+            category: recipe.category,
+            price: recipe.price,
+            is_available: recipe.bom.every(requirement => {
+              const stock = ingredients.find(item => item.name === requirement.ingredientName);
+              return stock && Number(stock.qty) >= Number(requirement.perPortion);
+            }),
+            has_private_missing: false,
+            ingredients: recipe.bom.map(requirement => ({
+              name: requirement.ingredientName,
+              available: Boolean(ingredients.find(item =>
+                item.name === requirement.ingredientName
+                && Number(item.qty) >= Number(requirement.perPortion)
+              )),
+              suggestions: []
+            }))
+          }));
+        } else {
+          if (!sb) throw new Error('ไม่พบการเชื่อมต่อฐานข้อมูล');
+          const { data, error } = await sb.rpc('freshflow_get_public_store_menus', {
+            p_store_user_id: viewStore.id
+          });
+          if (error) throw error;
+          visitorFoodMenus = data || [];
+        }
+        status.textContent = visitorFoodMenus.length
+          ? 'AI ตรวจรายการวัตถุดิบที่ร้านเผยแพร่แล้ว • ออเดอร์จะรอร้านยืนยันก่อนตัดสต็อก'
+          : 'ร้านนี้ยังไม่ได้เผยแพร่เมนูสำหรับสั่งอาหาร';
+        status.className = 'text-sm font-bold text-emerald-700 dark:text-emerald-300';
+        renderVisitorFoodMenus();
+      } catch (error) {
+        visitorFoodMenus = [];
+        status.textContent = `โหลดเมนูไม่สำเร็จ: ${error.message} • ให้ผู้ดูแลติดตั้ง schema ล่าสุด`;
+        status.className = 'text-sm font-bold text-rose-500';
+        renderVisitorFoodMenus();
+      }
+    }
+
+    function renderVisitorFoodMenus() {
+      const container = document.getElementById('visitor-food-menu-list');
+      if (!container) return;
+      if (!viewStore) {
+        container.innerHTML = '<p class="text-sm text-slate-500">เลือกร้านค้าก่อนเพื่อดูเมนู</p>';
+        return;
+      }
+      if (!visitorFoodMenus.length) {
+        container.innerHTML = '<p class="text-sm text-slate-500">ยังไม่มีเมนูที่ร้านเปิดให้สั่ง</p>';
+        return;
+      }
+
+      container.innerHTML = visitorFoodMenus.map((menu, index) => {
+        const ingredients = Array.isArray(menu.ingredients) ? menu.ingredients : [];
+        const ingredientRows = ingredients.length
+          ? ingredients.map((ingredient, ingredientIndex) => {
+            const suggestions = Array.isArray(ingredient.suggestions) ? ingredient.suggestions : [];
+            const options = [
+              ingredient.available
+                ? '<option value="keep" selected>ใช้ตามสูตร</option>'
+                : '<option value="choose" selected disabled>เลือกวิธีจัดการ</option>',
+              ...(ingredient.available ? ['<option value="extra">เพิ่มเป็น 2 เท่า</option>'] : []),
+              '<option value="omit">ไม่ใส่วัตถุดิบนี้</option>',
+              ...suggestions.map(item =>
+                `<option value="substitute:${encodeURIComponent(item.name)}">AI แนะนำแทนด้วย ${esc(item.name)}</option>`
+              )
+            ].join('');
+            return `
+              <label class="flex flex-col gap-1 rounded-xl bg-slate-100 p-2.5 text-xs dark:bg-slate-800">
+                <span class="font-bold">${esc(ingredient.name)} <span class="${ingredient.available ? 'text-emerald-600' : 'text-amber-600'}">${ingredient.available ? '• มีในสต็อก' : '• สต็อกไม่พอ'}</span></span>
+                <select id="food-order-adjustment-${index}-${ingredientIndex}" class="w-full rounded-lg border border-slate-200 bg-white px-2 py-2 dark:border-slate-700 dark:bg-slate-900">${options}</select>
+              </label>
+            `;
+          }).join('')
+          : '<p class="text-xs text-slate-500">ร้านไม่ได้เผยแพร่รายละเอียดวัตถุดิบรายเมนู • ระบุการปรับแต่งเพิ่มเติมให้ร้านตรวจสอบได้</p>';
+        const missing = ingredients.filter(item => !item.available);
+          const stockAdvice = menu.has_private_missing
+            ? '<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">AI พบว่าวัตถุดิบตามสูตรบางรายการยังไม่พร้อมหรือร้านไม่ได้เผยแพร่รายละเอียด จึงยังสั่งเมนูนี้ไม่ได้ • แนะนำให้ร้านตรวจสอบและเติมสต็อก</p>'
+            : missing.length
+          ? `<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">AI พบวัตถุดิบที่ไม่พอ: ${missing.map(item => esc(item.name)).join('、')}. ${missing.some(item => item.suggestions && item.suggestions.length) ? 'เลือกวัตถุดิบทดแทนที่ระบบเสนอ หรือไม่ใส่รายการนั้น' : 'ร้านจะได้รับคำแนะนำให้เติมสต็อก หากยังไม่มีทางเลือกให้ใช้เมนูอื่น'}</p>`
+          : menu.is_available
+            ? '<p class="rounded-xl bg-emerald-500/10 p-2.5 text-xs text-emerald-700 dark:text-emerald-300">AI ตรวจแล้ว วัตถุดิบตามสูตรมีพอสำหรับหนึ่งจาน</p>'
+            : '<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">AI พบวัตถุดิบที่ยังไม่เผยแพร่หรือมีไม่พอ ร้านจะตรวจสอบและแนะนำการเติมสต็อกก่อนยืนยัน</p>';
+        const privateMissing = Boolean(menu.has_private_missing);
+        return `
+          <article class="bento-card space-y-3 p-5">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-300">${esc(menu.category || 'เมนูอาหาร')}</span>
+                <h4 class="text-lg font-extrabold">${esc(menu.menu_name)}</h4>
+              </div>
+              <strong class="whitespace-nowrap text-xl text-emerald-600">฿${Number(menu.price).toLocaleString()}</strong>
+            </div>
+            ${stockAdvice}
+            ${ingredients.length ? `<div class="grid grid-cols-1 gap-2 sm:grid-cols-2">${ingredientRows}</div>` : ingredientRows}
+            <div>
+              <label for="food-order-customization-${index}" class="mb-1 block text-xs font-bold">ปรับแต่งเพิ่มเติม (ไม่บังคับ)</label>
+              <textarea id="food-order-customization-${index}" rows="2" maxlength="1000" placeholder="เช่น เผ็ดน้อย ไม่ใส่ผัก หรือขอแยกน้ำ" class="w-full rounded-xl bg-slate-100 px-3 py-2.5 text-sm dark:bg-slate-800"></textarea>
+              <p class="mt-1 text-[11px] text-slate-500">ข้อความนี้ให้ร้านตรวจสอบก่อนยืนยัน • การคำนวณสต็อกใช้ตัวเลือกวัตถุดิบด้านบน</p>
+            </div>
+            <div class="flex items-end gap-2">
+              <div>
+                <label for="food-order-quantity-${index}" class="mb-1 block text-xs font-bold">จำนวน</label>
+                <input id="food-order-quantity-${index}" type="number" min="1" max="50" step="1" value="1" class="w-24 rounded-xl bg-slate-100 px-3 py-2.5 text-sm dark:bg-slate-800" />
+              </div>
+              <button type="button" onclick="addFoodMenuToCart(${index})" ${privateMissing ? 'disabled title="ร้านต้องเติมวัตถุดิบที่ยังไม่เผยแพร่ก่อน"' : ''} class="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">${privateMissing ? 'รอร้านเติมวัตถุดิบ' : 'เพิ่มลงตะกร้า'}</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+      initTilt3D();
+    }
+
+    function addFoodMenuToCart(menuIndex) {
+      const menu = visitorFoodMenus[menuIndex];
+      if (!menu || !viewStore) return;
+      const quantity = Number(document.getElementById(`food-order-quantity-${menuIndex}`).value);
+      if (!Number.isInteger(quantity) || quantity < 1 || quantity > 50) {
+        showToast('จำนวนเมนูต้องอยู่ระหว่าง 1 ถึง 50');
+        return;
+      }
+
+      const adjustments = [];
+      const ingredients = Array.isArray(menu.ingredients) ? menu.ingredients : [];
+      for (let index = 0; index < ingredients.length; index++) {
+        const ingredient = ingredients[index];
+        const selected = document.getElementById(`food-order-adjustment-${menuIndex}-${index}`).value;
+        if (selected === 'choose') {
+          showToast(`กรุณาเลือกวิธีจัดการวัตถุดิบ ${ingredient.name}`);
+          return;
+        }
+        if (selected.startsWith('substitute:')) {
+          adjustments.push({
+            ingredient_name: ingredient.name,
+            action: 'substitute',
+            substitute_name: decodeURIComponent(selected.slice('substitute:'.length))
+          });
+        } else {
+          adjustments.push({ ingredient_name: ingredient.name, action: selected });
+        }
+      }
+
+      foodCart.push({
+        menu_id: menu.menu_id,
+        name: menu.menu_name,
+        price: Number(menu.price),
+        quantity,
+        customization: document.getElementById(`food-order-customization-${menuIndex}`).value.trim(),
+        adjustments
+      });
+      renderFoodCart();
+      showToast(`เพิ่ม ${menu.menu_name} ลงตะกร้าแล้ว`);
+    }
+
+    function renderFoodCart() {
+      const container = document.getElementById('food-order-cart');
+      const total = foodCart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      document.getElementById('food-order-cart-total').textContent = `รวม ฿${total.toLocaleString()}`;
+      if (!foodCart.length) {
+        container.innerHTML = '<p class="text-sm text-slate-500">ยังไม่มีเมนูในตะกร้า</p>';
+        return;
+      }
+      container.innerHTML = foodCart.map((item, index) => `
+        <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-100 p-3 dark:bg-slate-800">
+          <div class="min-w-0 flex-1">
+            <strong>${esc(item.name)}</strong>
+            ${item.adjustments.some(change => change.action !== 'keep') ? `<p class="mt-1 text-xs text-emerald-700 dark:text-emerald-300">${esc(item.adjustments.filter(change => change.action !== 'keep').map(change => change.action === 'omit' ? `ไม่ใส่ ${change.ingredient_name}` : change.action === 'extra' ? `เพิ่ม ${change.ingredient_name} x2` : `${change.ingredient_name} → ${change.substitute_name}`).join(' • '))}</p>` : ''}
+            <p class="text-xs text-slate-500">จำนวน ${item.quantity} • ฿${(item.price * item.quantity).toLocaleString()}${item.customization ? ` • ${esc(item.customization)}` : ''}</p>
+          </div>
+          <button type="button" onclick="removeFoodCartItem(${index})" class="rounded-lg bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-600">นำออก</button>
+        </div>
+      `).join('');
+    }
+
+    function removeFoodCartItem(index) {
+      if (!Number.isInteger(index) || !foodCart[index]) return;
+      foodCart.splice(index, 1);
+      renderFoodCart();
+    }
+
+    async function submitFoodOrder(event) {
+      event.preventDefault();
+      const status = document.getElementById('food-order-submit-status');
+      const button = document.getElementById('food-order-submit');
+      if (!viewStore || !foodCart.length) {
+        status.textContent = 'เลือกร้านและเพิ่มเมนูลงตะกร้าก่อนส่งออเดอร์';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+      if (demoMode || String(viewStore.id).startsWith('demo-')) {
+        status.textContent = 'โหมด Demo ไม่ได้ส่งออเดอร์จริง เลือกร้านที่สมัครใช้งาน FreshFlow เพื่อสั่งอาหาร';
+        status.className = 'text-sm font-bold text-amber-600';
+        return;
+      }
+      if (!sb) {
+        status.textContent = 'ส่งออเดอร์ไม่สำเร็จ: ระบบยังเชื่อมต่อฐานข้อมูลไม่ได้';
+        status.className = 'text-sm font-bold text-rose-500';
+        return;
+      }
+
+      button.disabled = true;
+      status.textContent = 'กำลังส่งออเดอร์ให้ร้านตรวจสอบ...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        const { data, error } = await sb.rpc('freshflow_submit_food_order', {
+          p_store_user_id: viewStore.id,
+          p_customer_name: document.getElementById('food-order-customer-name').value.trim(),
+          p_contact_info: document.getElementById('food-order-contact').value.trim(),
+          p_items: foodCart.map(item => ({
+            menu_id: item.menu_id,
+            quantity: item.quantity,
+            customization: item.customization,
+            adjustments: item.adjustments
+          }))
+        });
+        if (error) throw error;
+        foodCart = [];
+        renderFoodCart();
+        status.textContent = `ส่งออเดอร์ #${data.id} ให้ร้านแล้ว • รวม ฿${Number(data.total_amount).toLocaleString()} • รอร้านยืนยันก่อนตัดสต็อก`;
+        status.className = 'text-sm font-bold text-emerald-600';
+      } catch (error) {
+        status.textContent = `ส่งออเดอร์ไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      } finally {
+        button.disabled = false;
+      }
+    }
+
     function renderVisitorStoreDirectory(query) {
       const container = document.getElementById('visitorStoreDirectory');
       if (!container) return;
@@ -3861,6 +4232,7 @@
               ${ingredientPreview}
               <div class="flex flex-wrap gap-2">
                 <button onclick="selectVisitorStoreFromSearch(${index})" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-xs font-bold">ดูข้อมูลร้าน</button>
+                <button onclick="selectVisitorStoreForFoodOrder(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">สั่งอาหาร + AI</button>
                 <button onclick="selectVisitorStoreForCustomMenu(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">วัตถุดิบ / ขอเมนูพิเศษ</button>
               </div>
             </article>
@@ -3904,6 +4276,7 @@
         home: 'visitor-panel-home',
         search: 'visitor-panel-search',
         contact: 'visitor-panel-contact',
+        'food-order': 'visitor-panel-food-order',
         'custom-menu': 'visitor-panel-custom-menu'
       };
       if (!panelIds[panelName]) return;
@@ -3917,6 +4290,7 @@
         searchStorefront(document.getElementById('storefrontSearchInput').value);
       }
       if (panelName === 'custom-menu') renderVisitorPublicIngredients();
+      if (panelName === 'food-order') loadPublicStoreMenus();
       initTilt3D();
     }
 
@@ -4184,7 +4558,10 @@
     function onVisitorStoreChange() {
       const idx = parseInt(document.getElementById('visitor-store-select').value, 10);
       viewStore = Number.isInteger(idx) ? visitorStores[idx] || null : null;
-      const activePanel = ['home', 'search', 'contact', 'custom-menu']
+      foodCart = [];
+      foodCartStoreId = viewStore ? viewStore.id : null;
+      renderFoodCart();
+      const activePanel = ['home', 'search', 'contact', 'food-order', 'custom-menu']
         .find(name => !document.getElementById(`visitor-panel-${name}`).classList.contains('hidden')) || 'home';
       switchRoleToVisitor(activePanel);
     }
@@ -4194,6 +4571,16 @@
       viewStore = visitorStores[index];
       document.getElementById('visitor-store-select').value = String(index);
       await switchRoleToVisitor('custom-menu');
+    }
+
+    async function selectVisitorStoreForFoodOrder(index) {
+      if (!Number.isInteger(index) || !visitorStores[index]) return;
+      viewStore = visitorStores[index];
+      foodCart = [];
+      foodCartStoreId = viewStore.id;
+      renderFoodCart();
+      document.getElementById('visitor-store-select').value = String(index);
+      await switchRoleToVisitor('food-order');
     }
 
     function openGoogleMapsDirections() {
@@ -4247,6 +4634,7 @@
       if (tabName === 'accounting') renderAccountingTab();
       if (tabName === 'packages') renderSubscriptionPlan();
       if (tabName === 'custom-requests') loadCustomMenuRequests();
+      if (tabName === 'food-orders') loadFoodOrders();
 
       toggleMobileSidebar(false);
       initTilt3D();
@@ -4337,6 +4725,159 @@
         await loadCustomMenuRequests();
       } catch (error) {
         status.textContent = `อัปเดตสถานะไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      }
+    }
+
+    async function loadFoodOrders() {
+      const container = document.getElementById('food-orders-list');
+      const status = document.getElementById('food-orders-owner-status');
+      if (!currentUser || customerSession || supplierSession || !sb) {
+        container.innerHTML = '<p class="text-sm text-slate-500">เข้าสู่ระบบด้วยบัญชีเจ้าของร้านเพื่อดูออเดอร์อาหาร</p>';
+        return;
+      }
+
+      status.textContent = 'กำลังโหลดออเดอร์...';
+      status.className = 'text-sm font-bold text-slate-500';
+      try {
+        const { data, error } = await sb
+          .from('freshflow_food_orders')
+          .select('id,customer_name,contact_info,items,total_amount,estimated_profit,status,created_at')
+          .eq('store_user_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        foodOrders = data || [];
+        renderFoodOrders();
+        status.textContent = '';
+      } catch (error) {
+        status.textContent = `โหลดออเดอร์ไม่สำเร็จ: ${error.message}`;
+        status.className = 'text-sm font-bold text-rose-500';
+      }
+    }
+
+    function renderFoodOrders() {
+      const container = document.getElementById('food-orders-list');
+      const badge = document.getElementById('food-order-badge');
+      const pendingCount = foodOrders.filter(order => order.status === 'pending').length;
+      if (badge) {
+        badge.textContent = pendingCount;
+        badge.classList.toggle('hidden', pendingCount === 0);
+      }
+      if (!foodOrders.length) {
+        container.innerHTML = '<p class="text-sm text-slate-500">ยังไม่มีออเดอร์อาหารจากลูกค้า</p>';
+        return;
+      }
+
+      const statusLabels = { pending: 'รอร้านยืนยัน', accepted: 'ยืนยันแล้ว • ตัดสต็อกแล้ว', declined: 'ปฏิเสธออเดอร์', completed: 'ทำเสร็จแล้ว' };
+      container.innerHTML = foodOrders.map((order, index) => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        const stockAdvice = order.status === 'pending' ? getFoodOrderStockAdvice(items) : [];
+        const itemRows = items.map(item => {
+          const adjustments = Array.isArray(item.adjustments) ? item.adjustments : [];
+          const changes = adjustments.filter(change => change.action !== 'keep').map(change => {
+            if (change.action === 'omit') return `ไม่ใส่ ${change.ingredient_name}`;
+            if (change.action === 'extra') return `เพิ่ม ${change.ingredient_name} x2`;
+            if (change.action === 'substitute') return `${change.ingredient_name} → ${change.substitute_name}`;
+            return '';
+          }).filter(Boolean).join(' • ');
+          return `
+            <div class="rounded-xl bg-slate-100 p-3 text-sm dark:bg-slate-800">
+              <div class="flex flex-wrap justify-between gap-2"><strong>${esc(item.name)} × ${Number(item.quantity)}</strong><strong>฿${(Number(item.unit_price) * Number(item.quantity)).toLocaleString()}</strong></div>
+              ${changes ? `<p class="mt-1 text-xs text-emerald-700 dark:text-emerald-300">${esc(changes)}</p>` : ''}
+              ${item.customization ? `<p class="mt-1 whitespace-pre-wrap text-xs text-slate-600 dark:text-slate-300">หมายเหตุ: ${esc(item.customization)}</p>` : ''}
+            </div>
+          `;
+        }).join('');
+        const actions = order.status === 'pending'
+          ? `<button onclick="updateFoodOrder(${index}, 'accepted')" class="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white">ยืนยัน + ตัดสต็อก</button><button onclick="updateFoodOrder(${index}, 'declined')" class="rounded-lg bg-rose-500/10 px-3 py-2 text-xs font-bold text-rose-600">ปฏิเสธ</button>`
+          : order.status === 'accepted'
+            ? `<button onclick="updateFoodOrder(${index}, 'completed')" class="rounded-lg bg-slate-200 px-3 py-2 text-xs font-bold dark:bg-slate-700">ทำเครื่องหมายเสร็จ</button>`
+            : '';
+        return `
+          <article class="bento-card space-y-3 p-5">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p class="text-[10px] font-bold text-emerald-600">ออเดอร์ #${Number(order.id)}</p>
+                <h3 class="text-lg font-extrabold">${esc(order.customer_name)}</h3>
+                <p class="text-xs text-slate-500">ติดต่อกลับ: ${esc(order.contact_info)}</p>
+              </div>
+              <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold dark:bg-slate-800">${statusLabels[order.status] || esc(order.status)}</span>
+            </div>
+            <div class="space-y-2">${itemRows}</div>
+            ${stockAdvice.length ? `<div class="rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs"><strong class="text-amber-700 dark:text-amber-300">FreshFlow AI แนะนำก่อนยืนยัน</strong><ul class="mt-1 list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-300">${stockAdvice.map(advice => `<li>${esc(advice)}</li>`).join('')}</ul></div>` : ''}
+            <div class="flex flex-wrap justify-between gap-2 border-t border-slate-200 pt-3 text-sm dark:border-slate-700">
+              <strong>ยอดขาย ฿${Number(order.total_amount).toLocaleString()}</strong>
+              <strong class="text-emerald-600">กำไรโดยประมาณ ฿${Number(order.estimated_profit).toLocaleString()}</strong>
+            </div>
+            <p class="text-[11px] text-slate-400">${esc(new Date(order.created_at).toLocaleString('th-TH'))} • กำไรใช้ต้นทุนสูตรที่บันทึกในระบบ ไม่รวมค่าแรง/ค่าใช้จ่ายอื่น</p>
+            ${actions ? `<div class="flex flex-wrap gap-2">${actions}</div>` : ''}
+          </article>
+        `;
+      }).join('');
+    }
+
+    function getFoodOrderStockAdvice(items) {
+      const advice = [];
+      items.forEach(item => {
+        const recipe = menuRecipes.find(candidate => candidate.id === item.menu_id);
+        if (!recipe || !Array.isArray(recipe.bom)) return;
+        const adjustments = Array.isArray(item.adjustments) ? item.adjustments : [];
+        recipe.bom.forEach(requirement => {
+          const adjustment = adjustments.find(change => change.ingredient_name === requirement.ingredientName);
+          if (adjustment && adjustment.action === 'omit') return;
+          const ingredientName = adjustment && adjustment.action === 'substitute'
+            ? adjustment.substitute_name
+            : requirement.ingredientName;
+          const factor = adjustment && adjustment.action === 'extra' ? 2 : 1;
+          const required = Number(requirement.perPortion) * Number(item.quantity) * factor;
+          const stock = ingredients.find(candidate => candidate.name === ingredientName);
+          if (stock && Number(stock.qty) >= required) return;
+
+          const substitute = stock && ingredients.find(candidate =>
+            candidate.publicVisible
+            && candidate.name !== ingredientName
+            && candidate.category === stock.category
+            && Number(candidate.qty) >= Number(requirement.perPortion) * Number(item.quantity)
+          );
+          advice.push(substitute
+            ? `${ingredientName} มีไม่พอ • พิจารณา ${substitute.name} เป็นทางเลือกและยืนยันกับลูกค้าก่อน`
+            : `${ingredientName} มีไม่พอ • เติมสต็อกก่อนยืนยัน หรือแจ้งลูกค้าเลือกเมนูอื่น`);
+        });
+      });
+      return [...new Set(advice)];
+    }
+
+    async function updateFoodOrder(index, newStatus) {
+      const order = foodOrders[index];
+      if (!order || !currentUser || !['accepted', 'declined', 'completed'].includes(newStatus)) return;
+      const status = document.getElementById('food-orders-owner-status');
+      status.textContent = newStatus === 'accepted'
+        ? 'กำลังตรวจสต็อกและยืนยันออเดอร์แบบ atomic...'
+        : 'กำลังอัปเดตสถานะออเดอร์...';
+      status.className = 'text-sm font-bold text-slate-500';
+
+      try {
+        if (newStatus === 'accepted') {
+          if (!await saveUserState()) throw new Error('บันทึกสต็อกล่าสุดไม่สำเร็จ จึงยังยืนยันออเดอร์ไม่ได้');
+          const { data, error } = await sb.rpc('freshflow_accept_food_order', {
+            p_order_id: order.id
+          });
+          if (error) throw error;
+          applyPersistedAppState(data.state);
+          lastStateUpdatedAt = data.state_updated_at;
+          renderPersistedViews();
+          setCloudStatus('Supabase เชื่อมต่อแล้ว • ยืนยันออเดอร์และตัดสต็อกเรียบร้อย');
+          showToast(`ยืนยันออเดอร์ #${order.id} แล้ว • กำไรโดยประมาณ ฿${Number(data.estimated_profit).toLocaleString()}`);
+        } else {
+          const { error } = await sb.rpc('freshflow_update_food_order_status', {
+            p_order_id: order.id,
+            p_status: newStatus
+          });
+          if (error) throw error;
+        }
+        await loadFoodOrders();
+      } catch (error) {
+        status.textContent = `อัปเดตออเดอร์ไม่สำเร็จ: ${error.message}`;
         status.className = 'text-sm font-bold text-rose-500';
       }
     }
@@ -5115,6 +5656,7 @@
         addRecipeButton.classList.toggle('cursor-not-allowed', limitReached);
       }
       document.getElementById('menuCostingGrid').innerHTML = visibleRecipes.map(rec => {
+        const recipeIndex = menuRecipes.indexOf(rec);
         const foodCostPct = rec.price > 0 ? ((rec.cost / rec.price) * 100).toFixed(1) : '0.0';
         const grossProfit = (rec.price - rec.cost).toFixed(1);
         const deliveryNet = (rec.price * 0.70 - rec.cost).toFixed(1);
@@ -5140,6 +5682,10 @@
               <span>กำไรสุทธิหลังหัก GP เดลิเวอรี (30%):</span>
               <strong class="text-blue-500">+฿${deliveryNet}/จาน</strong>
             </div>
+            <label class="flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs font-bold">
+              <input type="checkbox" ${rec.publicVisible ? 'checked' : ''} onchange="toggleRecipePublic(${recipeIndex}, this.checked)" class="h-4 w-4 accent-emerald-600" />
+              เปิดเมนูนี้ให้ลูกค้าสั่งและปรับแต่ง
+            </label>
           </div>
         `;
       }).join('');
@@ -5170,18 +5716,55 @@
       const name = document.getElementById('recName').value.trim();
       const cost = parseFloat(document.getElementById('recCost').value);
       const price = parseFloat(document.getElementById('recPrice').value);
-      const ingText = document.getElementById('recIngs').value.split(',')[0].trim();
       if (!name || !Number.isFinite(cost) || !Number.isFinite(price) || cost < 0 || price <= 0) {
         showToast('กรุณากรอกชื่อเมนู ต้นทุน และราคาขายให้ถูกต้อง (ราคาขายต้องมากกว่า 0)');
         return;
       }
-      menuRecipes.unshift({ id: 'm-' + Date.now(), name, price, cost, baseDailyVelocity: 25, category: 'เมนูใหม่', bom: [{ ingredientName: ingText || 'เนื้ออกไก่สด', perPortion: 0.15 }] });
+      const bom = document.getElementById('recIngs').value.split(',').map(part => {
+        const match = part.trim().match(/^(.+?)\s*=\s*([\d.]+)$/);
+        if (!match) return null;
+        const ingredientName = match[1].trim();
+        const perPortion = Number(match[2]);
+        const inventoryItem = ingredients.find(item => item.name.toLocaleLowerCase('th-TH') === ingredientName.toLocaleLowerCase('th-TH'));
+        return inventoryItem && Number(inventoryItem.qty) > 0 && Number.isFinite(perPortion) && perPortion > 0
+          ? { ingredientName, perPortion, unitCost: Number(inventoryItem.cost) / Number(inventoryItem.qty) }
+          : null;
+      });
+      if (!bom.length || bom.some(requirement => !requirement)) {
+        showToast('กรุณาระบุวัตถุดิบที่มีในคลังเป็น ชื่อ=ปริมาณ ต่อจาน เช่น เนื้ออกไก่สด=0.15');
+        return;
+      }
+      menuRecipes.unshift({
+        id: 'm-' + Date.now(),
+        name,
+        price,
+        cost,
+        baseDailyVelocity: 25,
+        category: 'เมนูใหม่',
+        publicVisible: false,
+        bom
+      });
       scheduleCloudSave();
       closeAddRecipeModal();
       e.target.reset();
       renderCostingTab();
       chime();
       showToast(`บันทึกสูตรเมนู "${name}" และเชื่อมกับระบบพยากรณ์สินค้าแล้ว`);
+    }
+
+    function toggleRecipePublic(recipeIndex, isPublic) {
+      const recipe = menuRecipes[recipeIndex];
+      if (!recipe) return;
+      if (isPublic && (!Array.isArray(recipe.bom) || !recipe.bom.length
+        || recipe.bom.some(item => !item.ingredientName || !Number.isFinite(Number(item.perPortion)) || Number(item.perPortion) <= 0))) {
+        recipe.publicVisible = false;
+        renderCostingTab();
+        showToast('เมนูนี้ยังไม่มีสูตรวัตถุดิบที่ถูกต้อง จึงยังเปิดรับออเดอร์ไม่ได้');
+        return;
+      }
+      recipe.publicVisible = isPublic;
+      scheduleCloudSave();
+      showToast(isPublic ? 'เปิดเมนูให้ลูกค้าสั่งแล้ว' : 'ซ่อนเมนูจากหน้าลูกค้าแล้ว');
     }
 
     // ---------------------------------------------------------------------
