@@ -857,7 +857,7 @@
           </button>
         </div>
 
-        <!-- 7 Navigation Menu Items -->
+        <!-- Owner Navigation -->
         <nav class="space-y-1.5 pt-1" aria-label="Main Navigation">
           <button onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-all bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25">
             <i data-lucide="layout-grid" class="w-4 h-4 shrink-0"></i>
@@ -899,6 +899,11 @@
             <i data-lucide="file-spreadsheet" class="w-4 h-4 shrink-0 text-cyan-500"></i>
             <span class="sidebar-label truncate">7. รายงานบัญชี & ภาษี</span>
           </button>
+
+          <button onclick="switchTab('packages')" data-tab="packages" class="nav-btn w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800/70 transition-all">
+            <i data-lucide="badge-percent" class="w-4 h-4 shrink-0 text-amber-500"></i>
+            <span class="sidebar-label truncate">8. แพ็กเกจสมาชิก</span>
+          </button>
         </nav>
       </div>
 
@@ -911,7 +916,7 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center justify-between gap-1">
               <span id="owner-navbar-store-name" class="text-xs font-extrabold text-emerald-700 dark:text-emerald-300 truncate">ครัวสดใหม่ FreshFlow</span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500 text-white font-bold">PRO</span>
+              <span id="owner-plan-badge" class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500 text-white font-bold">ฟรี</span>
             </div>
             <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate" id="authUserEmail">owner@freshflow.ai</p>
           </div>
@@ -1522,6 +1527,7 @@
             </div>
           </div>
 
+          <p id="costing-plan-limit" class="text-xs text-slate-500"></p>
           <div id="menuCostingGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
         </section>
 
@@ -1684,6 +1690,84 @@
                 <tbody id="accountingTableBody" class="divide-y divide-slate-200/70 dark:divide-slate-800"></tbody>
               </table>
             </div>
+          </div>
+        </section>
+
+        <section id="tab-packages" class="tab-section hidden space-y-6">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">แพ็กเกจสมาชิก FreshFlow</h1>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">เลือกแพ็กเกจให้เหมาะกับการจัดการร้าน ระบบจะบันทึกแพ็กเกจที่เลือกไว้กับบัญชีของคุณ</p>
+            </div>
+            <div class="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs max-w-md">
+              <strong class="text-amber-700 dark:text-amber-300">ช่วงทดลองตลาด</strong>
+              <p class="text-slate-600 dark:text-slate-300 mt-1">การเลือกแพ็กเกจยังไม่มีการเรียกเก็บเงินจริงหรือหักเงินอัตโนมัติ</p>
+            </div>
+          </div>
+
+          <div class="bento-card p-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-xs text-slate-500">แพ็กเกจที่เลือก</p>
+              <p id="current-plan-label" class="text-xl font-extrabold">ฟรี • ฿0/เดือน</p>
+            </div>
+            <span class="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold">เปลี่ยนแพ็กเกจได้ทุกเมื่อในช่วงทดลอง</span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <article id="plan-card-free" class="bento-card p-6 space-y-5 border-2 border-transparent">
+              <div>
+                <h2 class="text-xl font-extrabold">ฟรี</h2>
+                <p class="mt-2"><strong class="text-3xl">฿0</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
+              </div>
+              <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <li>✓ คำนวณต้นทุนได้สูงสุด 10 เมนู</li>
+                <li>✓ ดูรายการวัตถุดิบใกล้หมดอายุ</li>
+              </ul>
+              <button id="select-plan-free" onclick="selectSubscriptionPlan('free')" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold text-sm">เลือกแพ็กเกจฟรี</button>
+            </article>
+
+            <article id="plan-card-basic" class="bento-card p-6 space-y-5 border-2 border-transparent">
+              <div>
+                <h2 class="text-xl font-extrabold">โปร</h2>
+                <p class="mt-2"><strong class="text-3xl">฿199</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
+              </div>
+              <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <li>✓ ทุกอย่างในแพ็กเกจฟรี</li>
+                <li>✓ คำนวณต้นทุนได้ไม่จำกัดเมนู</li>
+                <li>✓ แจ้งเตือนวัตถุดิบใกล้หมดอายุ</li>
+                <li>✓ AI แนะนำเมนูเพื่อเคลียร์สต็อก</li>
+              </ul>
+              <button id="select-plan-basic" onclick="selectSubscriptionPlan('basic')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm">เลือกแพ็กเกจโปร</button>
+            </article>
+
+            <article id="plan-card-pro" class="bento-card p-6 space-y-5 border-2 border-amber-400/70 bg-gradient-to-br from-amber-500/10 via-white/50 to-orange-500/10 dark:via-slate-900/50 ring-1 ring-amber-400/30 shadow-xl shadow-amber-500/10">
+              <div class="space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div>
+                    <h2 class="text-xl font-extrabold">พรีเมียม</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">เครื่องมือครบวงจรสำหรับร้านที่กำลังเติบโต</p>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-extrabold shadow">คุ้มค่าสำหรับร้านโต</span>
+                </div>
+                <p class="pt-1"><strong class="text-3xl">฿499</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
+                <p class="text-[11px] font-semibold text-amber-700 dark:text-amber-300">เฉลี่ยประมาณ ฿16.63/วัน (คำนวณที่ 30 วัน/เดือน)</p>
+              </div>
+              <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <li>✓ ทุกอย่างในแพ็กเกจโปร</li>
+                <li>✓ พยากรณ์การเงินและทดลองปรับแผน (What-if)</li>
+                <li>✓ สแกน/อ่านใบเสร็จด้วย OCR</li>
+                <li>✓ ตั้งโปรโมชันและแจ้งเตือนผ่าน LINE OA</li>
+                <li>✓ รายงานบัญชี/ภาษี ส่งออก CSV และพิมพ์รายงาน</li>
+                <li>✓ วางแผนสั่งซื้อวัตถุดิบซ้ำ (Auto-PO)</li>
+              </ul>
+              <button id="select-plan-pro" onclick="selectSubscriptionPlan('pro')" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-bold text-sm shadow-lg shadow-amber-500/25">เลือกแพ็กเกจพรีเมียม • ฿499/เดือน</button>
+            </article>
+          </div>
+
+          <div class="bento-card p-5 space-y-2 text-sm">
+            <h3 class="font-extrabold">รายได้จากส่วนแบ่งการขาย</h3>
+            <p class="text-slate-600 dark:text-slate-300">ตลาดกลางวัตถุดิบคิดคอมมิชชั่น 3% จากคำสั่งซื้อที่สำเร็จ โดยผู้ขายวัตถุดิบเป็นผู้ชำระตามระบบเดิม ไม่ใช่คอมมิชชั่นจากยอดขายหน้าร้าน</p>
+            <p class="text-xs text-slate-500">หมายเหตุ: การอ่านใบเสร็จและ Auto-PO เป็นการจำลอง ส่วนการส่ง LINE จริงต้องเชื่อมต่อ LINE OA ก่อนใช้งาน</p>
           </div>
         </section>
 
@@ -1991,6 +2075,12 @@
     let marketplaceOrders = [];
     let marketplaceSupplierProfile = null;
     let marketplaceCommissionRate = 3;
+    let subscriptionPlan = 'free';
+    const subscriptionPlans = {
+      free: { name: 'ฟรี', price: 0, level: 0 },
+      basic: { name: 'โปร', price: 199, level: 1 },
+      pro: { name: 'พรีเมียม', price: 499, level: 2 }
+    };
     let adminStoreRows = [];
     let adminContactRows = [];
     let cloudSaveTimer = null;
@@ -2127,6 +2217,7 @@
       return {
         ownerEmail: currentUser ? currentUser.email || '' : '',
         currentStore: store,
+        subscriptionPlan,
         ingredients,
         notes,
         menuRecipes,
@@ -2145,6 +2236,9 @@
       }
 
       currentStore = { ...currentStore, ...state.currentStore };
+      subscriptionPlan = Object.prototype.hasOwnProperty.call(subscriptionPlans, state.subscriptionPlan)
+        ? state.subscriptionPlan
+        : 'free';
       ingredients = state.ingredients;
       notes = state.notes;
       menuRecipes = state.menuRecipes;
@@ -2160,6 +2254,7 @@
     function createEmptyAccountState() {
       return {
         currentStore: { name: '', type: '', address: '', lat: 0, lng: 0, lineId: '' },
+        subscriptionPlan: 'free',
         ingredients: [],
         notes: [],
         menuRecipes: [],
@@ -2178,6 +2273,50 @@
       renderAccountingTab();
       renderNotifications();
       updateSidebarExpiryBadge();
+      renderSubscriptionPlan();
+    }
+
+    function hasPlan(requiredPlan) {
+      return subscriptionPlans[subscriptionPlan].level >= subscriptionPlans[requiredPlan].level;
+    }
+
+    function requirePlan(requiredPlan, featureName) {
+      if (hasPlan(requiredPlan)) return true;
+      switchTab('packages');
+      showToast(`${featureName} ใช้ได้ตั้งแต่แพ็กเกจ${subscriptionPlans[requiredPlan].name}`);
+      return false;
+    }
+
+    function renderSubscriptionPlan() {
+      const plan = subscriptionPlans[subscriptionPlan] || subscriptionPlans.free;
+      const badge = document.getElementById('owner-plan-badge');
+      const currentLabel = document.getElementById('current-plan-label');
+      if (badge) badge.textContent = plan.name;
+      if (currentLabel) currentLabel.textContent = `${plan.name} • ฿${plan.price.toLocaleString()}/เดือน`;
+
+      Object.keys(subscriptionPlans).forEach(planId => {
+        const card = document.getElementById(`plan-card-${planId}`);
+        const button = document.getElementById(`select-plan-${planId}`);
+        if (!card || !button) return;
+        const isCurrent = planId === subscriptionPlan;
+        card.classList.toggle('border-emerald-500', isCurrent && planId !== 'pro');
+        card.classList.toggle('border-amber-500', isCurrent && planId === 'pro');
+        card.classList.toggle('shadow-lg', isCurrent);
+        card.classList.toggle('shadow-emerald-500/10', isCurrent);
+        button.disabled = isCurrent;
+        button.textContent = isCurrent ? 'แพ็กเกจปัจจุบัน' : `เลือกแพ็กเกจ${subscriptionPlans[planId].name}`;
+        button.classList.toggle('opacity-60', isCurrent);
+        button.classList.toggle('cursor-not-allowed', isCurrent);
+      });
+    }
+
+    function selectSubscriptionPlan(planId) {
+      if (!Object.prototype.hasOwnProperty.call(subscriptionPlans, planId)) return;
+      subscriptionPlan = planId;
+      renderSubscriptionPlan();
+      renderCostingTab();
+      scheduleCloudSave();
+      showToast(`เลือกแพ็กเกจ${subscriptionPlans[planId].name}แล้ว (ยังไม่มีการเรียกเก็บเงินจริง)`);
     }
 
     function setCloudStatus(message) {
@@ -2574,7 +2713,8 @@
       }
     }
 
-    function sendLine(message) {
+    function sendLine(message, requiresPro = false) {
+      if (requiresPro && !requirePlan('pro', 'การตั้งโปรโมชันและส่งแจ้งเตือน LINE')) return;
       const timeStr = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
       notifications.unshift({
         id: Date.now(),
@@ -3859,6 +3999,16 @@
     // 5. NAVIGATION, SIDEBAR, THEME & 3D SPECULAR TILT
     // ---------------------------------------------------------------------
     function switchTab(tabName) {
+      const requiredPlan = {
+        'product-forecast': 'basic',
+        forecast: 'pro',
+        accounting: 'pro'
+      }[tabName];
+      if (requiredPlan && !hasPlan(requiredPlan)) {
+        const requestedTab = tabName;
+        tabName = 'packages';
+        showToast(`${requestedTab === 'product-forecast' ? 'AI แนะนำเมนูเคลียร์สต็อก' : requestedTab === 'forecast' ? 'พยากรณ์การเงิน' : 'รายงานบัญชี'} ใช้ได้ตั้งแต่แพ็กเกจ${subscriptionPlans[requiredPlan].name}`);
+      }
       currentTab = tabName;
       document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
       const target = document.getElementById('tab-' + tabName);
@@ -3879,6 +4029,7 @@
       if (tabName === 'costing') renderCostingTab();
       if (tabName === 'forecast') updateFinancialSimulation();
       if (tabName === 'accounting') renderAccountingTab();
+      if (tabName === 'packages') renderSubscriptionPlan();
 
       toggleMobileSidebar(false);
       initTilt3D();
@@ -3906,6 +4057,7 @@
     }
 
     function toggleNotificationDrawer() {
+      if (!requirePlan('basic', 'การแจ้งเตือนวัตถุดิบ')) return;
       document.getElementById('notificationDrawer').classList.toggle('translate-x-full');
       document.getElementById('notifDot').classList.add('hidden');
     }
@@ -4204,6 +4356,7 @@
     }
 
     function simulateScanReceipt() {
+      if (!requirePlan('pro', 'การอ่านใบเสร็จด้วย OCR')) return;
       const sampleItems = [
         { name: 'เนื้ออกไก่สด', qty: 10, unit: 'กก.', cost: 800, shelfLife: 2, category: 'เนื้อสัตว์', dailyUsage: 6.5, rop: 8 },
         { name: 'ใบกะเพราสด', qty: 3, unit: 'กก.', cost: 180, shelfLife: 2, category: 'ผักสด', dailyUsage: 1.4, rop: 2 }
@@ -4225,6 +4378,7 @@
     }
 
     function runCombinedAICalculation() {
+      if (!requirePlan('basic', 'AI แนะนำเมนูเคลียร์สต็อก')) return;
       chime();
       celebrate();
       document.getElementById('forecastLastSyncBadge').textContent = 'อัปเดตล่าสุดเมื่อสักครู่ (' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ')';
@@ -4472,11 +4626,12 @@
     }
 
     function activateClearanceCampaign(id, title, originalPrice, promoPrice, netProfit, wasteReduction) {
+      if (!requirePlan('pro', 'การตั้งโปรโมชันและส่งแจ้งเตือน LINE')) return;
       if (!activePromotions.some(p => p.id === id)) {
         activePromotions.unshift({ id, title, originalPrice, promoPrice, netProfit, wasteReduction, tag: 'AI Flash Clearance 3D', active: true });
         scheduleCloudSave();
       }
-      sendLine(`🔥 เปิดแคมเปญระบายสต็อก AI: "${title}" ราคาพิเศษ ฿${promoPrice} (จาก ฿${originalPrice}) กำไรสุทธิ +฿${netProfit}/เซ็ต ลดขยะอาหาร ${wasteReduction}`);
+      sendLine(`🔥 เปิดแคมเปญระบายสต็อก AI: "${title}" ราคาพิเศษ ฿${promoPrice} (จาก ฿${originalPrice}) กำไรสุทธิ +฿${netProfit}/เซ็ต ลดขยะอาหาร ${wasteReduction}`, true);
       chime();
       celebrate();
       renderProductForecastTab();
@@ -4494,17 +4649,19 @@
     }
 
     function createSingleAutoPO(ingId, orderQty) {
+      if (!requirePlan('pro', 'การสร้างใบสั่งซื้ออัตโนมัติ')) return;
       const ing = ingredients.find(i => i.id === ingId);
       if (!ing) return;
       const name = ing.name, unit = ing.unit;
       chime();
-      sendLine(`📦 ออกใบสั่งซื้ออัตโนมัติ (Auto-PO): ${name} จำนวน ${orderQty} ${unit} ส่งไปยังซัพพลายเออร์เรียบร้อย`);
+      sendLine(`📦 ออกใบสั่งซื้ออัตโนมัติ (Auto-PO): ${name} จำนวน ${orderQty} ${unit} ส่งไปยังซัพพลายเออร์เรียบร้อย`, true);
     }
 
     function createAllAutoPOs() {
+      if (!requirePlan('pro', 'การสร้างใบสั่งซื้ออัตโนมัติ')) return;
       chime();
       celebrate();
-      sendLine(`📦 ออกใบสั่งซื้ออัตโนมัติ (Batch Auto-PO) สำหรับวัตถุดิบที่ต่ำกว่าจุด Reorder Point ทุกรายการเรียบร้อยแล้ว`);
+      sendLine(`📦 ออกใบสั่งซื้ออัตโนมัติ (Batch Auto-PO) สำหรับวัตถุดิบที่ต่ำกว่าจุด Reorder Point ทุกรายการเรียบร้อยแล้ว`, true);
     }
 
     // ---------------------------------------------------------------------
@@ -4578,7 +4735,24 @@
     }
 
     function renderCostingTab() {
-      document.getElementById('menuCostingGrid').innerHTML = menuRecipes.map(rec => {
+      const isFreePlan = subscriptionPlan === 'free';
+      const visibleRecipes = isFreePlan ? menuRecipes.slice(0, 10) : menuRecipes;
+      const hiddenCount = menuRecipes.length - visibleRecipes.length;
+      const limitLabel = document.getElementById('costing-plan-limit');
+      const addRecipeButton = document.querySelector('#tab-costing button[onclick="openAddRecipeModal()"]');
+      if (limitLabel) {
+        limitLabel.textContent = isFreePlan
+          ? `แพ็กเกจฟรี: ${Math.min(menuRecipes.length, 10)}/10 เมนูที่ใช้คำนวณต้นทุน`
+          : `แพ็กเกจ${subscriptionPlans[subscriptionPlan].name}: ${menuRecipes.length} เมนู • ไม่จำกัด`;
+        if (hiddenCount > 0) limitLabel.textContent += ` • อีก ${hiddenCount} เมนูถูกเก็บไว้และจะแสดงเมื่ออัปเกรด`;
+      }
+      if (addRecipeButton) {
+        const limitReached = isFreePlan && menuRecipes.length >= 10;
+        addRecipeButton.disabled = limitReached;
+        addRecipeButton.classList.toggle('opacity-50', limitReached);
+        addRecipeButton.classList.toggle('cursor-not-allowed', limitReached);
+      }
+      document.getElementById('menuCostingGrid').innerHTML = visibleRecipes.map(rec => {
         const foodCostPct = rec.price > 0 ? ((rec.cost / rec.price) * 100).toFixed(1) : '0.0';
         const grossProfit = (rec.price - rec.cost).toFixed(1);
         const deliveryNet = (rec.price * 0.70 - rec.cost).toFixed(1);
@@ -4611,6 +4785,10 @@
     }
 
     function openAddRecipeModal() {
+      if (subscriptionPlan === 'free' && menuRecipes.length >= 10) {
+        requirePlan('basic', 'การคำนวณต้นทุนเมนูเกิน 10 เมนู');
+        return;
+      }
       const m = document.getElementById('addRecipeModal');
       m.classList.remove('hidden');
       m.classList.add('flex');
@@ -4622,6 +4800,11 @@
     }
     function saveNewRecipe(e) {
       e.preventDefault();
+      if (subscriptionPlan === 'free' && menuRecipes.length >= 10) {
+        closeAddRecipeModal();
+        requirePlan('basic', 'การคำนวณต้นทุนเมนูเกิน 10 เมนู');
+        return;
+      }
       const name = document.getElementById('recName').value.trim();
       const cost = parseFloat(document.getElementById('recCost').value);
       const price = parseFloat(document.getElementById('recPrice').value);
@@ -4858,7 +5041,7 @@
       scheduleCloudSave();
       chime();
       celebrate();
-      sendLine(`🛒 ลูกค้าสั่งซื้อดีลหน้าร้าน: "${title}" ยอดชำระ ฿${price}`);
+      sendLine(`🛒 ลูกค้าสั่งซื้อดีลหน้าร้าน: "${title}" ยอดชำระ ฿${price}`, false);
     }
 
     function renderNotifications() {
