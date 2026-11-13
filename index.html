@@ -481,9 +481,10 @@
             <p id="auth-description" class="text-xs text-slate-500 dark:text-slate-400">เข้าสู่ระบบหรือสมัครร้านค้าใหม่เพื่อเริ่มจัดการร้านด้วย FreshFlow</p>
           </div>
           <form id="login-form" onsubmit="handleLogin(event)" class="z-layer-1 space-y-4">
-            <div class="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 p-1">
+            <div class="grid grid-cols-3 gap-2 rounded-xl bg-slate-100 dark:bg-slate-800 p-1">
               <button id="auth-mode-owner" type="button" onclick="setAuthMode('owner')" class="py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 shadow">เจ้าของร้าน</button>
               <button id="auth-mode-customer" type="button" onclick="setAuthMode('customer')" class="py-2 rounded-lg text-xs font-bold text-slate-500">ลูกค้า</button>
+              <button id="auth-mode-supplier" type="button" onclick="setAuthMode('supplier')" class="py-2 rounded-lg text-xs font-bold text-slate-500">ผู้ขายวัตถุดิบ</button>
             </div>
             <div>
               <label class="block text-xs font-bold mb-1.5">อีเมลผู้ใช้งาน</label>
@@ -984,6 +985,10 @@
           <button onclick="switchRoleToVisitor()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500 hover:text-white text-xs font-bold transition flex items-center gap-1.5">
             <i data-lucide="store" class="w-4 h-4"></i>
             <span class="hidden md:inline">หน้าร้านลูกค้า</span>
+          </button>
+          <button onclick="openMarketplace('catalog')" class="px-3 py-2 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500 hover:text-white text-xs font-bold transition flex items-center gap-1.5">
+            <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+            <span class="hidden md:inline">ตลาดกลางวัตถุดิบ</span>
           </button>
 
           <!-- Right AI Co-Pilot Panel Toggle -->
@@ -1766,6 +1771,120 @@
   </section>
 
   <!-- =====================================================================
+       VIEW 7: FRESHFLOW INGREDIENT MARKETPLACE (Buyer / Supplier)
+  ===================================================================== -->
+  <section id="view-marketplace" class="hidden min-h-screen w-full">
+    <header class="sticky top-0 z-40 bento-card rounded-none border-x-0 border-t-0 px-4 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <img src="assets/freshflow-logo.png" alt="FreshFlow" class="w-11 h-11 rounded-2xl object-cover shadow-lg" />
+        <div>
+          <h1 class="font-extrabold text-lg">ตลาดกลางวัตถุดิบ FreshFlow</h1>
+          <p id="marketplace-subtitle" class="text-xs text-slate-500">ซื้อขายวัตถุดิบระหว่างร้านค้าและผู้ขาย</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button id="marketplace-back-owner" onclick="switchRoleToOwner()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">กลับหลังบ้านร้าน</button>
+        <button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-500 text-white text-xs font-bold">ออกจากระบบ</button>
+      </div>
+    </header>
+    <main class="max-w-7xl mx-auto p-4 sm:p-8 space-y-6">
+      <nav id="marketplace-tabs" class="flex flex-wrap gap-2" aria-label="เมนูตลาดกลาง">
+        <button onclick="showMarketplaceTab('catalog')" class="marketplace-tab px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-bold">ซื้อวัตถุดิบ</button>
+        <button onclick="showMarketplaceTab('orders')" class="marketplace-tab px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">รายการสั่งซื้อ</button>
+        <button id="marketplace-seller-tab" onclick="showMarketplaceTab('seller')" class="marketplace-tab hidden px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-bold">ศูนย์ผู้ขาย</button>
+      </nav>
+      <p id="marketplace-message" class="text-sm font-bold" role="status" aria-live="polite"></p>
+
+      <section id="marketplace-panel-catalog" class="marketplace-panel space-y-5">
+        <div class="space-y-1">
+          <h2 class="text-2xl font-extrabold">วัตถุดิบจากผู้ขาย</h2>
+          <p id="marketplace-commission-copy" class="text-sm text-slate-500">ผู้ขายเป็นผู้จัดส่งและรับยอดหลังหักค่าคอมมิชชั่น FreshFlow 3% เมื่อทำรายการสำเร็จ</p>
+        </div>
+        <label for="marketplace-search" class="sr-only">ค้นหาสินค้าวัตถุดิบ</label>
+        <input id="marketplace-search" type="search" oninput="renderMarketplaceCatalog(this.value)" placeholder="ค้นหาชื่อวัตถุดิบ หมวดหมู่ หรือผู้ขาย..." class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-amber-500" />
+        <div id="marketplace-catalog" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" aria-live="polite">
+          <p class="col-span-full text-sm text-slate-500">กำลังโหลดสินค้า...</p>
+        </div>
+      </section>
+
+      <section id="marketplace-panel-orders" class="marketplace-panel hidden space-y-5">
+        <div>
+          <h2 class="text-2xl font-extrabold">คำสั่งซื้อของฉัน</h2>
+          <p class="text-sm text-slate-500">ไม่มีการชำระเงินจริงในระบบต้นแบบนี้ สถานะจะเปลี่ยนเมื่อผู้ขายยืนยันหรือจัดส่ง</p>
+        </div>
+        <div id="marketplace-orders" class="space-y-3">
+          <p class="text-sm text-slate-500">กำลังโหลดคำสั่งซื้อ...</p>
+        </div>
+      </section>
+
+      <section id="marketplace-panel-seller" class="marketplace-panel hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <form id="marketplace-supplier-form" onsubmit="saveMarketplaceSupplier(event)" class="bento-card p-5 space-y-4">
+            <div>
+              <h2 class="text-xl font-extrabold">โปรไฟล์ผู้ขาย</h2>
+              <p class="text-xs text-slate-500">ใช้ชื่อธุรกิจและช่องทางติดต่อที่ต้องการเผยแพร่ให้ผู้ซื้อเห็น</p>
+            </div>
+            <div>
+              <label for="marketplace-business-name" class="block text-xs font-bold mb-1">ชื่อผู้ขาย / ธุรกิจ</label>
+              <input id="marketplace-business-name" required maxlength="160" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+            </div>
+            <div>
+              <label for="marketplace-public-contact" class="block text-xs font-bold mb-1">ช่องทางติดต่อสาธารณะ</label>
+              <input id="marketplace-public-contact" maxlength="160" placeholder="โทรศัพท์, LINE หรืออีเมล" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+            </div>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-bold">บันทึกโปรไฟล์ผู้ขาย</button>
+          </form>
+
+          <form id="marketplace-product-form" onsubmit="saveMarketplaceProduct(event)" class="bento-card p-5 space-y-4">
+            <div>
+              <h2 class="text-xl font-extrabold">ลงขายวัตถุดิบ</h2>
+              <p class="text-xs text-slate-500">ระบุราคา หน่วย และจำนวนคงเหลือ ระบบจะกันสต็อกเมื่อมีคำสั่งซื้อ</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="marketplace-product-name" class="block text-xs font-bold mb-1">ชื่อวัตถุดิบ</label>
+                <input id="marketplace-product-name" required maxlength="160" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+              </div>
+              <div>
+                <label for="marketplace-product-category" class="block text-xs font-bold mb-1">หมวดหมู่</label>
+                <input id="marketplace-product-category" required maxlength="80" placeholder="เช่น ผักสด, เนื้อสัตว์" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+              </div>
+              <div>
+                <label for="marketplace-product-unit" class="block text-xs font-bold mb-1">หน่วยขาย</label>
+                <input id="marketplace-product-unit" required maxlength="30" placeholder="กก., ลัง, แพ็ก" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+              </div>
+              <div>
+                <label for="marketplace-product-price" class="block text-xs font-bold mb-1">ราคาต่อหน่วย (บาท)</label>
+                <input id="marketplace-product-price" type="number" min="0.01" step="0.01" required class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+              </div>
+              <div>
+                <label for="marketplace-product-stock" class="block text-xs font-bold mb-1">สต็อกเริ่มต้น</label>
+                <input id="marketplace-product-stock" type="number" min="0" step="0.001" required class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm" />
+              </div>
+            </div>
+            <div>
+              <label for="marketplace-product-description" class="block text-xs font-bold mb-1">รายละเอียดสินค้า</label>
+              <textarea id="marketplace-product-description" rows="2" maxlength="1000" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+            </div>
+            <button type="submit" class="px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold">ลงขายสินค้า</button>
+          </form>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div class="bento-card p-5 space-y-3">
+            <h3 class="font-extrabold">สินค้าของฉัน</h3>
+            <div id="marketplace-my-products" class="space-y-2"></div>
+          </div>
+          <div class="bento-card p-5 space-y-3">
+            <h3 class="font-extrabold">ออเดอร์และค่าคอมมิชชั่น</h3>
+            <p id="marketplace-commission-summary" class="text-sm text-slate-500">ค่าคอมมิชชั่น 3% จะนับเมื่อออเดอร์เสร็จสมบูรณ์</p>
+            <div id="marketplace-seller-orders" class="space-y-2"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <!-- =====================================================================
        SUPABASE CONFIG MODAL (#view-config)
   ===================================================================== -->
   <div id="view-config" class="fixed inset-0 z-[110] bg-slate-950/65 backdrop-blur-xs hidden items-center justify-center p-4">
@@ -1865,7 +1984,13 @@
     let currentUser = null;
     let demoMode = false;
     let customerSession = false;
+    let supplierSession = false;
     let authMode = 'owner';
+    let marketplaceProducts = [];
+    let marketplaceOwnProducts = [];
+    let marketplaceOrders = [];
+    let marketplaceSupplierProfile = null;
+    let marketplaceCommissionRate = 3;
     let adminStoreRows = [];
     let adminContactRows = [];
     let cloudSaveTimer = null;
@@ -2069,17 +2194,20 @@
     }
 
     function setAuthMode(mode) {
-      if (!['owner', 'customer'].includes(mode)) return;
+      if (!['owner', 'customer', 'supplier'].includes(mode)) return;
       authMode = mode;
-      const ownerButton = document.getElementById('auth-mode-owner');
-      const customerButton = document.getElementById('auth-mode-customer');
-      ownerButton.className = `py-2 rounded-lg text-xs font-bold ${mode === 'owner' ? 'bg-white dark:bg-slate-700 shadow' : 'text-slate-500'}`;
-      customerButton.className = `py-2 rounded-lg text-xs font-bold ${mode === 'customer' ? 'bg-white dark:bg-slate-700 shadow' : 'text-slate-500'}`;
-      document.getElementById('auth-title').textContent = mode === 'owner' ? 'เข้าสู่ระบบเจ้าของร้าน' : 'เข้าสู่ระบบลูกค้า';
-      document.getElementById('auth-description').textContent = mode === 'owner'
-        ? 'เข้าสู่ระบบหรือสมัครร้านค้าใหม่เพื่อเริ่มจัดการร้านด้วย FreshFlow'
-        : 'เข้าสู่ระบบเพื่อใช้งานในมุมมองลูกค้า หรือค้นหาร้านค้าโดยไม่ต้องมีบัญชี';
-      document.getElementById('btn-signup').textContent = mode === 'owner' ? 'สมัครร้านค้าใหม่' : 'สมัครบัญชีลูกค้า';
+      ['owner', 'customer', 'supplier'].forEach(type => {
+        const button = document.getElementById(`auth-mode-${type}`);
+        button.className = `py-2 rounded-lg text-xs font-bold ${mode === type ? 'bg-white dark:bg-slate-700 shadow' : 'text-slate-500'}`;
+      });
+      const modeDetails = {
+        owner: ['เข้าสู่ระบบเจ้าของร้าน', 'เข้าสู่ระบบหรือสมัครร้านค้าใหม่เพื่อเริ่มจัดการร้านด้วย FreshFlow', 'สมัครร้านค้าใหม่'],
+        customer: ['เข้าสู่ระบบลูกค้า', 'เข้าสู่ระบบเพื่อใช้งานในมุมมองลูกค้า หรือค้นหาร้านค้าโดยไม่ต้องมีบัญชี', 'สมัครบัญชีลูกค้า'],
+        supplier: ['เข้าสู่ระบบผู้ขายวัตถุดิบ', 'สมัครบัญชีผู้ขายแยกต่างหาก เพื่อประกาศขายและจัดการคำสั่งซื้อวัตถุดิบ', 'สมัครเป็นผู้ขายวัตถุดิบ']
+      };
+      document.getElementById('auth-title').textContent = modeDetails[mode][0];
+      document.getElementById('auth-description').textContent = modeDetails[mode][1];
+      document.getElementById('btn-signup').textContent = modeDetails[mode][2];
       setAuthMessage('', false);
     }
 
@@ -2188,11 +2316,16 @@
       demoMode = false;
       profile.email = currentUser.email || '';
       document.getElementById('authUserEmail').textContent = profile.email;
-      customerSession = (currentUser.user_metadata || {}).account_type === 'customer';
+      const accountType = (currentUser.user_metadata || {}).account_type;
+      customerSession = accountType === 'customer';
+      supplierSession = accountType === 'supplier';
       try {
         if (customerSession) {
           setAuthMode('customer');
           await switchRoleToVisitor();
+        } else if (supplierSession) {
+          setAuthMode('supplier');
+          await openMarketplace('seller');
         } else {
           await loadUserState();
           showOnlyView('view-role-selection');
@@ -2207,6 +2340,7 @@
         }
         currentUser = null;
         customerSession = false;
+        supplierSession = false;
         setAuthMessage(`โหลดข้อมูลจากฐานข้อมูลไม่สำเร็จ: ${loadError.message}${extra}`, true);
         setCloudStatus('เชื่อมต่อฐานข้อมูลไม่สำเร็จ');
       }
@@ -2462,7 +2596,7 @@
     // 4. VIEW SWITCHING, AUTH, ONBOARDING & LEAFLET MAPS
     // ---------------------------------------------------------------------
     function showOnlyView(viewId) {
-      ['view-login', 'view-role-selection', 'view-store-onboarding', 'view-visitor', 'view-owner', 'view-admin'].forEach(id => {
+      ['view-login', 'view-role-selection', 'view-store-onboarding', 'view-visitor', 'view-owner', 'view-admin', 'view-marketplace'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
         if (id === viewId) {
@@ -2529,15 +2663,18 @@
         currentUser = data.user;
         demoMode = false;
         customerSession = authMode === 'customer';
+        supplierSession = authMode === 'supplier';
         profile.email = currentUser.email || email;
         document.getElementById('authUserEmail').textContent = profile.email;
         if (customerSession) {
           await switchRoleToVisitor();
+        } else if (supplierSession) {
+          await openMarketplace('seller');
         } else {
           await loadUserState();
         }
         document.getElementById('auth-password').value = '';
-        if (!customerSession) showOnlyView('view-role-selection');
+        if (!customerSession && !supplierSession) showOnlyView('view-role-selection');
         chime();
       } catch (error) {
         let message = error.message;
@@ -2551,6 +2688,7 @@
         }
         currentUser = null;
         customerSession = false;
+        supplierSession = false;
         setAuthMessage(`เข้าสู่ระบบไม่สำเร็จ: ${message}`, true);
       } finally {
         loginButton.disabled = signupButton.disabled = false;
@@ -2583,12 +2721,14 @@
         currentUser = data.user;
         demoMode = false;
         customerSession = authMode === 'customer';
+        supplierSession = authMode === 'supplier';
         profile.email = currentUser.email || email;
         document.getElementById('authUserEmail').textContent = profile.email;
         if (customerSession) await switchRoleToVisitor();
+        else if (supplierSession) await openMarketplace('seller');
         else await loadUserState();
         document.getElementById('auth-password').value = '';
-        if (!customerSession) showOnlyView('view-role-selection');
+        if (!customerSession && !supplierSession) showOnlyView('view-role-selection');
         chime();
       } catch (error) {
         let message = error.message;
@@ -2602,6 +2742,7 @@
         }
         currentUser = null;
         customerSession = false;
+        supplierSession = false;
         setAuthMessage(`สมัครสมาชิกไม่สำเร็จ: ${message}`, true);
       } finally {
         loginButton.disabled = signupButton.disabled = false;
@@ -2611,6 +2752,7 @@
     function restoreDemoState() {
       applyPersistedAppState(JSON.parse(JSON.stringify(demoSeedState)));
       profile = { email: 'owner@freshflow.ai', role: 'owner' };
+      supplierSession = false;
       visitorStores = [
         { id: 'demo-main', name: currentStore.name, type: currentStore.type, address: currentStore.address, lat: currentStore.lat, lng: currentStore.lng },
         { id: 'demo-siam', name: 'ครัวสดใหม่ FreshFlow (สาขาสยามสแควร์)', type: currentStore.type, address: 'สยามสแควร์ ซอย 3 ปทุมวัน กรุงเทพฯ', lat: 13.7456, lng: 100.5341 }
@@ -2634,6 +2776,7 @@
       }
       demoMode = true;
       customerSession = false;
+      supplierSession = false;
       restoreDemoState();
       chime();
       showOnlyView('view-owner');
@@ -2647,9 +2790,9 @@
     function selectRole(role) {
       profile.role = role;
       if (role === 'owner') {
-        if (customerSession) {
+        if (customerSession || supplierSession) {
           showOnlyView('view-visitor');
-          showToast('บัญชีลูกค้าไม่สามารถเปิดหลังบ้านร้านค้าได้');
+          showToast('บัญชีนี้ไม่สามารถเปิดหลังบ้านร้านค้าได้');
           return;
         }
         if (!currentStore.name || !currentStore.address || !currentStore.type) {
@@ -2660,6 +2803,375 @@
         }
       } else if (role === 'visitor') {
         switchRoleToVisitor();
+      }
+    }
+
+    function setMarketplaceMessage(message, isError) {
+      const element = document.getElementById('marketplace-message');
+      element.textContent = message || '';
+      element.classList.toggle('text-rose-500', Boolean(isError));
+      element.classList.toggle('text-emerald-600', Boolean(message) && !isError);
+      element.classList.toggle('text-slate-500', !message);
+    }
+
+    async function openMarketplace(tabName) {
+      if (!currentUser || customerSession) {
+        showOnlyView('view-login');
+        setAuthMode('owner');
+        setAuthMessage('กรุณาเข้าสู่ระบบด้วยบัญชีเจ้าของร้านเพื่อสั่งซื้อวัตถุดิบ', true);
+        return;
+      }
+
+      showOnlyView('view-marketplace');
+      const isSupplier = supplierSession;
+      document.getElementById('marketplace-back-owner').classList.toggle('hidden', isSupplier);
+      document.getElementById('marketplace-seller-tab').classList.toggle('hidden', !isSupplier);
+      document.getElementById('marketplace-subtitle').textContent = isSupplier
+        ? 'ลงขายวัตถุดิบ จัดการสต็อก และติดตามรายได้หลังหักค่าคอมมิชชั่น'
+        : 'สั่งซื้อวัตถุดิบจากผู้ขายโดยไม่ปะปนกับคลังหลังบ้านร้าน';
+      let commissionError = '';
+      try {
+        await loadMarketplaceCommissionRate();
+      } catch (error) {
+        commissionError = `โหลดอัตราค่าคอมมิชชั่นไม่สำเร็จ: ${error.message}`;
+      }
+      showMarketplaceTab(isSupplier ? 'seller' : tabName || 'catalog');
+      await loadMarketplaceProducts();
+      if (commissionError) setMarketplaceMessage(commissionError, true);
+    }
+
+    function showMarketplaceTab(tabName) {
+      const allowedTabs = supplierSession ? ['orders', 'seller'] : ['catalog', 'orders'];
+      if (!allowedTabs.includes(tabName)) return;
+      ['catalog', 'orders', 'seller'].forEach(name => {
+        document.getElementById(`marketplace-panel-${name}`).classList.toggle('hidden', name !== tabName);
+      });
+      document.querySelectorAll('.marketplace-tab').forEach(button => {
+        const active = button.getAttribute('onclick') === `showMarketplaceTab('${tabName}')`;
+        button.classList.toggle('bg-amber-500', active);
+        button.classList.toggle('text-white', active);
+        button.classList.toggle('bg-slate-200', !active);
+        button.classList.toggle('dark:bg-slate-800', !active);
+      });
+      if (tabName === 'orders') loadMarketplaceOrders();
+      if (tabName === 'seller') {
+        loadMarketplaceSupplierProfile();
+        loadMarketplaceOwnProducts();
+        loadMarketplaceOrders();
+      }
+    }
+
+    async function loadMarketplaceCommissionRate() {
+      const { data, error } = await sb
+        .from('freshflow_marketplace_settings')
+        .select('commission_rate')
+        .eq('id', 1)
+        .single();
+      if (error) throw error;
+      marketplaceCommissionRate = Number(data.commission_rate);
+      document.getElementById('marketplace-commission-copy').textContent =
+        `ผู้ขายเป็นผู้จัดส่งและรับยอดหลังหักค่าคอมมิชชั่น FreshFlow ${marketplaceCommissionRate}% เมื่อทำรายการสำเร็จ`;
+      document.getElementById('marketplace-commission-summary').textContent =
+        `ค่าคอมมิชชั่น ${marketplaceCommissionRate}% จะนับเมื่อออเดอร์เสร็จสมบูรณ์`;
+    }
+
+    async function loadMarketplaceProducts() {
+      const container = document.getElementById('marketplace-catalog');
+      container.innerHTML = '<p class="col-span-full text-sm text-slate-500">กำลังโหลดสินค้า...</p>';
+      try {
+        const { data, error } = await sb
+          .from('freshflow_marketplace_products')
+          .select('id,seller_id,name,category,unit,description,unit_price,stock_qty,freshflow_marketplace_suppliers!inner(business_name,public_contact)')
+          .eq('is_active', true)
+          .gt('stock_qty', 0)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        marketplaceProducts = (data || []).map(product => {
+          const supplier = Array.isArray(product.freshflow_marketplace_suppliers)
+            ? product.freshflow_marketplace_suppliers[0]
+            : product.freshflow_marketplace_suppliers;
+          return {
+            ...product,
+            seller_name: supplier ? supplier.business_name : 'ผู้ขายวัตถุดิบ',
+            public_contact: supplier ? supplier.public_contact : ''
+          };
+        });
+        renderMarketplaceCatalog(document.getElementById('marketplace-search').value);
+        if (!marketplaceProducts.length) {
+          setMarketplaceMessage('ยังไม่มีสินค้าวัตถุดิบที่เปิดขาย');
+        } else {
+          setMarketplaceMessage('');
+        }
+      } catch (error) {
+        marketplaceProducts = [];
+        container.innerHTML = `<p class="col-span-full text-sm text-rose-500">โหลดสินค้าไม่สำเร็จ: ${esc(error.message)} กรุณารัน schema ตลาดกลางใน Supabase ก่อน</p>`;
+        setMarketplaceMessage('เชื่อมต่อตลาดกลางไม่สำเร็จ', true);
+      }
+    }
+
+    function renderMarketplaceCatalog(query) {
+      const container = document.getElementById('marketplace-catalog');
+      if (!container) return;
+      const term = String(query || '').trim().toLocaleLowerCase('th-TH');
+      const matches = marketplaceProducts.filter(product =>
+        `${product.name} ${product.category} ${product.seller_name}`.toLocaleLowerCase('th-TH').includes(term)
+      );
+      container.innerHTML = matches.length
+        ? matches.map((product, index) => `
+          <article class="bento-card p-5 space-y-3">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <span class="text-[10px] font-bold text-amber-600">${esc(product.category)}</span>
+                <h3 class="font-extrabold text-lg">${esc(product.name)}</h3>
+              </div>
+              <span class="text-xs font-bold text-slate-500">${Number(product.stock_qty).toLocaleString()} ${esc(product.unit)}</span>
+            </div>
+            <p class="text-xs text-slate-500 min-h-8">${esc(product.description || 'วัตถุดิบจากผู้ขาย FreshFlow')}</p>
+            <p class="text-xs">ผู้ขาย: <strong>${esc(product.seller_name)}</strong></p>
+            ${product.public_contact ? `<p class="text-xs text-slate-500">ติดต่อ: ${esc(product.public_contact)}</p>` : ''}
+            <div class="flex items-end gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+              <div class="flex-1">
+                <label for="marketplace-quantity-${index}" class="block text-[10px] font-bold mb-1">จำนวน (${esc(product.unit)})</label>
+                <input id="marketplace-quantity-${index}" type="number" min="0.001" max="${Number(product.stock_qty)}" step="0.001" value="1" class="w-full px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm" />
+              </div>
+              <div class="text-right">
+                <span class="block text-[10px] text-slate-500">ต่อ ${esc(product.unit)}</span>
+                <strong class="text-lg text-emerald-600">฿${Number(product.unit_price).toLocaleString()}</strong>
+              </div>
+            </div>
+            <button onclick="placeMarketplaceOrder(${index})" class="w-full px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold">สั่งซื้อวัตถุดิบ</button>
+          </article>
+        `).join('')
+        : `<p class="col-span-full text-sm text-slate-500">${marketplaceProducts.length ? 'ไม่พบสินค้าที่ตรงกับคำค้น' : 'ยังไม่มีวัตถุดิบเปิดขาย'}</p>`;
+    }
+
+    async function placeMarketplaceOrder(index) {
+      if (!currentUser || customerSession || supplierSession) {
+        setMarketplaceMessage('เข้าสู่ระบบด้วยบัญชีเจ้าของร้านเพื่อสั่งซื้อ', true);
+        return;
+      }
+      const product = marketplaceProducts[index];
+      const quantityInput = document.getElementById(`marketplace-quantity-${index}`);
+      const quantity = Number(quantityInput.value);
+      if (!product || !Number.isFinite(quantity) || quantity <= 0 || quantity > Number(product.stock_qty)) {
+        setMarketplaceMessage('กรุณาระบุจำนวนที่ถูกต้องและไม่เกินสต็อก', true);
+        return;
+      }
+      if (!currentStore.name) {
+        setMarketplaceMessage('กรุณาตั้งค่าโปรไฟล์ร้านก่อนสั่งซื้อ', true);
+        return;
+      }
+
+      setMarketplaceMessage('กำลังบันทึกคำสั่งซื้อ...');
+      try {
+        const { data, error } = await sb
+          .from('freshflow_marketplace_orders')
+          .insert({
+            product_id: product.id,
+            quantity,
+            buyer_store: currentStore.name
+          })
+          .select('id,subtotal,commission_rate,commission_amount,seller_net,status')
+          .single();
+        if (error) throw error;
+        showToast(`ส่งคำสั่งซื้อแล้ว • ยอด ฿${Number(data.subtotal).toLocaleString()} • รอผู้ขายยืนยัน`);
+        setMarketplaceMessage(`คำสั่งซื้อถูกบันทึกแล้ว (รหัส ${data.id.slice(0, 8)})`);
+        await loadMarketplaceProducts();
+      } catch (error) {
+        setMarketplaceMessage(`สั่งซื้อไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function loadMarketplaceSupplierProfile() {
+      if (!supplierSession || !currentUser) return;
+      try {
+        const { data, error } = await sb
+          .from('freshflow_marketplace_suppliers')
+          .select('business_name,public_contact')
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+        if (error) throw error;
+        marketplaceSupplierProfile = data;
+        document.getElementById('marketplace-business-name').value = data ? data.business_name : '';
+        document.getElementById('marketplace-public-contact').value = data ? data.public_contact : '';
+      } catch (error) {
+        setMarketplaceMessage(`โหลดโปรไฟล์ผู้ขายไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function saveMarketplaceSupplier(event) {
+      event.preventDefault();
+      if (!supplierSession || !currentUser) {
+        setMarketplaceMessage('ใช้บัญชีผู้ขายวัตถุดิบเพื่อบันทึกโปรไฟล์', true);
+        return;
+      }
+      const businessName = document.getElementById('marketplace-business-name').value.trim();
+      const publicContact = document.getElementById('marketplace-public-contact').value.trim();
+      if (!businessName) {
+        setMarketplaceMessage('กรุณากรอกชื่อผู้ขายหรือชื่อธุรกิจ', true);
+        return;
+      }
+      try {
+        const { data, error } = await sb
+          .from('freshflow_marketplace_suppliers')
+          .upsert({
+            user_id: currentUser.id,
+            business_name: businessName,
+            public_contact: publicContact,
+            is_active: true,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'user_id' })
+          .select('business_name,public_contact')
+          .single();
+        if (error) throw error;
+        marketplaceSupplierProfile = data;
+        setMarketplaceMessage('บันทึกโปรไฟล์ผู้ขายเรียบร้อย');
+        showToast('ลงทะเบียนโปรไฟล์ผู้ขายแล้ว');
+        await loadMarketplaceProducts();
+      } catch (error) {
+        setMarketplaceMessage(`บันทึกโปรไฟล์ไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function saveMarketplaceProduct(event) {
+      event.preventDefault();
+      if (!supplierSession || !currentUser || !marketplaceSupplierProfile) {
+        setMarketplaceMessage('กรุณาบันทึกโปรไฟล์ผู้ขายก่อนลงสินค้า', true);
+        return;
+      }
+      const product = {
+        seller_id: currentUser.id,
+        name: document.getElementById('marketplace-product-name').value.trim(),
+        category: document.getElementById('marketplace-product-category').value.trim(),
+        unit: document.getElementById('marketplace-product-unit').value.trim(),
+        unit_price: Number(document.getElementById('marketplace-product-price').value),
+        stock_qty: Number(document.getElementById('marketplace-product-stock').value),
+        description: document.getElementById('marketplace-product-description').value.trim()
+      };
+      if (!product.name || !product.category || !product.unit || !Number.isFinite(product.unit_price) ||
+          product.unit_price <= 0 || !Number.isFinite(product.stock_qty) || product.stock_qty < 0) {
+        setMarketplaceMessage('กรุณาตรวจสอบชื่อ หมวดหมู่ หน่วย ราคา และสต็อกสินค้า', true);
+        return;
+      }
+      try {
+        const { error } = await sb.from('freshflow_marketplace_products').insert(product);
+        if (error) throw error;
+        document.getElementById('marketplace-product-form').reset();
+        setMarketplaceMessage('ลงขายวัตถุดิบเรียบร้อย');
+        await Promise.all([loadMarketplaceOwnProducts(), loadMarketplaceProducts()]);
+      } catch (error) {
+        setMarketplaceMessage(`ลงสินค้าไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function loadMarketplaceOwnProducts() {
+      if (!supplierSession || !currentUser) return;
+      const container = document.getElementById('marketplace-my-products');
+      try {
+        const { data, error } = await sb
+          .from('freshflow_marketplace_products')
+          .select('id,name,category,unit,unit_price,stock_qty,is_active')
+          .eq('seller_id', currentUser.id)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        marketplaceOwnProducts = data || [];
+        container.innerHTML = marketplaceOwnProducts.length
+          ? marketplaceOwnProducts.map((product, index) => `
+            <article class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div><strong>${esc(product.name)}</strong><span class="block text-slate-500">${Number(product.stock_qty).toLocaleString()} ${esc(product.unit)} • ฿${Number(product.unit_price).toLocaleString()} / ${esc(product.unit)}</span></div>
+              <button onclick="toggleMarketplaceProduct(${index})" class="px-3 py-1.5 rounded-lg ${product.is_active ? 'bg-rose-500/10 text-rose-600' : 'bg-emerald-500/10 text-emerald-600'} font-bold">${product.is_active ? 'หยุดขาย' : 'เปิดขาย'}</button>
+            </article>
+          `).join('')
+          : '<p class="text-xs text-slate-500">ยังไม่มีสินค้าที่ลงขาย</p>';
+      } catch (error) {
+        container.innerHTML = `<p class="text-xs text-rose-500">โหลดสินค้าของฉันไม่สำเร็จ: ${esc(error.message)}</p>`;
+      }
+    }
+
+    async function toggleMarketplaceProduct(index) {
+      const product = marketplaceOwnProducts[index];
+      if (!product) return;
+      try {
+        const { error } = await sb
+          .from('freshflow_marketplace_products')
+          .update({ is_active: !product.is_active, updated_at: new Date().toISOString() })
+          .eq('id', product.id)
+          .eq('seller_id', currentUser.id);
+        if (error) throw error;
+        await Promise.all([loadMarketplaceOwnProducts(), loadMarketplaceProducts()]);
+      } catch (error) {
+        setMarketplaceMessage(`เปลี่ยนสถานะสินค้าไม่สำเร็จ: ${error.message}`, true);
+      }
+    }
+
+    async function loadMarketplaceOrders() {
+      if (!currentUser) return;
+      const container = document.getElementById(supplierSession ? 'marketplace-seller-orders' : 'marketplace-orders');
+      try {
+        const { data, error } = await sb
+          .from('freshflow_marketplace_orders')
+          .select('id,buyer_id,seller_id,product_id,buyer_store,product_name,unit,quantity,unit_price,subtotal,commission_rate,commission_amount,seller_net,status,created_at')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        marketplaceOrders = data || [];
+        renderMarketplaceOrders(container);
+      } catch (error) {
+        container.innerHTML = `<p class="text-sm text-rose-500">โหลดคำสั่งซื้อไม่สำเร็จ: ${esc(error.message)}</p>`;
+      }
+    }
+
+    function renderMarketplaceOrders(container) {
+      const isSeller = supplierSession;
+      const rows = marketplaceOrders;
+      if (isSeller) {
+        const commissionTotal = rows
+          .filter(order => order.status === 'fulfilled')
+          .reduce((sum, order) => sum + Number(order.commission_amount), 0);
+        document.getElementById('marketplace-commission-summary').textContent =
+          `ค่าคอมมิชชั่นสะสมจากออเดอร์สำเร็จ (${marketplaceCommissionRate}%): ฿${commissionTotal.toLocaleString()}`;
+      }
+      container.innerHTML = rows.length
+        ? rows.map((order, index) => {
+          const statusLabels = { requested: 'รอผู้ขายยืนยัน', confirmed: 'ยืนยันแล้ว', fulfilled: 'เสร็จสมบูรณ์', cancelled: 'ยกเลิก' };
+          let actions = '';
+          if (isSeller && order.status === 'requested') {
+            actions = `<button onclick="updateMarketplaceOrderStatus(${index},'confirmed')" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-bold">ยืนยัน</button><button onclick="updateMarketplaceOrderStatus(${index},'cancelled')" class="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-600 font-bold">ยกเลิก</button>`;
+          } else if (isSeller && order.status === 'confirmed') {
+            actions = `<button onclick="updateMarketplaceOrderStatus(${index},'fulfilled')" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-white font-bold">ทำรายการสำเร็จ</button><button onclick="updateMarketplaceOrderStatus(${index},'cancelled')" class="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-600 font-bold">ยกเลิก</button>`;
+          } else if (!isSeller && order.status === 'requested') {
+            actions = `<button onclick="updateMarketplaceOrderStatus(${index},'cancelled')" class="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-600 font-bold">ยกเลิกคำสั่งซื้อ</button>`;
+          }
+          return `
+            <article class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 space-y-2 text-xs">
+              <div class="flex flex-wrap justify-between gap-2">
+                <strong>${esc(order.product_name)} • ${Number(order.quantity).toLocaleString()} ${esc(order.unit)}</strong>
+                <span class="font-bold ${order.status === 'fulfilled' ? 'text-emerald-600' : order.status === 'cancelled' ? 'text-rose-500' : 'text-amber-600'}">${statusLabels[order.status] || esc(order.status)}</span>
+              </div>
+              <p class="text-slate-500">${isSeller ? `ผู้ซื้อ: ${esc(order.buyer_store || 'ร้านค้า')}` : `รหัส: ${esc(order.id.slice(0, 8))}`}</p>
+              <div class="flex flex-wrap justify-between gap-2">
+                <span>ยอดสินค้า ฿${Number(order.subtotal).toLocaleString()}</span>
+                ${isSeller ? `<span>ค่าคอมฯ ${Number(order.commission_rate)}%: ฿${Number(order.commission_amount).toLocaleString()} • รับสุทธิ ฿${Number(order.seller_net).toLocaleString()}</span>` : ''}
+              </div>
+              ${actions ? `<div class="flex flex-wrap gap-2 pt-1">${actions}</div>` : ''}
+            </article>
+          `;
+        }).join('')
+        : '<p class="text-sm text-slate-500">ยังไม่มีคำสั่งซื้อ</p>';
+    }
+
+    async function updateMarketplaceOrderStatus(index, status) {
+      const order = marketplaceOrders[index];
+      if (!order || !['confirmed', 'fulfilled', 'cancelled'].includes(status)) return;
+      try {
+        const { error } = await sb
+          .from('freshflow_marketplace_orders')
+          .update({ status })
+          .eq('id', order.id);
+        if (error) throw error;
+        setMarketplaceMessage('อัปเดตสถานะคำสั่งซื้อแล้ว');
+        await Promise.all([loadMarketplaceOrders(), loadMarketplaceProducts()]);
+      } catch (error) {
+        setMarketplaceMessage(`อัปเดตสถานะไม่สำเร็จ: ${error.message}`, true);
       }
     }
 
@@ -2900,7 +3412,7 @@
     function backToLogin() { showOnlyView('view-login'); }
     function goToRoleSelection() { showOnlyView('view-role-selection'); }
     async function logout() {
-      if (!customerSession) {
+      if (!customerSession && !supplierSession) {
         const saved = await saveUserState();
         if (!saved) return;
       }
@@ -2914,6 +3426,7 @@
       currentUser = null;
       demoMode = false;
       customerSession = false;
+      supplierSession = false;
       restoreDemoState();
       showOnlyView('view-login');
       showToast('ออกจากระบบเรียบร้อยแล้ว');
@@ -3333,7 +3846,7 @@
     }
 
     function switchRoleToOwner() {
-      if ((!currentUser || customerSession) && !demoMode) {
+      if ((!currentUser || customerSession || supplierSession) && !demoMode) {
         showOnlyView('view-login');
         setAuthMessage('กรุณาเข้าสู่ระบบก่อนเข้าหลังบ้านร้านค้า', true);
         return;
