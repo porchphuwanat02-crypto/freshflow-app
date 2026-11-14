@@ -3068,16 +3068,39 @@
       }
     }
 
+    function tryDemoLogin(email, password) {
+      const normalizedEmail = (email || '').trim().toLowerCase();
+      if (normalizedEmail === 'demo@freshflow.ai' && String(password || '') === 'demo1234') {
+        currentUser = null;
+        demoMode = true;
+        customerSession = false;
+        supplierSession = false;
+        profile.email = 'demo@freshflow.ai';
+        document.getElementById('authUserEmail').textContent = profile.email;
+        restoreDemoState();
+        chime();
+        setAuthMessage('เข้าสู่ระบบ Demo สำเร็จ', false);
+        showOnlyView('view-owner');
+        switchTab('dashboard');
+        return true;
+      }
+      return false;
+    }
+
     async function handleLogin(e) {
       e.preventDefault();
       const form = document.getElementById('login-form');
       if (!form || !form.reportValidity()) return;
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      if (tryDemoLogin(email, password)) {
+        document.getElementById('auth-password').value = '';
+        return;
+      }
       if (!sb) {
         setAuthMessage('โหลด Supabase SDK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วโหลดหน้าใหม่', true);
         return;
       }
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value;
       const loginButton = document.getElementById('btn-login');
       const signupButton = document.getElementById('btn-signup');
       loginButton.disabled = signupButton.disabled = true;
@@ -3121,13 +3144,16 @@
     }
 
     async function handleSignup() {
+      if (!document.getElementById('login-form').reportValidity()) return;
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      if (tryDemoLogin(email, password)) {
+        return;
+      }
       if (!sb) {
         setAuthMessage('โหลด Supabase SDK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วโหลดหน้าใหม่', true);
         return;
       }
-      if (!document.getElementById('login-form').reportValidity()) return;
-      const email = document.getElementById('auth-email').value.trim();
-      const password = document.getElementById('auth-password').value;
       const loginButton = document.getElementById('btn-login');
       const signupButton = document.getElementById('btn-signup');
       loginButton.disabled = signupButton.disabled = true;
