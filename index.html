@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FreshFlow —ผู้ช่วยการเงินและสต็อกอัจฉริยะสำหรับร้านอาหาร</title>
+  <title>FreshFlow — ระบบจัดการร้านอาหารและค้นหาร้านค้า</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -634,8 +634,7 @@
         <nav class="flex flex-wrap items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800 p-1" aria-label="เมนูหน้าร้าน">
           <button onclick="showStorefrontPanel('home')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">หน้าแรก</button>
           <button onclick="showStorefrontPanel('search')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ค้นหา</button>
-          <button onclick="showStorefrontPanel('food-order')" class="px-3 py-2 rounded-lg text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-white dark:hover:bg-slate-700 transition">สั่งอาหาร + AI</button>
-          <button onclick="showStorefrontPanel('custom-menu')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">วัตถุดิบ / เมนูพิเศษ</button>
+          <button onclick="showStorefrontPanel('food-order')" class="px-3 py-2 rounded-lg text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-white dark:hover:bg-slate-700 transition">คลัง • สั่งอาหาร + AI</button>
           <button onclick="showStorefrontPanel('contact')" class="px-3 py-2 rounded-lg text-xs font-bold hover:bg-white dark:hover:bg-slate-700 transition">ติดต่อร้าน</button>
         </nav>
         <div id="visitor-store-picker" class="flex items-center gap-2">
@@ -826,10 +825,26 @@
             </div>
             <div class="rounded-2xl border border-emerald-500/20 bg-white/70 p-3 text-xs dark:bg-slate-900/70">
               <strong class="block text-emerald-700 dark:text-emerald-300">AI วิเคราะห์ก่อนยืนยัน</strong>
-              <span class="text-slate-500">วัตถุดิบ • ต้นทุน • กำไรต่อจาน</span>
+              <span class="text-slate-500">เมนู • สถานะสต็อก • คำแนะนำก่อนสั่ง</span>
             </div>
           </div>
         </div>
+
+        <section class="bento-card space-y-4 border border-emerald-500/20 p-5 sm:p-7">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <span class="culinary-kicker">Live shop inventory</span>
+              <h3 class="mt-1 text-xl font-extrabold">วัตถุดิบของ <span id="custom-menu-store-name">เลือกร้านค้าก่อน</span></h3>
+              <p class="mt-1 text-xs text-slate-500">แสดงรายการและปริมาณคงเหลือจากคลังร้าน • ไม่แสดงต้นทุนหรือวันหมดอายุ</p>
+            </div>
+            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+              <span class="h-2 w-2 rounded-full bg-emerald-500"></span> อัปเดตจากคลังร้าน
+            </span>
+          </div>
+          <div id="visitor-public-ingredients" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+            <p class="text-sm text-slate-500">เลือกร้านค้าเพื่อดูวัตถุดิบในคลัง</p>
+          </div>
+        </section>
 
         <div class="space-y-3">
           <div class="flex flex-wrap items-end justify-between gap-2">
@@ -844,6 +859,57 @@
             <p class="text-sm text-slate-500">เลือกร้านค้าเพื่อดูเมนู</p>
           </div>
         </div>
+
+        <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+          <div class="bento-card flex flex-col gap-4 border border-violet-500/20 p-5 sm:p-6">
+            <div>
+              <span class="culinary-kicker">Ask FreshFlow AI</span>
+              <h3 class="mt-1 text-lg font-extrabold">ถาม AI ก่อนสั่ง</h3>
+              <p class="mt-1 text-xs text-slate-500">AI ตอบจากเมนูและข้อมูลคลังที่ร้านแสดงให้ลูกค้าเท่านั้น</p>
+            </div>
+            <div id="visitor-ai-messages" class="max-h-72 min-h-36 space-y-3 overflow-y-auto rounded-2xl bg-slate-50 p-4 dark:bg-slate-900/70" aria-live="polite">
+              <div class="rounded-2xl rounded-tl-none bg-white p-3 text-sm shadow-sm dark:bg-slate-800">สวัสดีค่ะ ถามได้เลยว่าร้านมีวัตถุดิบอะไร เมนูไหนน่าสนใจ หรือมีตัวเลือกทดแทนอะไรบ้าง</div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="askVisitorAI('วันนี้มีวัตถุดิบอะไรบ้าง')" class="rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300">วันนี้มีวัตถุดิบอะไรบ้าง?</button>
+              <button type="button" onclick="askVisitorAI('แนะนำเมนูที่สั่งได้')" class="rounded-full bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-300">แนะนำเมนูที่สั่งได้</button>
+            </div>
+            <form onsubmit="handleVisitorAISubmit(event)" class="flex gap-2">
+              <label for="visitor-ai-input" class="sr-only">ถาม FreshFlow AI</label>
+              <input id="visitor-ai-input" type="text" maxlength="500" placeholder="พิมพ์คำถามเกี่ยวกับเมนูหรือวัตถุดิบ..." class="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800" />
+              <button type="submit" class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-3 text-sm font-bold text-white">ถาม AI</button>
+            </form>
+          </div>
+
+          <form id="custom-menu-request-form" onsubmit="submitCustomMenuRequest(event)" class="bento-card space-y-4 p-5 sm:p-6">
+            <div>
+              <span class="culinary-kicker">Made for you</span>
+              <h3 class="mt-1 text-lg font-extrabold">ขอเมนูพิเศษ</h3>
+              <p class="mt-1 text-xs text-slate-500">ร้านจะตรวจสอบวัตถุดิบและติดต่อกลับ • ยังไม่ใช่คำสั่งซื้อ</p>
+            </div>
+            <div>
+              <label for="custom-menu-name" class="mb-1 block text-sm font-bold">ชื่อเมนูที่ต้องการ</label>
+              <input id="custom-menu-name" type="text" maxlength="160" required placeholder="เช่น ข้าวผัดปลาแซลมอน" class="w-full rounded-xl bg-slate-100 px-4 py-3 dark:bg-slate-800" />
+            </div>
+            <div>
+              <label for="custom-menu-notes" class="mb-1 block text-sm font-bold">รายละเอียดเพิ่มเติม (ไม่บังคับ)</label>
+              <textarea id="custom-menu-notes" rows="3" maxlength="1000" placeholder="วัตถุดิบที่อยากเพิ่ม/ไม่ใส่ หรือระดับความเผ็ด" class="w-full rounded-xl bg-slate-100 px-4 py-3 dark:bg-slate-800"></textarea>
+            </div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label for="custom-menu-customer-name" class="mb-1 block text-sm font-bold">ชื่อสำหรับติดต่อกลับ</label>
+                <input id="custom-menu-customer-name" type="text" maxlength="120" autocomplete="name" required class="w-full rounded-xl bg-slate-100 px-4 py-3 dark:bg-slate-800" />
+              </div>
+              <div>
+                <label for="custom-menu-contact" class="mb-1 block text-sm font-bold">เบอร์โทรหรืออีเมล</label>
+                <input id="custom-menu-contact" type="text" maxlength="160" required class="w-full rounded-xl bg-slate-100 px-4 py-3 dark:bg-slate-800" />
+              </div>
+            </div>
+            <p class="text-xs text-slate-500">ข้อมูลติดต่อจะส่งให้ร้านที่เลือกเพื่อใช้ตอบคำขอนี้เท่านั้น</p>
+            <p id="custom-menu-request-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
+            <button id="custom-menu-request-submit" type="submit" class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 font-bold text-white shadow-lg">ส่งคำขอให้ร้าน</button>
+          </form>
+        </section>
 
         <form id="food-order-checkout-form" onsubmit="submitFoodOrder(event)" class="bento-card space-y-4 p-5 sm:p-7">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -868,49 +934,6 @@
           </div>
           <p id="food-order-submit-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
           <button id="food-order-submit" type="submit" class="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3 font-bold text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50">ส่งออเดอร์ให้ร้านยืนยัน</button>
-        </form>
-      </section>
-
-      <section id="visitor-panel-custom-menu" class="storefront-panel hidden space-y-5">
-        <div class="space-y-1">
-          <h2 class="text-2xl font-extrabold">วัตถุดิบที่ร้านเผยแพร่ และเมนูพิเศษของคุณ</h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400">ดูวัตถุดิบที่ร้านเลือกเปิดเผย แล้วส่งคำขอเมนูให้ร้านพิจารณาได้ โดยยังไม่ใช่คำสั่งซื้อ</p>
-        </div>
-
-        <div class="bento-card p-5 space-y-3">
-          <h3 class="font-extrabold">วัตถุดิบของ <span id="custom-menu-store-name">เลือกร้านค้าก่อน</span></h3>
-          <p class="text-xs text-slate-500">แสดงเฉพาะชื่อและสถานะมี/หมด ไม่แสดงจำนวน ต้นทุน หรือวันหมดอายุ</p>
-          <div id="visitor-public-ingredients" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" aria-live="polite">
-            <p class="text-sm text-slate-500">เลือกร้านค้าเพื่อดูวัตถุดิบที่ร้านเผยแพร่</p>
-          </div>
-        </div>
-
-        <form id="custom-menu-request-form" onsubmit="submitCustomMenuRequest(event)" class="bento-card max-w-3xl p-5 sm:p-7 space-y-4">
-          <div>
-            <h3 class="text-lg font-extrabold">ส่งคำขอเมนูที่อยากรับประทาน</h3>
-            <p class="text-xs text-slate-500 mt-1">ร้านจะตรวจสอบวัตถุดิบ ความเป็นไปได้ และความปลอดภัยก่อนตอบกลับ</p>
-          </div>
-          <div>
-            <label for="custom-menu-name" class="block text-sm font-bold mb-1">ชื่อเมนูที่ต้องการ</label>
-            <input id="custom-menu-name" type="text" maxlength="160" required placeholder="เช่น หมกปลาแซลมอน, อ่อมปลาค่อ หรือเมนูวากิวตามต้องการ" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-          </div>
-          <div>
-            <label for="custom-menu-notes" class="block text-sm font-bold mb-1">รายละเอียดเพิ่มเติม (ไม่บังคับ)</label>
-            <textarea id="custom-menu-notes" rows="3" maxlength="1000" placeholder="วัตถุดิบที่อยากเพิ่ม/ไม่ใส่ หรือระดับความเผ็ด" class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></textarea>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label for="custom-menu-customer-name" class="block text-sm font-bold mb-1">ชื่อสำหรับติดต่อกลับ</label>
-              <input id="custom-menu-customer-name" type="text" maxlength="120" autocomplete="name" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-            </div>
-            <div>
-              <label for="custom-menu-contact" class="block text-sm font-bold mb-1">เบอร์โทรหรืออีเมล</label>
-              <input id="custom-menu-contact" type="text" maxlength="160" required class="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
-            </div>
-          </div>
-          <p class="text-xs text-slate-500">ข้อมูลติดต่อจะส่งให้ร้านที่เลือกเพื่อใช้ตอบคำขอนี้เท่านั้น</p>
-          <p id="custom-menu-request-status" class="text-sm font-bold" role="status" aria-live="polite"></p>
-          <button id="custom-menu-request-submit" type="submit" class="px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold shadow-lg">ส่งคำขอให้ร้าน</button>
         </form>
       </section>
     </main>
@@ -1310,14 +1333,35 @@
              TAB 2: AI INGREDIENT SCAN & IMPORT (3D Laser Scanner + Neural Link)
         =============================================================== -->
         <section id="tab-scan" class="tab-section hidden space-y-6">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">นำเข้าวัตถุดิบ & สแกนใบเสร็จ AI 3D Laser</h1>
-              <p class="text-sm text-slate-500 dark:text-slate-400">สแกนใบเสร็จหรือเพิ่มรายการวัตถุดิบเพื่อส่งต่อให้ AI พยากรณ์จำนวนจานและการระบายสต็อกทันที</p>
+          <div class="relative overflow-hidden rounded-[1.75rem] border border-emerald-500/25 bg-gradient-to-br from-emerald-950 via-teal-900 to-slate-900 p-6 text-white shadow-xl shadow-emerald-900/15 sm:p-8">
+            <div class="absolute -right-10 -top-16 h-56 w-56 rounded-full bg-emerald-400/20 blur-3xl"></div>
+            <div class="relative flex flex-wrap items-center justify-between gap-5">
+              <div class="max-w-2xl space-y-2">
+                <span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold text-emerald-100">
+                  <i data-lucide="boxes" class="h-3.5 w-3.5"></i> LIVE INVENTORY • FRESHFLOW AI
+                </span>
+                <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">คลังวัตถุดิบของร้าน</h1>
+                <p class="text-sm text-emerald-50/80">จัดการสต็อกได้ในที่เดียว พร้อมซิงก์ชื่อ ปริมาณ และสถานะไปยังหน้าลูกค้าโดยอัตโนมัติ • วันหมดอายุและต้นทุนยังเป็นข้อมูลส่วนตัวของร้าน</p>
+              </div>
+              <button onclick="simulateScanReceipt()" class="relative flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-xs font-extrabold text-emerald-900 shadow-lg transition hover:-translate-y-0.5">
+                <i data-lucide="scan-line" class="h-4 w-4"></i> สแกนบิล AI
+              </button>
             </div>
-            <button onclick="simulateScanReceipt()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 dark:from-emerald-600 dark:to-teal-600 text-white text-xs font-bold hover:opacity-95 transition flex items-center gap-2 shadow-lg">
-              <i data-lucide="camera" class="w-4 h-4 text-emerald-300"></i> จำลองสแกนใบเสร็จ AI OCR
-            </button>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <article class="bento-card flex items-center gap-4 border border-emerald-500/15 p-4">
+              <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"><i data-lucide="package" class="h-5 w-5"></i></span>
+              <div><p class="text-xs text-slate-500">รายการในคลัง</p><p id="inventoryTotalItems" class="text-xl font-extrabold">0 รายการ</p></div>
+            </article>
+            <article class="bento-card flex items-center gap-4 border border-amber-500/15 p-4">
+              <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-300"><i data-lucide="layers-3" class="h-5 w-5"></i></span>
+              <div><p class="text-xs text-slate-500">มีสินค้าคงเหลือ</p><p id="inventoryAvailableItems" class="text-xl font-extrabold">0 รายการ</p></div>
+            </article>
+            <article class="bento-card flex items-center gap-4 border border-teal-500/15 p-4">
+              <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-300"><i data-lucide="store" class="h-5 w-5"></i></span>
+              <div><p class="text-xs text-slate-500">การแสดงผลหน้าลูกค้า</p><p class="text-sm font-extrabold text-teal-700 dark:text-teal-300">แชร์คลังอัตโนมัติ</p></div>
+            </article>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -1375,9 +1419,9 @@
               <div class="space-y-4">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h3 class="text-base font-extrabold">รายการวัตถุดิบในคลังปัจจุบัน (<span id="ingredientCountBadge">0</span> รายการ)</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">ซิงก์เข้าสู่สมองกล AI เพื่อคำนวณกำลังผลิตและจุดระบายสต็อก</p>
-                    <p class="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1">เลือก “เผยแพร่” เฉพาะวัตถุดิบที่ต้องการให้ลูกค้าเห็น ระบบจะแสดงเพียงชื่อและสถานะมี/หมด</p>
+                    <h3 class="text-base font-extrabold">รายการวัตถุดิบในคลัง (<span id="ingredientCountBadge">0</span> รายการ)</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">ซิงก์เข้าสู่ AI สำหรับวางแผนกำลังผลิตและบริหารสต็อก</p>
+                    <p class="mt-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">ลูกค้าเห็นชื่อ ปริมาณ และสถานะเท่านั้น • ไม่แสดงต้นทุนหรือวันหมดอายุ</p>
                   </div>
                   <div class="text-right">
                     <span class="text-xs text-slate-400">มูลค่ารวมวัตถุดิบ</span>
@@ -1393,7 +1437,6 @@
                         <th class="py-2.5 px-3.5">ปริมาณ</th>
                         <th class="py-2.5 px-3.5">อายุเหลือ</th>
                         <th class="py-2.5 px-3.5 text-right">ต้นทุน</th>
-                        <th class="py-2.5 px-3.5 text-center">เผยแพร่</th>
                         <th class="py-2.5 px-3.5 text-center">จัดการ</th>
                       </tr>
                     </thead>
@@ -2265,6 +2308,7 @@
     let visitorStores = [];
     let visitorStoreIngredients = [];
     let visitorIngredientLoadError = '';
+    let visitorAiStoreId = null;
     let visitorFoodMenus = [];
     let foodCart = [];
     let foodCartStoreId = null;
@@ -2301,7 +2345,7 @@
       { id: 4, name: 'นมสดพาสเจอร์ไรส์', qty: 24, unit: 'ลิตร', cost: 960, shelfLife: 2, category: 'นมและเครื่องดื่ม', dailyUsage: 7.0, rop: 10 },
       { id: 5, name: 'เมล็ดกาแฟคั่วกลาง', qty: 6, unit: 'กก.', cost: 2100, shelfLife: 25, category: 'ของแห้ง', dailyUsage: 1.2, rop: 3 },
       { id: 6, name: 'กุ้งขาวแกะเปลือก', qty: 5, unit: 'กก.', cost: 1150, shelfLife: 3, category: 'เนื้อสัตว์', dailyUsage: 2.2, rop: 4 }
-    ];
+    ].map(ingredient => ({ ...ingredient, publicVisible: true }));
 
     let notes = [
       { id: 1, text: 'สั่งเนื้ออกไก่รอบเช้าวันพรุ่งนี้ลดลง 20% เพื่อระบายสต็อกเดิม', time: '14:15 น.' },
@@ -2417,7 +2461,7 @@
       subscriptionPlan = Object.prototype.hasOwnProperty.call(subscriptionPlans, state.subscriptionPlan)
         ? state.subscriptionPlan
         : 'free';
-      ingredients = state.ingredients;
+      ingredients = state.ingredients.map(ingredient => ({ ...ingredient, publicVisible: true }));
       notes = state.notes;
       menuRecipes = state.menuRecipes.map(recipe => ({
         ...recipe,
@@ -2567,16 +2611,23 @@
     }
 
     async function syncPublicStoreIngredients(userId) {
-      const rows = ingredients
-        .filter(ingredient => ingredient.publicVisible)
-        .map(ingredient => ({
+      const rows = ingredients.map(ingredient => ({
           user_id: userId,
           ingredient_id: String(ingredient.id),
           ingredient_name: ingredient.name,
+          quantity: Math.max(0, Number(ingredient.qty) || 0),
+          unit: ingredient.unit || '',
           is_available: Number(ingredient.qty) > 0,
           updated_at: new Date().toISOString()
         }));
-      if (!rows.length) return;
+      if (!rows.length) {
+        const { error } = await sb
+          .from('freshflow_public_store_ingredients')
+          .delete()
+          .eq('user_id', userId);
+        if (error) throw error;
+        return;
+      }
       const { error } = await sb
         .from('freshflow_public_store_ingredients')
         .upsert(rows, { onConflict: 'user_id,ingredient_id' });
@@ -3907,7 +3958,7 @@
       }));
       const { data: ingredientData, error: ingredientError } = await sb
         .from('freshflow_public_store_ingredients')
-        .select('user_id,ingredient_id,ingredient_name,is_available')
+        .select('user_id,ingredient_id,ingredient_name,quantity,unit,is_available')
         .order('ingredient_name');
       visitorIngredientLoadError = ingredientError ? ingredientError.message : '';
       visitorStoreIngredients = ingredientError ? [] : ingredientData || [];
@@ -3921,14 +3972,19 @@
       if (demoMode && visitorStores.some(store => String(store.id).startsWith('demo-')) && !visitorStoreIngredients.length) {
         visitorIngredientLoadError = '';
         visitorStoreIngredients = [
-          { user_id: 'demo-main', ingredient_id: 'salmon', ingredient_name: 'ปลาแซลมอน', is_available: true },
-          { user_id: 'demo-main', ingredient_id: 'basil', ingredient_name: 'ใบกะเพราสด', is_available: true },
-          { user_id: 'demo-siam', ingredient_id: 'wagyu', ingredient_name: 'เนื้อวากิว', is_available: true }
+          { user_id: 'demo-main', ingredient_id: 'salmon', ingredient_name: 'ปลาแซลมอน', quantity: 8, unit: 'กก.', is_available: true },
+          { user_id: 'demo-main', ingredient_id: 'basil', ingredient_name: 'ใบกะเพราสด', quantity: 3, unit: 'กก.', is_available: true },
+          { user_id: 'demo-siam', ingredient_id: 'wagyu', ingredient_name: 'เนื้อวากิว', quantity: 5, unit: 'กก.', is_available: true }
         ];
       }
 
       if (!viewStore || !visitorStores.some(store => store.id === viewStore.id)) {
         viewStore = visitorStores[0] || null;
+      }
+      const selectedStoreId = viewStore ? viewStore.id : null;
+      if (visitorAiStoreId !== selectedStoreId) {
+        visitorAiStoreId = selectedStoreId;
+        resetVisitorAI();
       }
       renderVisitorStorePicker();
       renderVisitorStoreDirectory(document.getElementById('visitorStoreDirectorySearch').value);
@@ -3964,13 +4020,88 @@
 
       const items = getPublicIngredientsForStore(viewStore.id);
       container.innerHTML = items.length
-        ? items.map(item => `
-          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-between gap-2">
-            <span class="text-sm font-bold">${esc(item.ingredient_name)}</span>
-            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${item.is_available ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700'}">${item.is_available ? 'มี' : 'หมด'}</span>
-          </div>
-        `).join('')
-        : '<p class="col-span-full text-sm text-slate-500">ร้านนี้ยังไม่ได้เลือกเผยแพร่วัตถุดิบ</p>';
+        ? items.map(item => {
+          const quantity = Number(item.quantity);
+          const available = Boolean(item.is_available) && quantity > 0;
+          return `
+            <article class="group flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400/60 hover:shadow-md dark:border-slate-700 dark:bg-slate-800/80">
+              <div class="flex min-w-0 items-center gap-3">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${available ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700'}"><i data-lucide="leaf" class="h-4 w-4"></i></span>
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-extrabold">${esc(item.ingredient_name)}</p>
+                  <p class="mt-0.5 text-xs text-slate-500">คงเหลือ ${Number.isFinite(quantity) ? quantity.toLocaleString('th-TH') : '0'} ${esc(item.unit || '')}</p>
+                </div>
+              </div>
+              <span class="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${available ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 text-slate-500 dark:bg-slate-700'}">${available ? 'มีสินค้า' : 'หมดชั่วคราว'}</span>
+            </article>
+          `;
+        }).join('')
+        : '<p class="col-span-full rounded-2xl bg-slate-100 p-4 text-sm text-slate-500 dark:bg-slate-800">ร้านนี้ยังไม่มีรายการวัตถุดิบในคลัง</p>';
+      refreshIcons();
+    }
+
+    function handleVisitorAISubmit(event) {
+      event.preventDefault();
+      const input = document.getElementById('visitor-ai-input');
+      const question = input.value.trim();
+      if (!question) return;
+      input.value = '';
+      askVisitorAI(question);
+    }
+
+    function resetVisitorAI() {
+      const messages = document.getElementById('visitor-ai-messages');
+      if (messages) {
+        messages.innerHTML = '<div class="rounded-2xl rounded-tl-none bg-white p-3 text-sm shadow-sm dark:bg-slate-800">สวัสดีค่ะ ถามได้เลยว่าร้านมีวัตถุดิบอะไร เมนูไหนน่าสนใจ หรือมีตัวเลือกทดแทนอะไรบ้าง</div>';
+      }
+    }
+
+    function askVisitorAI(question) {
+      const messages = document.getElementById('visitor-ai-messages');
+      const text = String(question || '').trim().slice(0, 500);
+      if (!messages || !text) return;
+
+      const publicIngredients = viewStore ? getPublicIngredientsForStore(viewStore.id) : [];
+      const availableIngredients = publicIngredients.filter(item => item.is_available && Number(item.quantity) > 0);
+      const availableMenus = visitorFoodMenus.filter(menu => menu.is_available && !menu.has_private_missing);
+      const normalizedQuestion = text.toLocaleLowerCase('th-TH');
+      const requestedIngredient = publicIngredients.find(item =>
+        normalizedQuestion.includes(String(item.ingredient_name).toLocaleLowerCase('th-TH'))
+      );
+      const requestedMenu = visitorFoodMenus.find(menu =>
+        normalizedQuestion.includes(String(menu.menu_name).toLocaleLowerCase('th-TH'))
+      );
+      let answer;
+
+      if (['หมดอายุ', 'วันหมดอายุ', 'วันเสีย', 'อายุสินค้า'].some(term => normalizedQuestion.includes(term))) {
+        answer = 'ข้อมูลวันหมดอายุเป็นข้อมูลภายในของร้าน ระบบจึงไม่แสดงในหน้า AI ลูกค้า หากต้องการความมั่นใจเรื่องความสด กรุณาสอบถามร้านโดยตรงค่ะ';
+      } else if (requestedIngredient) {
+        const quantity = Number(requestedIngredient.quantity);
+        answer = requestedIngredient.is_available && quantity > 0
+          ? `${requestedIngredient.ingredient_name} มีในคลัง ${quantity.toLocaleString('th-TH')} ${requestedIngredient.unit || ''} ค่ะ`
+          : `${requestedIngredient.ingredient_name} หมดชั่วคราว ลองสอบถามร้านหรือเลือกวัตถุดิบอื่นค่ะ`;
+      } else if (requestedMenu) {
+        answer = requestedMenu.is_available && !requestedMenu.has_private_missing
+          ? `${requestedMenu.menu_name} สั่งได้ในราคา ฿${Number(requestedMenu.price).toLocaleString('th-TH')} ค่ะ`
+          : `${requestedMenu.menu_name} ยังไม่พร้อมให้สั่ง ลองเลือกเมนูอื่นหรือส่งคำขอพิเศษให้ร้านค่ะ`;
+      } else if (['วัตถุดิบ', 'สต็อก', 'มีอะไร', 'คงเหลือ'].some(term => normalizedQuestion.includes(term))) {
+        answer = availableIngredients.length
+          ? `วัตถุดิบที่มีในคลังตอนนี้: ${availableIngredients.map(item => `${item.ingredient_name} ${Number(item.quantity).toLocaleString('th-TH')} ${item.unit || ''}`).join('、')} ค่ะ`
+          : 'ตอนนี้ยังไม่มีวัตถุดิบที่ร้านระบุว่าพร้อมใช้งาน ลองเลือกเมนูอื่นหรือสอบถามร้านได้ค่ะ';
+      } else if (['เมนู', 'แนะนำ', 'อาหาร', 'ราคา'].some(term => normalizedQuestion.includes(term))) {
+        answer = availableMenus.length
+          ? `เมนูที่สั่งได้ตอนนี้: ${availableMenus.map(menu => `${menu.menu_name} ฿${Number(menu.price).toLocaleString('th-TH')}`).join('、')} ค่ะ`
+          : 'ยังไม่มีเมนูที่พร้อมสั่งในขณะนี้ ลองส่งคำขอเมนูพิเศษให้ร้านด้านล่างได้ค่ะ';
+      } else {
+        answer = 'ฉันช่วยเช็กเมนูที่สั่งได้และวัตถุดิบในคลังที่ร้านแสดงไว้ได้ค่ะ หากต้องการเมนูเฉพาะ กด “ขอเมนูพิเศษ” เพื่อส่งคำขอให้ร้าน';
+      }
+
+      messages.innerHTML += `
+        <div class="flex justify-end"><div class="max-w-[85%] rounded-2xl rounded-tr-none bg-gradient-to-r from-emerald-500 to-teal-600 p-3 text-sm text-white">${esc(text)}</div></div>
+        <div class="flex items-start gap-2"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600"><i data-lucide="sparkles" class="h-3.5 w-3.5"></i></span><div class="max-w-[90%] rounded-2xl rounded-tl-none bg-white p-3 text-sm shadow-sm dark:bg-slate-800">${esc(answer)}</div></div>
+      `;
+      messages.scrollTop = messages.scrollHeight;
+      refreshIcons();
     }
 
     async function loadPublicStoreMenus() {
@@ -4021,7 +4152,7 @@
           visitorFoodMenus = data || [];
         }
         status.textContent = visitorFoodMenus.length
-          ? 'AI ตรวจรายการวัตถุดิบที่ร้านเผยแพร่แล้ว • ออเดอร์จะรอร้านยืนยันก่อนตัดสต็อก'
+          ? 'AI ตรวจคลังวัตถุดิบของร้านแล้ว • ออเดอร์จะรอร้านยืนยันก่อนตัดสต็อก'
           : 'ร้านนี้ยังไม่ได้เผยแพร่เมนูสำหรับสั่งอาหาร';
         status.className = 'text-sm font-bold text-emerald-700 dark:text-emerald-300';
         renderVisitorFoodMenus();
@@ -4067,15 +4198,15 @@
               </label>
             `;
           }).join('')
-          : '<p class="text-xs text-slate-500">ร้านไม่ได้เผยแพร่รายละเอียดวัตถุดิบรายเมนู • ระบุการปรับแต่งเพิ่มเติมให้ร้านตรวจสอบได้</p>';
+          : '<p class="text-xs text-slate-500">เมนูนี้ยังไม่มีรายละเอียดส่วนประกอบในระบบ • ระบุการปรับแต่งเพิ่มเติมให้ร้านตรวจสอบได้</p>';
         const missing = ingredients.filter(item => !item.available);
           const stockAdvice = menu.has_private_missing
-            ? '<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">AI พบว่าวัตถุดิบตามสูตรบางรายการยังไม่พร้อมหรือร้านไม่ได้เผยแพร่รายละเอียด จึงยังสั่งเมนูนี้ไม่ได้ • แนะนำให้ร้านตรวจสอบและเติมสต็อก</p>'
+            ? '<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">เมนูนี้ยังไม่มีสูตรวัตถุดิบครบ จึงยังสั่งผ่านระบบไม่ได้ • กรุณาสอบถามร้าน</p>'
             : missing.length
           ? `<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">AI พบวัตถุดิบที่ไม่พอ: ${missing.map(item => esc(item.name)).join('、')}. ${missing.some(item => item.suggestions && item.suggestions.length) ? 'เลือกวัตถุดิบทดแทนที่ระบบเสนอ หรือไม่ใส่รายการนั้น' : 'ร้านจะได้รับคำแนะนำให้เติมสต็อก หากยังไม่มีทางเลือกให้ใช้เมนูอื่น'}</p>`
           : menu.is_available
             ? '<p class="rounded-xl bg-emerald-500/10 p-2.5 text-xs text-emerald-700 dark:text-emerald-300">AI ตรวจแล้ว วัตถุดิบตามสูตรมีพอสำหรับหนึ่งจาน</p>'
-            : '<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">AI พบวัตถุดิบที่ยังไม่เผยแพร่หรือมีไม่พอ ร้านจะตรวจสอบและแนะนำการเติมสต็อกก่อนยืนยัน</p>';
+            : '<p class="rounded-xl bg-amber-500/10 p-2.5 text-xs text-amber-700 dark:text-amber-300">AI พบวัตถุดิบที่มีไม่พอ ร้านจะตรวจสอบและแนะนำการเติมสต็อกก่อนยืนยัน</p>';
         const privateMissing = Boolean(menu.has_private_missing);
         return `
           <article class="bento-card space-y-3 p-5">
@@ -4098,7 +4229,7 @@
                 <label for="food-order-quantity-${index}" class="mb-1 block text-xs font-bold">จำนวน</label>
                 <input id="food-order-quantity-${index}" type="number" min="1" max="50" step="1" value="1" class="w-24 rounded-xl bg-slate-100 px-3 py-2.5 text-sm dark:bg-slate-800" />
               </div>
-              <button type="button" onclick="addFoodMenuToCart(${index})" ${privateMissing ? 'disabled title="ร้านต้องเติมวัตถุดิบที่ยังไม่เผยแพร่ก่อน"' : ''} class="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">${privateMissing ? 'รอร้านเติมวัตถุดิบ' : 'เพิ่มลงตะกร้า'}</button>
+              <button type="button" onclick="addFoodMenuToCart(${index})" ${privateMissing ? 'disabled title="เมนูยังไม่มีสูตรวัตถุดิบครบ"' : ''} class="flex-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50">${privateMissing ? 'รอร้านเพิ่มสูตรวัตถุดิบ' : 'เพิ่มลงตะกร้า'}</button>
             </div>
           </article>
         `;
@@ -4236,8 +4367,8 @@
           const ingredientPreview = visitorIngredientLoadError
             ? `<p class="text-[11px] text-rose-500">โหลดวัตถุดิบไม่สำเร็จ: ${esc(visitorIngredientLoadError)}</p>`
             : storeIngredients.length
-              ? `<p class="text-[11px] text-slate-500">วัตถุดิบที่ร้านเผยแพร่ ${storeIngredients.length} รายการ: ${storeIngredients.slice(0, 3).map(item => esc(item.ingredient_name)).join('、')}${storeIngredients.length > 3 ? '…' : ''}</p>`
-              : '<p class="text-[11px] text-slate-500">ร้านยังไม่ได้เผยแพร่วัตถุดิบ</p>';
+              ? `<p class="text-[11px] text-slate-500">ในคลัง ${storeIngredients.length} รายการ: ${storeIngredients.slice(0, 3).map(item => esc(item.ingredient_name)).join('、')}${storeIngredients.length > 3 ? '…' : ''}</p>`
+              : '<p class="text-[11px] text-slate-500">ยังไม่มีวัตถุดิบในคลัง</p>';
           return `
             <article class="bento-card p-5 space-y-3">
               <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-300">${esc(store.type || 'ร้านค้า FreshFlow')}</span>
@@ -4246,8 +4377,7 @@
               ${ingredientPreview}
               <div class="flex flex-wrap gap-2">
                 <button onclick="selectVisitorStoreFromSearch(${index})" class="px-3 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-xs font-bold">ดูข้อมูลร้าน</button>
-                <button onclick="selectVisitorStoreForFoodOrder(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">สั่งอาหาร + AI</button>
-                <button onclick="selectVisitorStoreForCustomMenu(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">วัตถุดิบ / ขอเมนูพิเศษ</button>
+                <button onclick="selectVisitorStoreForFoodOrder(${index})" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold">คลัง • สั่งอาหาร + AI</button>
               </div>
             </article>
           `;
@@ -4286,12 +4416,12 @@
     }
 
     function showStorefrontPanel(panelName) {
+      if (panelName === 'custom-menu') panelName = 'food-order';
       const panelIds = {
         home: 'visitor-panel-home',
         search: 'visitor-panel-search',
         contact: 'visitor-panel-contact',
-        'food-order': 'visitor-panel-food-order',
-        'custom-menu': 'visitor-panel-custom-menu'
+        'food-order': 'visitor-panel-food-order'
       };
       if (!panelIds[panelName]) return;
       Object.entries(panelIds).forEach(([name, id]) => {
@@ -4303,8 +4433,10 @@
       if (panelName === 'search') {
         searchStorefront(document.getElementById('storefrontSearchInput').value);
       }
-      if (panelName === 'custom-menu') renderVisitorPublicIngredients();
-      if (panelName === 'food-order') loadPublicStoreMenus();
+      if (panelName === 'food-order') {
+        renderVisitorPublicIngredients();
+        loadPublicStoreMenus();
+      }
       initTilt3D();
     }
 
@@ -4575,7 +4707,7 @@
       foodCart = [];
       foodCartStoreId = viewStore ? viewStore.id : null;
       renderFoodCart();
-      const activePanel = ['home', 'search', 'contact', 'food-order', 'custom-menu']
+      const activePanel = ['home', 'search', 'contact', 'food-order']
         .find(name => !document.getElementById(`visitor-panel-${name}`).classList.contains('hidden')) || 'home';
       switchRoleToVisitor(activePanel);
     }
@@ -4584,7 +4716,7 @@
       if (!Number.isInteger(index) || !visitorStores[index]) return;
       viewStore = visitorStores[index];
       document.getElementById('visitor-store-select').value = String(index);
-      await switchRoleToVisitor('custom-menu');
+      await switchRoleToVisitor('food-order');
     }
 
     async function selectVisitorStoreForFoodOrder(index) {
@@ -5130,15 +5262,18 @@
     function renderIngredientsTab() {
       const tbody = document.getElementById('ingredient-tbody');
       const totalCost = ingredients.reduce((s, i) => s + Number(i.cost), 0);
+      const availableCount = ingredients.filter(ingredient => Number(ingredient.qty) > 0).length;
       document.getElementById('ingredientCountBadge').textContent = ingredients.length;
       document.getElementById('intake-total-price').textContent = '฿' + totalCost.toLocaleString();
+      document.getElementById('inventoryTotalItems').textContent = `${ingredients.length} รายการ`;
+      document.getElementById('inventoryAvailableItems').textContent = `${availableCount} รายการ`;
 
       tbody.innerHTML = ingredients.map((ing, index) => {
         const urgent = ing.shelfLife <= 2;
         return `
-          <tr class="hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition">
+          <tr class="transition hover:bg-emerald-50/70 dark:hover:bg-emerald-950/20">
             <td class="py-3 px-3.5 font-extrabold">${esc(ing.name)}<div class="text-[10px] text-slate-400 font-normal">${esc(ing.category)}</div></td>
-            <td class="py-3 px-3.5 font-bold">${ing.qty} ${esc(ing.unit)}</td>
+            <td class="py-3 px-3.5 font-bold">${Number(ing.qty).toLocaleString('th-TH')} ${esc(ing.unit)}</td>
             <td class="py-3 px-3.5">
               <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${urgent ? 'bg-rose-500/15 text-rose-500' : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'}">
                 ${ing.shelfLife} วัน
@@ -5146,13 +5281,7 @@
             </td>
             <td class="py-3 px-3.5 text-right font-extrabold">฿${Number(ing.cost).toLocaleString()}</td>
             <td class="py-3 px-3.5 text-center">
-              <label class="inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
-                <input type="checkbox" ${ing.publicVisible ? 'checked' : ''} onchange="toggleIngredientVisibility(${index}, this.checked)" aria-label="เผยแพร่ ${esc(ing.name)} ให้ลูกค้าเห็น" class="accent-emerald-500" />
-                <span class="text-[10px] font-bold text-slate-500">เผยแพร่</span>
-              </label>
-            </td>
-            <td class="py-3 px-3.5 text-center">
-              <button onclick="deleteIngredient(${ing.id})" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition">
+              <button onclick="deleteIngredient(${index})" aria-label="ลบ ${esc(ing.name)}" class="rounded-lg p-2 text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-500">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </td>
@@ -5160,43 +5289,6 @@
         `;
       }).join('');
       refreshIcons();
-    }
-
-    async function toggleIngredientVisibility(index, isVisible) {
-      const ingredient = ingredients[index];
-      if (!ingredient) return;
-      const publish = Boolean(isVisible);
-
-      if (currentUser && sb) {
-        try {
-          let result;
-          if (publish) {
-            result = await sb.from('freshflow_public_store_ingredients').upsert({
-              user_id: currentUser.id,
-              ingredient_id: String(ingredient.id),
-              ingredient_name: ingredient.name,
-              is_available: Number(ingredient.qty) > 0,
-              updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id,ingredient_id' });
-          } else {
-            result = await sb
-              .from('freshflow_public_store_ingredients')
-              .delete()
-              .eq('user_id', currentUser.id)
-              .eq('ingredient_id', String(ingredient.id));
-          }
-          if (result.error) throw result.error;
-        } catch (error) {
-          renderIngredientsTab();
-          showToast(`เปลี่ยนการเผยแพร่วัตถุดิบไม่สำเร็จ: ${error.message}`);
-          return;
-        }
-      }
-
-      ingredient.publicVisible = publish;
-      scheduleCloudSave();
-      renderIngredientsTab();
-      showToast(publish ? 'เผยแพร่ชื่อและสถานะวัตถุดิบให้ลูกค้าแล้ว' : 'ซ่อนวัตถุดิบจากหน้าลูกค้าแล้ว');
     }
 
     function addManualIngredient(e) {
@@ -5228,6 +5320,7 @@
           cost,
           shelfLife,
           category,
+          publicVisible: true,
           dailyUsage: +(qty * 0.35).toFixed(1),
           rop: +(qty * 0.4).toFixed(1)
         });
@@ -5251,9 +5344,9 @@
       showToast(`เพิ่ม ${name} (${qty} ${unit}) เข้าคลังและลงบัญชีเรียบร้อย`);
     }
 
-    async function deleteIngredient(id) {
-      const ingredient = ingredients.find(item => item.id === id);
-      if (ingredient && ingredient.publicVisible && currentUser && sb) {
+    async function deleteIngredient(index) {
+      const ingredient = ingredients[index];
+      if (ingredient && currentUser && sb) {
         try {
           const { error } = await sb
             .from('freshflow_public_store_ingredients')
@@ -5262,11 +5355,11 @@
             .eq('ingredient_id', String(ingredient.id));
           if (error) throw error;
         } catch (error) {
-          showToast(`ลบข้อมูลวัตถุดิบที่เผยแพร่ไม่สำเร็จ: ${error.message}`);
+          showToast(`ลบข้อมูลวัตถุดิบจากหน้าลูกค้าไม่สำเร็จ: ${error.message}`);
           return;
         }
       }
-      ingredients = ingredients.filter(i => i.id !== id);
+      ingredients.splice(index, 1);
       scheduleCloudSave();
       renderIngredientsTab();
       updateSidebarExpiryBadge();
@@ -5283,7 +5376,7 @@
           found.qty += item.qty;
           found.cost += item.cost;
         } else {
-          ingredients.unshift({ id: Date.now() + Math.floor(Math.random() * 1000), ...item });
+          ingredients.unshift({ id: Date.now() + Math.floor(Math.random() * 1000), ...item, publicVisible: true });
         }
       });
       scheduleCloudSave();
