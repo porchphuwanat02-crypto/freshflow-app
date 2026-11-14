@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FreshFlow — ระบบจัดการร้านอาหารและค้นหาร้านค้า</title>
+  <title>FreshFlow —ผู้ช่วยการเงินและสต็อกอัจฉริยะสำหรับร้านอาหาร</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -1830,59 +1830,72 @@
           <div class="bento-card p-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p class="text-xs text-slate-500">แพ็กเกจที่เลือก</p>
-              <p id="current-plan-label" class="text-xl font-extrabold">ฟรี • ฿0/เดือน</p>
+              <p id="current-plan-label" class="text-xl font-extrabold">Starter • ฿0/เดือน</p>
             </div>
             <span class="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold">เปลี่ยนแพ็กเกจได้ทุกเมื่อในช่วงทดลอง</span>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
             <article id="plan-card-free" class="bento-card p-6 space-y-5 border-2 border-transparent">
               <div>
-                <h2 class="text-xl font-extrabold">ฟรี</h2>
+                <h2 class="text-xl font-extrabold">Starter</h2>
                 <p class="mt-2"><strong class="text-3xl">฿0</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
               </div>
               <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                <li>✓ คำนวณต้นทุนได้สูงสุด 10 เมนู</li>
-                <li>✓ ดูรายการวัตถุดิบใกล้หมดอายุ</li>
+                <li>✓ ใช้ฟรี</li>
+                <li>✓ สูงสุด 10 เมนู</li>
+                <li>✓ สแกนบิล 15 ใบ</li>
               </ul>
-              <button id="select-plan-free" onclick="selectSubscriptionPlan('free')" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold text-sm">เลือกแพ็กเกจฟรี</button>
+              <button id="select-plan-free" onclick="selectSubscriptionPlan('free')" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold text-sm">เลือกแพ็กเกจ Starter</button>
             </article>
 
             <article id="plan-card-basic" class="bento-card p-6 space-y-5 border-2 border-transparent">
               <div>
-                <h2 class="text-xl font-extrabold">โปร</h2>
-                <p class="mt-2"><strong class="text-3xl">฿199</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
+                <h2 class="text-xl font-extrabold">Pro</h2>
+                <p class="mt-2"><strong class="text-3xl">฿129</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
               </div>
               <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                <li>✓ ทุกอย่างในแพ็กเกจฟรี</li>
-                <li>✓ คำนวณต้นทุนได้ไม่จำกัดเมนู</li>
-                <li>✓ แจ้งเตือนวัตถุดิบใกล้หมดอายุ</li>
-                <li>✓ AI แนะนำเมนูเพื่อเคลียร์สต็อก</li>
+                <li>✓ เมนูไม่จำกัด</li>
+                <li>✓ สแกนบิล 60 ใบ</li>
+                <li>✓ AI พยากรณ์ 7 วัน</li>
+                <li>✓ ส่วนลดวัตถุดิบ 1%</li>
               </ul>
-              <button id="select-plan-basic" onclick="selectSubscriptionPlan('basic')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm">เลือกแพ็กเกจโปร</button>
+              <button id="select-plan-basic" onclick="selectSubscriptionPlan('basic')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm">เลือกแพ็กเกจ Pro</button>
             </article>
 
             <article id="plan-card-pro" class="bento-card p-6 space-y-5 border-2 border-amber-400/70 bg-gradient-to-br from-amber-500/10 via-white/50 to-orange-500/10 dark:via-slate-900/50 ring-1 ring-amber-400/30 shadow-xl shadow-amber-500/10">
               <div class="space-y-2">
                 <div class="flex items-start justify-between gap-2">
                   <div>
-                    <h2 class="text-xl font-extrabold">พรีเมียม</h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">เครื่องมือครบวงจรสำหรับร้านที่กำลังเติบโต</p>
+                    <h2 class="text-xl font-extrabold">Pro AI</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">แพ็กเกจหลัก คุ้มสุดสำหรับร้านที่ต้องการใช้ AI เต็มประสิทธิภาพ</p>
                   </div>
-                  <span class="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-extrabold shadow">คุ้มค่าสำหรับร้านโต</span>
+                  <span class="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-extrabold shadow">คุ้มสุด</span>
                 </div>
-                <p class="pt-1"><strong class="text-3xl">฿499</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
-                <p class="text-[11px] font-semibold text-amber-700 dark:text-amber-300">เฉลี่ยประมาณ ฿16.63/วัน (คำนวณที่ 30 วัน/เดือน)</p>
+                <p class="pt-1"><strong class="text-3xl">฿219</strong><span class="text-sm text-slate-500"> / เดือน</span></p>
               </div>
               <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
-                <li>✓ ทุกอย่างในแพ็กเกจโปร</li>
-                <li>✓ พยากรณ์การเงินและทดลองปรับแผน (What-if)</li>
-                <li>✓ สแกน/อ่านใบเสร็จด้วย OCR</li>
-                <li>✓ ตั้งโปรโมชันและแจ้งเตือนผ่าน LINE OA</li>
-                <li>✓ รายงานบัญชี/ภาษี ส่งออก CSV และพิมพ์รายงาน</li>
-                <li>✓ วางแผนสั่งซื้อวัตถุดิบซ้ำ (Auto-PO)</li>
+                <li>✓ สแกนบิล 200 ใบ</li>
+                <li>✓ AI พยากรณ์ 30 วัน</li>
+                <li>✓ สร้างโปรโมชันเคลียร์สต็อก</li>
+                <li>✓ ส่วนลดวัตถุดิบ 2%</li>
               </ul>
-              <button id="select-plan-pro" onclick="selectSubscriptionPlan('pro')" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-bold text-sm shadow-lg shadow-amber-500/25">เลือกแพ็กเกจพรีเมียม • ฿499/เดือน</button>
+              <button id="select-plan-pro" onclick="selectSubscriptionPlan('pro')" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-bold text-sm shadow-lg shadow-amber-500/25">เลือกแพ็กเกจ Pro AI</button>
+            </article>
+
+            <article id="plan-card-pro-premium-3-month" class="bento-card p-6 space-y-5 border-2 border-transparent">
+              <div>
+                <h2 class="text-xl font-extrabold">Pro Premium 3 Month</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pro AI แบบเหมาจ่าย 3 เดือน</p>
+                <p class="mt-2"><strong class="text-3xl">฿549</strong><span class="text-sm text-slate-500"> / 3 เดือน</span></p>
+                <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">เฉลี่ยเดือนละ ฿183</p>
+              </div>
+              <ul class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <li>✓ สิทธิประโยชน์ Pro AI</li>
+                <li>✓ แถมคูปองซื้อวัตถุดิบ ฿100</li>
+                <li>✓ ไฟล์ป้าย QR Code ฟรี</li>
+              </ul>
+              <button id="select-plan-pro-premium-3-month" onclick="selectSubscriptionPlan('pro-premium-3-month')" class="w-full py-3 rounded-xl bg-slate-200 dark:bg-slate-800 font-bold text-sm">เลือก Pro Premium 3 Month</button>
             </article>
           </div>
 
@@ -2229,9 +2242,10 @@
     let marketplaceCommissionRate = 3;
     let subscriptionPlan = 'free';
     const subscriptionPlans = {
-      free: { name: 'ฟรี', price: 0, level: 0 },
-      basic: { name: 'โปร', price: 199, level: 1 },
-      pro: { name: 'พรีเมียม', price: 499, level: 2 }
+      free: { name: 'Starter', price: 0, period: 'เดือน', level: 0 },
+      basic: { name: 'Pro', price: 129, period: 'เดือน', level: 1 },
+      pro: { name: 'Pro AI', price: 219, period: 'เดือน', level: 2 },
+      'pro-premium-3-month': { name: 'Pro Premium 3 Month', price: 549, period: '3 เดือน', level: 2 }
     };
     let adminStoreRows = [];
     let adminContactRows = [];
@@ -2466,7 +2480,7 @@
       const badge = document.getElementById('owner-plan-badge');
       const currentLabel = document.getElementById('current-plan-label');
       if (badge) badge.textContent = plan.name;
-      if (currentLabel) currentLabel.textContent = `${plan.name} • ฿${plan.price.toLocaleString()}/เดือน`;
+      if (currentLabel) currentLabel.textContent = `${plan.name} • ฿${plan.price.toLocaleString()}/${plan.period}`;
 
       Object.keys(subscriptionPlans).forEach(planId => {
         const card = document.getElementById(`plan-card-${planId}`);
@@ -2478,7 +2492,7 @@
         card.classList.toggle('shadow-lg', isCurrent);
         card.classList.toggle('shadow-emerald-500/10', isCurrent);
         button.disabled = isCurrent;
-        button.textContent = isCurrent ? 'แพ็กเกจปัจจุบัน' : `เลือกแพ็กเกจ${subscriptionPlans[planId].name}`;
+        button.textContent = isCurrent ? 'แพ็กเกจปัจจุบัน' : `เลือกแพ็กเกจ ${subscriptionPlans[planId].name}`;
         button.classList.toggle('opacity-60', isCurrent);
         button.classList.toggle('cursor-not-allowed', isCurrent);
       });
@@ -4603,8 +4617,8 @@
     // ---------------------------------------------------------------------
     function switchTab(tabName) {
       const requiredPlan = {
-        'product-forecast': 'basic',
-        forecast: 'pro',
+        'product-forecast': 'pro',
+        forecast: 'basic',
         accounting: 'pro'
       }[tabName];
       if (requiredPlan && !hasPlan(requiredPlan)) {
@@ -5259,7 +5273,6 @@
     }
 
     function simulateScanReceipt() {
-      if (!requirePlan('pro', 'การอ่านใบเสร็จด้วย OCR')) return;
       const sampleItems = [
         { name: 'เนื้ออกไก่สด', qty: 10, unit: 'กก.', cost: 800, shelfLife: 2, category: 'เนื้อสัตว์', dailyUsage: 6.5, rop: 8 },
         { name: 'ใบกะเพราสด', qty: 3, unit: 'กก.', cost: 180, shelfLife: 2, category: 'ผักสด', dailyUsage: 1.4, rop: 2 }
@@ -5281,7 +5294,7 @@
     }
 
     function runCombinedAICalculation() {
-      if (!requirePlan('basic', 'AI แนะนำเมนูเคลียร์สต็อก')) return;
+      if (!requirePlan('pro', 'AI แนะนำเมนูเคลียร์สต็อก')) return;
       chime();
       celebrate();
       document.getElementById('forecastLastSyncBadge').textContent = 'อัปเดตล่าสุดเมื่อสักครู่ (' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ')';
@@ -5645,7 +5658,7 @@
       const addRecipeButton = document.querySelector('#tab-costing button[onclick="openAddRecipeModal()"]');
       if (limitLabel) {
         limitLabel.textContent = isFreePlan
-          ? `แพ็กเกจฟรี: ${Math.min(menuRecipes.length, 10)}/10 เมนูที่ใช้คำนวณต้นทุน`
+          ? `แพ็กเกจ Starter: ${Math.min(menuRecipes.length, 10)}/10 เมนูที่ใช้คำนวณต้นทุน`
           : `แพ็กเกจ${subscriptionPlans[subscriptionPlan].name}: ${menuRecipes.length} เมนู • ไม่จำกัด`;
         if (hiddenCount > 0) limitLabel.textContent += ` • อีก ${hiddenCount} เมนูถูกเก็บไว้และจะแสดงเมื่ออัปเกรด`;
       }
