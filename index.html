@@ -3070,6 +3070,8 @@
 
     async function handleLogin(e) {
       e.preventDefault();
+      const form = document.getElementById('login-form');
+      if (!form || !form.reportValidity()) return;
       if (!sb) {
         setAuthMessage('โหลด Supabase SDK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วโหลดหน้าใหม่', true);
         return;
